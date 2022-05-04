@@ -221,7 +221,8 @@ title, "XFEL CL to T20: October 2021"
 beam, energy=14.0
 use, CLTT20
 print, #s/#e
-twiss, beta0=B0_CL.QFH, save, couple, tape=twiss_CL_T20
+twiss, beta0=B0_CL.QFH, save, couple, tape=twiss_CL_T20, rtape=rmat_CL_T20
+twiss, beta0=B0_CL.QFH, save, chrom, tape=chrom_CL_T20
 !
 plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
      vmin=0,vmax=100, vaxis2=dx,dy
@@ -242,3 +243,4 @@ survey, x0     =  0.0,          &
 !---------------------------------------------------------------------------------------
 !---------------------------------------------------------------------------------------
 
+SAVE, FILENAME=structure_CL_T20
