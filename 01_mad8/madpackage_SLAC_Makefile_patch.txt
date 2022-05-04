@@ -1,0 +1,19 @@
+--- madpackage/Makefile	2010-08-05 00:15:50.000000000 +0100
++++ Makefile	2020-03-07 15:06:31.000000000 +0000
+@@ -11,12 +11,12 @@
+ 
+ # Linux (rhel4-32 at SLAC):
+   SYS=linux
+-  FCOMP=f77
++  FCOMP=gfortran
+   FCOPTS=-Wno-globals -O3
+-  CERN=/cern/2002/lib
+-  Xlib=/usr/X11R6/lib
++  CERN=/usr/lib/i386-linux-gnu/
++  Xlib=/usr/lib/i386-linux-gnu/
+   LIBS=$(CERN)/libmathlib.a $(CERN)/libpacklib.a $(CERN)/libkernlib.a \
+-       $(Xlib)/libX11.a -lnsl -lm -lc
++       $(Xlib)/libX11.a $(Xlib)/libxcb.a $(Xlib)/libXau.a $(Xlib)/libXdmcp.a -lnsl -lm -lc
+   ASTLIB=
+   GCC_FLAGS=-g -ansi -Wall -D_SWAP_ -D_LINUX_
+ 
