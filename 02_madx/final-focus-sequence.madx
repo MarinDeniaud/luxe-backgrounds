@@ -1,0 +1,83 @@
+! Constants
+// REAL CONST NOMINAL_DISTANCE_TO_TARGET = 11.990046867763699;
+// REAL CONST NOMINAL_DISTANCE_TO_IP = 19.500047688156346;
+
+
+! Markers
+ff_start: marker;
+luxe.target: marker;
+luxe.dump.1: marker;
+luxe.ip: marker;
+luxe.dump.2: marker;
+
+! Magnets
+qh.11.t20: quadrupole, l:= L_QH_eff, k1:= 0;
+qh.12.t20: quadrupole, l:= L_QH_eff, k1:= 0;
+qh.13.t20: quadrupole, l:= L_QH_eff, k1:= 0;
+qh.t20.ff.f1: quadrupole, l:= L_QH_eff, k1:= 0;
+qh.t20.ff.d1: quadrupole, l:= L_QH_eff, k1:= 0;
+qh.t20.ff.d2: quadrupole, l:= L_QH_eff, k1:= 0;
+qh.t20.ff.f2: quadrupole, l:= L_QH_eff, k1:= 0;
+
+L_QH_yoke = 1.0000;
+L_QH_eff  = 1.0291;
+
+QH_QH_IRON_SEPARATION = 0.25;
+
+QH_GAP_eff = QH_QH_IRON_SEPARATION - 2 * (L_QH_eff - L_QH_yoke);
+
+lqhalf = L_QH_eff / 2.0;
+
+CH_LENGTH = 0.2;
+
+
+
+CH.T20.FF.X: HKICKER, l = CH_LENGTH;
+CH.T20.FF.Y: VKICKER, l = CH_LENGTH;
+CH.T20.FF.Y1: HKICKER, l = CH_LENGTH;
+CH.T20.FF.Y2: HKICKER, l = CH_LENGTH;
+
+BPM.T20.FF.start: MONITOR;
+BPM.T20.FF.2: MONITOR;
+BPM.T20.FF.luxe: MONITOR;
+
+
+
+tripgap = QH_GAP_eff;
+
+bpm_half_length = 0.1;
+
+TARGET = NOMINAL_DISTANCE_TO_TARGET;
+
+TARGET_TO_LAST_QUAD_GAP = 1.0;
+LQG = TARGET_TO_LAST_QUAD_GAP;
+
+ff_start_position = TARGET - 7*lqhalf - 3*tripgap - LQG - lqhalf;
+
+! Sequence
+final_focus_t20: sequence, l = NOMINAL_DISTANCE_TO_SECOND_DUMP, refpos=ff_start;
+ff_start, at = 0;
+BPM.T20.FF.start, at = 1.0; ! First BPM after the arc.
+qh.11.t20, at = 2.0; 
+CH.T20.FF.X, at = 3.0; ! Corrector after the horizontal matching quad.
+qh.12.t20, at = 4.0;
+CH.T20.FF.Y, at = 4.8; ! Corrector after the vertical matching quad.
+
+BPM.T20.FF.2, at = 4.8 + 0.2 + bpm_half_length; ! BPM AFter the matching quads.
+
+! Kickers before the final focus quadrupoles.
+CH.T20.FF.X, at = ff_start_position - 2*0.2 - 3 * (CH_LENGTH / 2.0);
+CH.T20.FF.Y, at = ff_start_position - 1*0.2 - 1 * (CH_LENGTH / 2.0);
+
+qh.t20.ff.f1, at = TARGET - 7*lqhalf - 3*tripgap - LQG;
+qh.t20.ff.d1, at = TARGET - 5*lqhalf - 2*tripgap - LQG;
+qh.t20.ff.d1, at = TARGET - 3*lqhalf - 1*tripgap - LQG;
+qh.t20.ff.f2, at = TARGET - 1*lqhalf - 0*tripgap - LQG;
+! BPM straight after the final focus quadrupole.
+BPM.T20.FF.luxe, at = TARGET - LQG + bpm_half_length + 0.05; ! 0.05 = longitudinal Safety to leave it outside the quad field 
+
+luxe.target, at = TARGET;
+luxe.dump.1, at = NOMINAL_DISTANCE_TO_FIRST_DUMP;
+luxe.ip, at = NOMINAL_DISTANCE_TO_IP;
+luxe.dump.2, at = NOMINAL_DISTANCE_TO_SECOND_DUMP;
+endsequence;

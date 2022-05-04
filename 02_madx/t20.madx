@@ -1,0 +1,246 @@
+Option, verify, -echo;
+set, format="22.15e";
+
+BET_5UM = 0.5766016880129738;
+BET_10UM = 4*BET_5UM;
+! BET_GOAL = BET_5UM;
+BET_GOAL = BET_10UM;
+
+REAL CONST QH_MAX_ABS_K1=0.45; ! 30 (~bit below the max gradient) / (3.3356 * 20) (=brho)
+
+! Where these numbers come from: D10000000044643_A001 from Daniel Thoden (referred to as
+! excel from here onwards).
+
+! This is the length of the arc that Nina sent me.
+REAL CONST ARC_LENGTH = 65.3184474;
+! This is from the excel spreadsheet.  It is 0.5m less than the one in the spreadsheet
+! because it is from the centre of the SBEND to the MARKER, but here I am doing from the
+! end of the SBEND that is 1m in length to the MARKER.  This is from the end of the arc
+! to the target.
+REAL CONST NOMINAL_DISTANCE_TO_TARGET = 11.990046867763699;
+! From excel.  0.5m less than in the excel LUX_E tab for the same reason as the previous one.
+REAL CONST NOMINAL_DISTANCE_TO_IP = 19.500047688156346;
+
+! Emails from Louis regarding dump locations:
+REAL CONST TARGET_TO_FIRST_DUMP = 4.62; ! Is this right?  end of target or middle?
+REAL CONST TARGET_TO_SECOND_DUMP = 14.6;
+
+! Derived.
+REAL CONST TARGET_TO_IP = NOMINAL_DISTANCE_TO_IP - NOMINAL_DISTANCE_TO_TARGET;
+REAL CONST ARC_TO_TARGET = ARC_LENGTH + NOMINAL_DISTANCE_TO_TARGET;
+REAL CONST ARC_TO_IP = ARC_LENGTH + NOMINAL_DISTANCE_TO_IP;
+REAL CONST ARC_TO_FIRST_DUMP = ARC_TO_TARGET + TARGET_TO_FIRST_DUMP;
+REAL CONST ARC_TO_SECOND_DUMP = ARC_TO_TARGET + TARGET_TO_SECOND_DUMP;
+REAL CONST NOMINAL_DISTANCE_TO_FIRST_DUMP = NOMINAL_DISTANCE_TO_TARGET + TARGET_TO_FIRST_DUMP;
+REAL CONST NOMINAL_DISTANCE_TO_SECOND_DUMP = NOMINAL_DISTANCE_TO_TARGET + TARGET_TO_SECOND_DUMP;
+
+
+//---------------------------------- CASE (model) SELECTION
+
+// case=1; //  CASE 1: HORIZONTAL AND VERTICAL DISPERSION
+// case=2; // CASE2: HORIZONTAL DISPERSION ONLY
+call, file="arc-sequence.madx";
+call, file="final-focus-sequence.madx";
+
+SETPLOT, FONT=1, LWIDTH=8, POST=2, LSCALE=2.0, SSCALE=2.0, RSCALE=1.6, ASCALE=1.9, interpolate;
+
+beam, particle="electron", energy=20., exn=1.4e-6, eyn=1.4e-6, sige=1e-6;
+! Initial optics for the case with non-zero vertical dispersion at the entrance.
+start_T20_up:  beta0, betx =  +9.701136465, alfx = -0.5542165316,
+                      bety = +46.956026730, alfy = +2.3108583040,
+                      dx = +0.01497010119, dpx = +0.006973303890,
+                      dy = -0.02816641057, dpy = +0.002391521083;
+
+! Set predetermined quadrupole strengths in the arc.
+call, file="arc-quad-settings.madx";
+
+! 1.  Just the arc, with final focus
+title, "XFEL T20 arc";
+use, sequence=T20;
+set, format="22.15e";
+twiss, beta0=start_T20_up, file="twiss-t20.tfs";
+plot, table=twiss,haxis=s, vaxis1=betx,bety, colour=100, vaxis2=dx, dy, noversion;
+
+
+! 2. A drift from the end of the arc to the distance toward the IP.
+title, "XFEL T20 + drift to dump";
+T20_with_ff_drift: sequence, l=ARC_TO_SECOND_DUMP, refer=entry;
+t20, at=0;
+LUXE.TARGET, at=ARC_TO_TARGET;
+LUXE.DUMP.1, at=ARC_TO_FIRST_DUMP;
+LUXE.IP, at=ARC_TO_IP;
+LUXE.DUMP.2, at=ARC_TO_SECOND_DUMP;
+endsequence;
+
+use, sequence=T20_with_ff_drift;
+twiss, beta0=start_T20_up, file="twiss-t20-drift.tfs";
+plot, table=twiss,haxis=s, vaxis1=betx,bety, colour=100, vaxis2=dx, dy, noversion;
+
+! 3. Drift to end of arc replaced with a final focus, with a match on the FF and SOME OF THE ARC.
+title, "XFEL T20 arc with focus at IP, arc-matched";
+! Matching section
+QH.11.T20->K1 = +0.0;
+QH.12.T20->K1 = -0.0;
+! Final focus
+QH.T20.FF.D1->K1 = +0.311108117127;
+QH.T20.FF.D2->K1 = +0.311108117127;
+QH.T20.FF.F1->K1 = -0.242173312086;
+QH.T20.FF.F2->K1 = -0.242173312086;
+! Make full sequence by combining T20 arc with the final focus sequence
+T20_with_ff: sequence, l=ARC_TO_SECOND_DUMP;
+t20, at=0;
+final_focus_t20, at=ARC_LENGTH;
+endsequence;
+
+
+use, sequence=T20_with_ff;
+MATCH, sequence=T20_with_ff, beta0=start_T20_up;
+constraint, range=FF_START/LUXE.IP, BETX<500, BETY<300;
+constraint, range=LUXE.IP, BETX=BET_GOAL, BETY=BET_GOAL, ALFX=0, ALFY=0, DX=0, DY=0, DPX=0.0, DPY=0.0;
+! THE ARC::::
+! vary, name=QH.5.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+! vary, name=QH.6.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+vary, name=QH.7.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+vary, name=QH.8.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+vary, name=QH.9.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+vary, name=QH.10.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+! THE FF::::
+VARY, NAME=QH.T20.FF.D1->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.D2->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.F1->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.F2->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, name=QH.11.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, name=QH.12.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+LMDIF, calls=1000000;!, tolerance=1e-9;
+ENDMATCH;
+twiss, beta0=start_T20_up, file="twiss-t20-with-ff-arc-matched.tfs";
+plot, table=twiss,haxis=s, vaxis1=betx,bety, colour=100, vaxis2=dx, dy, noversion;
+
+! select, flag=ERROR, RANGE=FF_START/LUXE.IP, PATTERN="^QH.*$";
+! EALIGN, DX = 1e-4*TGAUSS(2.5), DY = 1e-4*TGAUSS(2.5);
+! ! EALIGN, DX=1e-3, DY=1e-3, DS=1e-3, DPHI=1e-3/0.5, DTHETA=1e-3/0.5, DPSI=1e-3/0.;
+! ESAVE, file="field-errors";
+
+
+! 4. Drift to end of arc replaced with a final focus, with a match on the FF ONLY
+QH.11.T20->K1 = +0.0;
+QH.12.T20->K1 = -0.0;
+! Final focus
+! QH.T20.FF.D1->K1 = +0.311108117127;
+! QH.T20.FF.D2->K1 = +0.311108117127;
+! QH.T20.FF.F1->K1 = -0.242173312086;
+! QH.T20.FF.F2->K1 = -0.242173312086;
+
+QH.T20.FF.D1->K1 = +0.0;
+QH.T20.FF.D2->K1 = +0.0;
+QH.T20.FF.F1->K1 = -0.0;
+QH.T20.FF.F2->K1 = -0.0;
+
+call, file="arc-quad-settings.madx"; ! reset arc quad strengths
+title, "XFEL T20 arc with focus at IP, final-focus-matched";
+MATCH, sequence=T20_with_ff, beta0=start_T20_up;
+constraint, range=FF_START/LUXE.IP, BETX<1000, BETY<1000;
+constraint, range=LUXE.IP, BETX=BET_GOAL, BETY=BET_GOAL, ALFX=0, ALFY=0, DX=0, DY=0, DPX=0.0, DPY=0.0;
+! THE FF::::
+VARY, NAME=QH.T20.FF.D1->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.D2->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.F1->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.F2->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, name=QH.11.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, name=QH.12.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+LMDIF, calls=1000000;!, tolerance=1e-9;
+ENDMATCH;
+twiss, beta0=start_T20_up, file="twiss-t20-with-ff-ff-matched.tfs";
+survey, file="survey-t20-with-ff.tfs", x0=-0.01422519458, y0=-2.437829649, z0=2058.055423, theta0=-0.006179858106, phi0=-0.0003645263733, psi0=7.853834041e-06;
+plot, table=twiss,haxis=s, vaxis1=betx,bety, colour=100, vaxis2=dx, dy, noversion;
+
+! 5. Focus at the target!  Matched with FF-ONLY
+title, "XFEL T20 arc with focus at the target, final-focus-matched"
+call, file="arc-sequence.madx";
+QH.11.T20->K1 = +0.0;
+QH.12.T20->K1 = -0.0;
+! Final focus
+QH.T20.FF.D1->K1 = -0.3;
+QH.T20.FF.D2->K1 = +0.3;
+QH.T20.FF.F1->K1 = +0.3;
+QH.T20.FF.F2->K1 = +0.3;
+
+MATCH, sequence=T20_with_ff, beta0=start_T20_up;
+constraint, range=FF_START/LUXE.DUMP.2, BETX<1000, BETY<1000;
+constraint, range=LUXE.TARGET, BETX=BET_GOAL, BETY=BET_GOAL, ALFX=0, ALFY=0, DX=0, DY=0, DPX=0.0, DPY=0.0;
+VARY, NAME=QH.T20.FF.D1->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.D2->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.F1->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.F2->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, name=QH.11.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, name=QH.12.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+LMDIF, calls=1000000;!, tolerance=1e-9;
+ENDMATCH;
+twiss, beta0=start_T20_up, file="twiss-t20-focus-at-target-ff-matched.tfs";
+plot, table=twiss,haxis=s, vaxis1=betx,bety, colour=100, vaxis2=dx, dy, noversion;
+
+! 6. Focus at the target!  Matched with FF AND ARC
+title, "XFEL T20 arc with focus at the target, arc+ff-matched"
+call, file="arc-quad-settings.madx"
+QH.11.T20->K1 = +0.0;
+QH.12.T20->K1 = -0.0;
+! Final focus
+QH.T20.FF.D1->K1 = -0.2;
+QH.T20.FF.D2->K1 = +0.2;
+QH.T20.FF.F1->K1 = +0.2;
+QH.T20.FF.F2->K1 = -0.1;
+QH.T20.FF.F2->K1 = +0.1;
+MATCH, sequence=T20_with_ff, beta0=start_T20_up;
+constraint, range=FF_START/LUXE.IP, BETX<1000, BETY<1000;
+constraint, range=LUXE.TARGET, BETX=BET_GOAL, BETY=BET_GOAL, ALFX=0, ALFY=0, DX=0, DY=0, DPX=0.0, DPY=0.0;
+! THE ARC::::
+! vary, name=QH.5.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+! vary, name=QH.6.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+! vary, name=QH.7.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+vary, name=QH.8.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+vary, name=QH.9.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+vary, name=QH.10.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+! THE FF:::::
+VARY, NAME=QH.T20.FF.D1->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.D2->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.F1->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, NAME=QH.T20.FF.F2->K1, STEP=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, name=QH.11.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+VARY, name=QH.12.T20->K1, step=0.0001, lower=-QH_MAX_ABS_K1, upper=QH_MAX_ABS_K1;
+LMDIF, calls=1000000;!, tolerance=1e-9;
+ENDMATCH;
+twiss, beta0=start_T20_up, file="twiss-t20-focus-at-target-arc-matched.tfs";
+plot, table=twiss,haxis=s, vaxis1=betx,bety, colour=100, vaxis2=dx, dy, noversion;
+
+
+!------------------------------------------------------------------------------------------------!
+!--- Case 2: Simplified case, only horizontal plane----------------------------------------------!
+!------------------------------------------------------------------------------------------------!
+
+! 10.02.2021: T20 from 2d (1st not tilted) septum entrance
+!                - without 1st part with KL kickers
+!                - without dogleg in the end
+
+! May-June 2020 --- Changing of BD angles to fit in the tunnel
+!                   Fitting point is for 13.086 m downstream
+
+! 16.02.2021: without dogleg
+QH.1.T20->K1 = +0.297749960246;
+QH.2.T20->K1 = -0.267573272063;
+QH.3.T20->K1 = +0.372449463511;
+QH.4.T20->K1 = -0.219265983219;
+QH.5.T20->K1 = +0.348933559169;
+QH.6.T20->K1 = -0.356885221170;
+QH.7.T20->K1 = +0.237598611934;
+QH.8.T20->K1 = -0.176902298305;
+QH.9.T20->K1 = +0.192190338963;
+QH.10.T20->K1 = -0.085517533401;
+
+title,"XFEL T20: horizontal (no dogleg)";
+use, sequence=T20_dogleg_drift;
+
+start_T20_H:  beta0, betx = +10.09119729, alfx = -0.5695604028,
+                     bety = +47.26116533, alfy = +2.3242562690;
+twiss, beta0=start_T20_H, file="twiss-t20m-hor.tfs";
+
+plot,table=twiss,haxis=s, vaxis1=betx,bety, colour=100, vmin=0,vmax=60, vaxis2=dx,dy, noversion;

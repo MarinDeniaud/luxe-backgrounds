@@ -1,0 +1,119 @@
+
+! factor = 1 / 1.0005;
+! factor = 1 / 0.999;
+factor = 1;
+
+! QH.1.T20->K1 =       QH.1.T20->K1 * factor;
+! QH.2.T20->K1 = 	     QH.2.T20->K1 * factor;
+! QH.3.T20->K1 = 	     QH.3.T20->K1 * factor;
+! QH.4.T20->K1 = 	     QH.4.T20->K1 * factor;
+! QH.5.T20->K1 = 	     QH.5.T20->K1 * factor;
+! QH.6.T20->K1 = 	     QH.6.T20->K1 * factor;
+! QH.7.T20->K1 = 	     QH.7.T20->K1 * factor;
+! QH.8.T20->K1 = 	     QH.8.T20->K1 * factor;
+! QH.9.T20->K1 = 	     QH.9.T20->K1 * factor;
+! QH.10.T20->K1 =      QH.10.T20->K1 * factor;
+
+! QH.11.T20->K1 =      QH.11.T20->K1 * factor;
+! QH.12.T20->K1 =      QH.12.T20->K1 * factor;
+! ! Final focus
+! QH.T20.FF.D1->K1 =   QH.T20.FF.D1->K1 * factor;
+! QH.T20.FF.D2->K1 =   QH.T20.FF.D2->K1 * factor;
+! QH.T20.FF.F1->K1 =   QH.T20.FF.F1->K1 * factor;
+! QH.T20.FF.F2->K1 =   QH.T20.FF.F2->K1 * factor;
+
+
+
+
+! factor = 1 / 0.995;
+! factor = 1 / 0.996;
+! factor = 1 / 0.997;
+! factor = 1 / 0.998;
+! factor = 1 / 0.999;
+! factor = 1 / 0.9995;
+! factor = 1 / 1.000;
+! factor = 1 / 1.0005;
+! factor = 1 / 1.001;
+! factor = 1 / 1.002;
+! factor = 1 / 1.003;
+! factor = 1 / 1.004;
+! factor = 1 / 1.00;
+
+! QH.1.T20->K1 =       QH.1.T20->K1 * factor;
+! QH.2.T20->K1 = 	     QH.2.T20->K1 * factor;
+! QH.3.T20->K1 = 	     QH.3.T20->K1 * factor;
+! QH.4.T20->K1 = 	     QH.4.T20->K1 * factor;
+! QH.5.T20->K1 = 	     QH.5.T20->K1 * factor;
+! QH.6.T20->K1 = 	     QH.6.T20->K1 * factor;
+! QH.7.T20->K1 = 	     QH.7.T20->K1 * factor;
+! QH.8.T20->K1 = 	     QH.8.T20->K1 * factor;
+! QH.9.T20->K1 = 	     QH.9.T20->K1 * factor;
+! QH.10.T20->K1 =      QH.10.T20->K1 * factor;
+
+! QH.11.T20->K1 =      QH.11.T20->K1 * factor;
+! QH.12.T20->K1 =      QH.12.T20->K1 * factor;
+! ! Final focus
+! QH.T20.FF.D1->K1 =   QH.T20.FF.D1->K1 * factor;
+! QH.T20.FF.D2->K1 =   QH.T20.FF.D2->K1 * factor;
+! QH.T20.FF.F1->K1 =   QH.T20.FF.F1->K1 * factor;
+! QH.T20.FF.F2->K1 =   QH.T20.FF.F2->K1 * factor;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+use, sequence=T20_with_ff;
+! Track the centroid 
+! Dx0 = 0.01497010119;
+! Dy0 = -0.02816641057;
+! Dxp0 = 0.00697330389;
+! Dyp0 = 0.002391521083;
+
+! pt = 0.001;
+
+! ! p = 0.995, 0.996, 0... 1.005
+
+! x = Dx0 * pt;
+! y = Dy0 * pt;
+! px = Dxp0 * pt;
+! py = Dyp0 * pt;
+! ! place = 
+
+! x = 0;
+! y = 0;
+! px = 0;
+! py = 0;
+
+
+! ptc_create_universe;
+! ptc_create_layout,model=2,method=6,nst=10,time=true,exact=true;
+
+! PTC_START, X=-0.007485050595, PX=-0.003486651945, Y=0.014083205285, PY=-0.003486651945, T=0., PT=-0.005;
+! PTC_START, X=-0.005988040476, PX=-0.0027893215560000004, Y=0.011266564228, PY=-0.0027893215560000004, T=0., PT=-0.004;
+! PTC_START, X=-0.004491030357, PX=-0.002091991167, Y=0.008449923171, PY=-0.002091991167, T=0., PT=-0.003;
+! PTC_START, X=-0.002994020238, PX=-0.0013946607780000002, Y=0.005633282114, PY=-0.0013946607780000002, T=0., PT=-0.002;
+! PTC_START, X=-0.001497010119, PX=-0.0006973303890000001, Y=0.002816641057, PY=-0.0006973303890000001, T=0., PT=-0.001;
+! PTC_START, X=0.0, PX=0.0, Y=-0.0, PY=0.0, T=0., PT=0.0;
+! PTC_START, X=0.001497010119, PX=0.0006973303890000001, Y=-0.002816641057, PY=0.0006973303890000001, T=0., PT=0.001;
+! PTC_START, X=0.002994020238, PX=0.0013946607780000002, Y=-0.005633282114, PY=0.0013946607780000002, T=0., PT=0.002;
+! PTC_START, X=0.004491030357, PX=0.002091991167, Y=-0.008449923171, PY=0.002091991167, T=0., PT=0.003;
+! PTC_START, X=0.005988040476, PX=0.0027893215560000004, Y=-0.011266564228, PY=0.0027893215560000004, T=0., PT=0.004;
+! PTC_START, X=0.007485050595, PX=0.003486651945, Y=-0.014083205285, PY=0.003486651945, T=0., PT=0.005;
+
+! ptc_align;
+! ptc_observe, place=luxe.target;
+! ptc_observe, place=luxe.ip;
+! ptc_track, element_by_element, dump, turns=1, icase=5, onetable, maxaper={1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+! ptc_track_end;
+! ptc_end;
+
