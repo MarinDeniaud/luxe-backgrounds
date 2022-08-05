@@ -93,9 +93,8 @@ def nonBiasConvert():
     _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(tag), ngenerate=10000, batch=True)
 
 
-def biasConvert():
-    tag = 'T20_bias'
-    bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear', xsecfact=[5e7, 2.3e12, 7.3e11], flag=[2, 2, 2])
+def biasConvert(tag, fact=[1.0, 1.0, 1.0]):
+    bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear', xsecfact=[5e7*fact[0], 2.3e12*fact[1], 7.3e11*fact[2]], flag=[2, 2, 2])
     vacuum = _bd.Builder.Material('luxeVacuum', density=1e-12, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
     _bd.Convert.Mad82Gmad('../01_mad8/TWISS_CL_T20', tag,
                           beamparamsdict={'EX': 3.58*10**-11, 'EY': 3.58*10**-11, 'Esprd': 1*10**-6, 'particletype': 'e-'},
@@ -107,70 +106,23 @@ def biasConvert():
     _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(tag), ngenerate=10000, batch=True)
 
 
-def bias2Convert():
-    tag = 'T20_bias_2'
-    bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear', xsecfact=[5e7/2, 2.3e12/2, 7.3e11/2], flag=[2, 2, 2])
-    vacuum = _bd.Builder.Material('luxeVacuum', density=1e-12, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
-    _bd.Convert.Mad82Gmad('../01_mad8/TWISS_CL_T20', tag,
-                          beamparamsdict={'EX': 3.58*10**-11, 'EY': 3.58*10**-11, 'Esprd': 1*10**-6, 'particletype': 'e-'},
-                          biases=bias,
-                          materials=vacuum,
-                          allelementdict={'biasVacuum': '"biasElecBeamGas"', 'vacuumMaterial': '"luxeVacuum"'},
-                          optionsdict={'physicsList': '"em em_extra qgsp_bert decay"'})
+def run_all_bias():
+    biasConvert('T20_bias_0.025', fact=[0.025, 0.025 ,0.025])
+    biasConvert('T20_bias_0.05',  fact=[0.05, 0.05, 0.05])
+    biasConvert('T20_bias_0.075', fact=[0.075, 0.075, 0.075])
+    biasConvert('T20_bias_0.1',   fact=[0.1, 0.1, 0.1])
+    biasConvert('T20_bias_0.2',   fact=[0.2, 0.2, 0.2])
+    biasConvert('T20_bias_0.3',   fact=[0.3, 0.3, 0.3])
+    biasConvert('T20_bias_0.4',   fact=[0.4, 0.4, 0.4])
+    biasConvert('T20_bias_0.5',   fact=[0.5, 0.5, 0.5])
+    biasConvert('T20_bias_0.6',   fact=[0.6, 0.6, 0.6])
+    biasConvert('T20_bias_0.7',   fact=[0.7, 0.7, 0.7])
+    biasConvert('T20_bias_0.8',   fact=[0.8, 0.8, 0.8])
+    biasConvert('T20_bias_1',     fact=[1, 1, 1])
+    biasConvert('T20_bias_2',     fact=[2, 2, 2])
+    biasConvert('T20_bias_3',     fact=[3, 3, 3])
+    biasConvert('T20_bias_4',     fact=[4, 4, 4])
 
-    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(tag), ngenerate=10000, batch=True)
-
-
-def bias4Convert():
-    tag = 'T20_bias_4'
-    bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear', xsecfact=[5e7/4, 2.3e12/4, 7.3e11/4], flag=[2, 2, 2])
-    vacuum = _bd.Builder.Material('luxeVacuum', density=1e-12, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
-    _bd.Convert.Mad82Gmad('../01_mad8/TWISS_CL_T20', tag,
-                          beamparamsdict={'EX': 3.58*10**-11, 'EY': 3.58*10**-11, 'Esprd': 1*10**-6, 'particletype': 'e-'},
-                          biases=bias,
-                          materials=vacuum,
-                          allelementdict={'biasVacuum': '"biasElecBeamGas"', 'vacuumMaterial': '"luxeVacuum"'},
-                          optionsdict={'physicsList': '"em em_extra qgsp_bert decay"'})
-
-    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(tag), ngenerate=10000, batch=True)
-
-def bias8Convert():
-    tag = 'T20_bias_8'
-    bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear', xsecfact=[5e7/8, 2.3e12/8, 7.3e11/8], flag=[2, 2, 2])
-    vacuum = _bd.Builder.Material('luxeVacuum', density=1e-12, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
-    _bd.Convert.Mad82Gmad('../01_mad8/TWISS_CL_T20', tag,
-                          beamparamsdict={'EX': 3.58*10**-11, 'EY': 3.58*10**-11, 'Esprd': 1*10**-6, 'particletype': 'e-'},
-                          biases=bias,
-                          materials=vacuum,
-                          allelementdict={'biasVacuum': '"biasElecBeamGas"', 'vacuumMaterial': '"luxeVacuum"'},
-                          optionsdict={'physicsList': '"em em_extra qgsp_bert decay"'})
-
-    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(tag), ngenerate=10000, batch=True)
-
-
-def biasX2Convert():
-    tag = 'T20_bias_x2'
-    bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear', xsecfact=[5e7*2, 2.3e12*2, 7.3e11*2], flag=[2, 2, 2])
-    vacuum = _bd.Builder.Material('luxeVacuum', density=1e-12, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
-    _bd.Convert.Mad82Gmad('../01_mad8/TWISS_CL_T20', tag,
-                          beamparamsdict={'EX': 3.58*10**-11, 'EY': 3.58*10**-11, 'Esprd': 1*10**-6, 'particletype': 'e-'},
-                          biases=bias,
-                          materials=vacuum,
-                          allelementdict={'biasVacuum': '"biasElecBeamGas"', 'vacuumMaterial': '"luxeVacuum"'},
-                          optionsdict={'physicsList': '"em em_extra qgsp_bert decay"'})
-
-    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(tag), ngenerate=10000, batch=True)
-
-
-def biasX4Convert():
-    tag = 'T20_bias_x4'
-    bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear', xsecfact=[5e7*4, 2.3e12*4, 7.3e11*4], flag=[2, 2, 2])
-    vacuum = _bd.Builder.Material('luxeVacuum', density=1e-12, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
-    _bd.Convert.Mad82Gmad('../01_mad8/TWISS_CL_T20', tag,
-                          beamparamsdict={'EX': 3.58*10**-11, 'EY': 3.58*10**-11, 'Esprd': 1*10**-6, 'particletype': 'e-'},
-                          biases=bias,
-                          materials=vacuum,
-                          allelementdict={'biasVacuum': '"biasElecBeamGas"', 'vacuumMaterial': '"luxeVacuum"'},
-                          optionsdict={'physicsList': '"em em_extra qgsp_bert decay"'})
-
-    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(tag), ngenerate=10000, batch=True)
+    biasConvert('T20_bias_0.01_eBrem', fact=[0.01, 1, 1])
+    biasConvert('T20_bias_0.25_eBrem', fact=[0.25, 1, 1])
+    biasConvert('T20_bias_0.5_eBrem', fact=[0.5, 1, 1])
