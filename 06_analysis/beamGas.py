@@ -27,27 +27,28 @@ FILES_DICT = {'Bias_0.025': {'filename': 'T20_bias_0.025_output.root', 'histname
               'Bias_0.5_eBrem':  {'filename': 'T20_bias_0.5_eBrem_output.root',  'histname': 'T20_bias_0.5_eBrem_output_hist.root',  'tag': 'T20_bias_0.5'}}
 
 SCENAR_DICT = {'Primary First Hits all processes':               {'biaslist': ['Bias_0.2', 'Bias_0.5', 'Bias_1', 'Bias_2'], 'histlist': ['h_PFH_S'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False},
-               'Primary First Hits all processes (unweighted)':  {'biaslist': ['Bias_0.2', 'Bias_0.5', 'Bias_1', 'Bias_2'], 'histlist': ['h_PFH_S_unweighted'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': True},
+                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
+               'Primary First Hits all processes (unweighted)':  {'biaslist': ['Bias_0.2', 'Bias_0.5', 'Bias_1', 'Bias_2'], 'histlist': ['h_PFH_S_unweight'],
+                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': True, 'logScale': True},
                'Primary First Hits each processes':              {'biaslist': ['Bias_1'], 'histlist': ['h_PFH_S_eBrem', 'h_PFH_S_Coulomb', 'h_PFH_S_elecNuc'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False},
-               'Primary First Hits Coulomb (Test)':              {'biaslist': ['Bias_0.2', 'Bias_0.5', 'Bias_1', 'Bias_2'], 'histlist': ['h_PFH_S_Coulomb'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False},
-               'Primary First Hits eBrem':                       {'biaslist': ['Bias_1', 'Bias_0.5_eBrem', 'Bias_0.25_eBrem', 'Bias_0.01_eBrem'],
-                                                                  'histlist': ['h_PFH_S_eBrem_unweighted'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False},
-               'Beam profile in x for 3 samplers':               {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_x', 'h_MidSampler_x', 'h_EndSampler_x'],
-                                                                  'xlabel': 'X [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False},
-               'Beam profile in xp for 3 samplers':              {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_xp', 'h_MidSampler_xp', 'h_EndSampler_xp'],
-                                                                  'xlabel': 'XP [rad]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False},
-               'Beam profile in y for 3 samplers':               {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_y', 'h_MidSampler_y', 'h_EndSampler_y'],
-                                                                  'xlabel': 'Y [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False},
-               'Beam profile in yp for 3 samplers':              {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_yp', 'h_MidSampler_yp', 'h_EndSampler_yp'],
-                                                                  'xlabel': 'Y [rad]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False},
-               'Beam energy profile for 3 samplers':             {'biaslist': ['Bias_0.5'],
-                                                                  'histlist': ['h_StartSampler_energy', 'h_MidSampler_energy', 'h_EndSampler_energy'],
-                                                                  'xlabel': 'E [GeV]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False},
+                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
+               'Primary First Hits each processes (unweighted)': {'biaslist': ['Bias_1'],
+                                                                  'histlist': ['h_PFH_S_eBrem_unweight', 'h_PFH_S_Coulomb_unweight', 'h_PFH_S_elecNuc_unweight'],
+                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': False},
+               'Primary First Hits eBrem (unweighted)':          {'biaslist': ['Bias_1', 'Bias_0.5_eBrem', 'Bias_0.25_eBrem', 'Bias_0.01_eBrem'],
+                                                                  'histlist': ['h_PFH_S_eBrem_unweight'],
+                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
+               # 'Beam profile in x for 3 samplers':               {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_x', 'h_MidSampler_x', 'h_EndSampler_x'],
+               #                                                    'xlabel': 'X [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
+               # 'Beam profile in xp for 3 samplers':              {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_xp', 'h_MidSampler_xp', 'h_EndSampler_xp'],
+               #                                                    'xlabel': 'XP [rad]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
+               # 'Beam profile in y for 3 samplers':               {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_y', 'h_MidSampler_y', 'h_EndSampler_y'],
+               #                                                    'xlabel': 'Y [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
+               # 'Beam profile in yp for 3 samplers':              {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_yp', 'h_MidSampler_yp', 'h_EndSampler_yp'],
+               #                                                    'xlabel': 'Y [rad]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
+               # 'Beam energy profile for 3 samplers':             {'biaslist': ['Bias_0.5'],
+               #                                                    'histlist': ['h_StartSampler_energy', 'h_MidSampler_energy', 'h_EndSampler_energy'],
+               #                                                    'xlabel': 'E [GeV]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
                }
 
 
@@ -67,18 +68,20 @@ def poly2(x, a, b, c):
 def analysis(inputfilename, nbins=50):
     tag = inputfilename.split('.root')[0]
 
-    root_data = _bd.Data.Load('../03_bdsimModel/'+inputfilename)
+    root_data = _bd.Data.Load('../04_dataLocal/'+inputfilename)
     # e = root_data.GetEvent()
     t = root_data.GetEventTree()
 
     print("File :", tag, " / Nb of entries = ", t.GetEntries())
 
-    h_PrimaryFirstHit_S_unweight = _rt.TH1D("h_PFH_S_unweighted",    "{} PFH wrt S all processes (unweighted)".format(tag), nbins, 0, 300)
-    h_PrimaryFirstHit_S          = _rt.TH1D("h_PFH_S",               "{} PFH wrt S all processes".format(tag),              nbins, 0, 300)
-    h_PrimaryFirstHit_S_eBrem    = _rt.TH1D("h_PFH_S_eBrem",         "{} PFH wrt S eBrem".format(tag),                      nbins, 0, 300)
-    h_PrimaryFirstHit_S_eBrem_unweigh = _rt.TH1D("h_PFH_S_eBrem_unweighted", "{} PFH wrt S eBrem".format(tag), nbins, 0, 300)
-    h_PrimaryFirstHit_S_Coulomb  = _rt.TH1D("h_PFH_S_Coulomb",       "{} PFH wrt S Coulomb".format(tag),                    nbins, 0, 300)
-    h_PrimaryFirstHit_S_elecNuc  = _rt.TH1D("h_PFH_S_elecNuc",       "{} PFH wrt S elecNuc".format(tag),                    nbins, 0, 300)
+    h_PrimaryFirstHit_S_unweight         = _rt.TH1D("h_PFH_S_unweight",         "{} PFH wrt S all processes (unweighted)".format(tag), nbins, 0, 300)
+    h_PrimaryFirstHit_S                  = _rt.TH1D("h_PFH_S",                  "{} PFH wrt S all processes".format(tag),              nbins, 0, 300)
+    h_PrimaryFirstHit_S_eBrem_unweight   = _rt.TH1D("h_PFH_S_eBrem_unweight",   "{} PFH wrt S eBrem".format(tag),                      nbins, 0, 300)
+    h_PrimaryFirstHit_S_eBrem            = _rt.TH1D("h_PFH_S_eBrem",            "{} PFH wrt S eBrem".format(tag),                      nbins, 0, 300)
+    h_PrimaryFirstHit_S_Coulomb_unweight = _rt.TH1D("h_PFH_S_Coulomb_unweight", "{} PFH wrt S Coulomb".format(tag),                    nbins, 0, 300)
+    h_PrimaryFirstHit_S_Coulomb          = _rt.TH1D("h_PFH_S_Coulomb",          "{} PFH wrt S Coulomb".format(tag),                    nbins, 0, 300)
+    h_PrimaryFirstHit_S_elecNuc_unweight = _rt.TH1D("h_PFH_S_elecNuc_unweight", "{} PFH wrt S elecNuc".format(tag),                    nbins, 0, 300)
+    h_PrimaryFirstHit_S_elecNuc          = _rt.TH1D("h_PFH_S_elecNuc",          "{} PFH wrt S elecNuc".format(tag),                    nbins, 0, 300)
 
     h_PrimaryFirstHit_x          = _rt.TH1D("h_PFH_x",               "{} PFH wrt x all processes".format(tag),              nbins, -2e-4, 2e-4)
     h_PrimaryFirstHit_y          = _rt.TH1D("h_PFH_y",               "{} PFH wrt y all processes".format(tag),              nbins, -2e-4, 2e-4)
@@ -125,11 +128,13 @@ def analysis(inputfilename, nbins=50):
         h_PrimaryFirstHit_S_unweight.Fill(evt.PrimaryFirstHit.S[0])
         h_PrimaryFirstHit_S.Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
         if evt.PrimaryFirstHit.postStepProcessSubType[0] == 1:
+            h_PrimaryFirstHit_S_Coulomb_unweight.Fill(evt.PrimaryFirstHit.S[0])
             h_PrimaryFirstHit_S_Coulomb.Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
         if evt.PrimaryFirstHit.postStepProcessSubType[0] == 3:
+            h_PrimaryFirstHit_S_eBrem_unweight.Fill(evt.PrimaryFirstHit.S[0])
             h_PrimaryFirstHit_S_eBrem.Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
-            h_PrimaryFirstHit_S_eBrem_unweigh.Fill(evt.PrimaryFirstHit.S[0])
         if evt.PrimaryFirstHit.postStepProcessSubType[0] == 121:
+            h_PrimaryFirstHit_S_elecNuc_unweight.Fill(evt.PrimaryFirstHit.S[0])
             h_PrimaryFirstHit_S_elecNuc.Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
 
         h_PrimaryFirstHit_x.Fill(evt.PrimaryFirstHit.x[0], evt.PrimaryFirstHit.weight[0])
@@ -179,9 +184,11 @@ def analysis(inputfilename, nbins=50):
 
     h_PrimaryFirstHit_S_unweight.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
     h_PrimaryFirstHit_S.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
+    h_PrimaryFirstHit_S_eBrem_unweight.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
     h_PrimaryFirstHit_S_eBrem.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
-    h_PrimaryFirstHit_S_eBrem_unweigh.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
+    h_PrimaryFirstHit_S_Coulomb_unweight.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
     h_PrimaryFirstHit_S_Coulomb.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
+    h_PrimaryFirstHit_S_elecNuc_unweight.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
     h_PrimaryFirstHit_S_elecNuc.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
 
     h_PrimaryFirstHit_x.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
@@ -228,9 +235,11 @@ def analysis(inputfilename, nbins=50):
     f = _rt.TFile("{}_hist.root".format(tag), "recreate")
     h_PrimaryFirstHit_S_unweight.Write()
     h_PrimaryFirstHit_S.Write()
+    h_PrimaryFirstHit_S_eBrem_unweight.Write()
     h_PrimaryFirstHit_S_eBrem.Write()
-    h_PrimaryFirstHit_S_eBrem_unweigh.Write()
+    h_PrimaryFirstHit_S_Coulomb_unweight.Write()
     h_PrimaryFirstHit_S_Coulomb.Write()
+    h_PrimaryFirstHit_S_elecNuc_unweight.Write()
     h_PrimaryFirstHit_S_elecNuc.Write()
 
     h_PrimaryFirstHit_x.Write()
@@ -325,7 +334,7 @@ def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None
 
     if linFit:
         popt, pcov = curve_fit(linear, centres, contents, sigma=errors, absolute_sigma=True)
-        _plt.plot(centres, linear(centres, *popt), ls='--', color=color, label='linear fit: slope = %1.3e' % popt[0])
+        _plt.plot(centres, linear(centres, *popt), ls='--', color=color, label='linear fit: slope = %1.3e, b = %1.3e' % tuple(popt))
     if expFit:
         popt, pcov = curve_fit(exponential, centres, contents, p0=[300, 0.01], sigma=errors, absolute_sigma=True)
         _plt.plot(centres, exponential(centres, *popt), ls='--', color=color, label='exponential fit: slope=-%1.3e' % popt[1])
@@ -348,7 +357,7 @@ if __name__ == "__main__":
         for bias in SCENAR_DICT[scenario]['biaslist']:
             for hist in SCENAR_DICT[scenario]['histlist']:
                 plot_hist(FILES_DICT[bias]['histname'], hist, linFit=SCENAR_DICT[scenario]['linFit'], expFit=SCENAR_DICT[scenario]['expFit'],
-                          logScale=True, fitRange=[0, -1], color='C{}'.format(color))
+                          logScale=SCENAR_DICT[scenario]['logScale'], fitRange=[0, -1], color='C{}'.format(color))
                 color += 1
 
         _plt.xlabel(SCENAR_DICT[scenario]['xlabel'])
