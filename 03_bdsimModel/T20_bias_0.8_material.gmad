@@ -1,5 +1,5 @@
-! Mon, 01 Aug 2022 23:53:01 +0000
+! Mon, 08 Aug 2022 17:32:46 +0000
 ! pybdsim.Builder Lattice, using pybdsim version 2.2.0 
 ! MATERIAL DEFINITION
 
-luxeVacuum: matdef, components={"G4_H","G4_C","G4_O"}, density=1e-12, T=300, componentsFractions={0.482, 0.221, 0.297};
+luxeVacuum: matdef, components={"G4_H","G4_C","G4_O"}, T=300, componentsFractions={0.482, 0.221, 0.297}, density=1e-12;
