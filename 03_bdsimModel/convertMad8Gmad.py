@@ -107,7 +107,7 @@ def biasConvert(tag, fact=[1.0, 1.0, 1.0]):
 
 
 def run_all_bias():
-    biasConvert('T20_bias_0.025', fact=[0.025, 0.025 ,0.025])
+    biasConvert('T20_bias_0.025', fact=[0.025, 0.025, 0.025])
     biasConvert('T20_bias_0.05',  fact=[0.05, 0.05, 0.05])
     biasConvert('T20_bias_0.075', fact=[0.075, 0.075, 0.075])
     biasConvert('T20_bias_0.1',   fact=[0.1, 0.1, 0.1])

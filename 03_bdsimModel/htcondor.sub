@@ -1,0 +1,34 @@
+universe = vanilla
+
+executable = bdsimjob.sh
+
+# use some variables for various paths
+basedir   = /scratch2/lnevay/
+outputdir = $(basedir)/data/study1
+logdir    = $(outputdir)/log
+modeldir  = $(basedir)/beamline-model
+
+# make the output directory including one for the logs 
+include command : mkdir -p $(logdir)
+
+# arguments : input.gmad outputdir outputfilename analysisfile seed ngenerate
+arguments = $(modeldir)/models/beamline.gmad $(outputdir) $(ProcId) $(modeldir)/analysis/analysisConfig.txt 500
+
+# direct logging and screen out
+output = $(logdir)/$(ProcId).out
+error  = $(logdir)/$(ProcId).out
+log    = $(logdir)/$(ProcId).log
+
+# resources
+request_cpus = 1
+request_disk = 500MB
+request_memory = 500MB
+
+ShouldTransferFiles = YES
+when_to_transfer_output = ON_EXIT
+
+# queue name
++JobFlavour = "medium"
+
+# submit 1000 jobs
+queue 1000

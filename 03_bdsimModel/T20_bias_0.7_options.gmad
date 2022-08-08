@@ -1,0 +1,5 @@
+! Mon, 01 Aug 2022 23:11:17 +0000
+! pybdsim.Builder Lattice, using pybdsim version 2.2.0 
+! OPTIONS DEFINITION
+
+option,	physicsList="em em_extra qgsp_bert decay";

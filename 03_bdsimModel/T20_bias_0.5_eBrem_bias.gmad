@@ -1,0 +1,5 @@
+! Wed, 03 Aug 2022 17:05:15 +0000
+! pybdsim.Builder Lattice, using pybdsim version 2.2.0 
+! BIAS DEFINITION
+
+biasElecBeamGas: xsecBias, flag={2,2,2}, xsecfact={25000000.0,2300000000000.0,730000000000.0}, proc="eBrem CoulombScat electronNuclear", particle="e-";

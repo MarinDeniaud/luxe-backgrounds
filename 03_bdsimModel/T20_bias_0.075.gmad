@@ -1,0 +1,14 @@
+! Wed, 03 Aug 2022 14:57:20 +0000
+! pybdsim.Builder Lattice, using pybdsim version 2.2.0 
+! Number of Elements:	166
+! Total length:		296.1486289889624m
+
+include T20_bias_0.075_components.gmad;
+include T20_bias_0.075_sequence.gmad;
+include T20_bias_0.075_beam.gmad;
+include T20_bias_0.075_options.gmad;
+include T20_bias_0.075_bias.gmad;
+include T20_bias_0.075_material.gmad;
+
+
+sample, all;
