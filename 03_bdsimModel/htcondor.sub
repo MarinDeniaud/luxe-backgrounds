@@ -3,7 +3,7 @@ universe = vanilla
 executable = bdsimjob.sh
 
 # use some variables for various paths
-basedir   = /scratch2/mdeniaud/
+basedir   = /scratch2/mdeniaud
 outputdir = $(basedir)/phd/luxe-backgrounds/05_dataFarm
 logdir    = $(outputdir)/log
 modeldir  = $(basedir)/phd/luxe-backgrounds/03_bdsimModel
@@ -11,13 +11,13 @@ modeldir  = $(basedir)/phd/luxe-backgrounds/03_bdsimModel
 # make the output directory including one for the logs 
 include command : mkdir -p $(logdir)
 
-# arguments : input.gmad outputdir outputfilename analysisfile seed ngenerate
-arguments = $(modeldir)/$(gmadfile) $(outputdir) $(ProcId) $(modeldir)/../06_analysis/analysisConfig.txt 500
+# arguments : input.gmad outputfilename seed analysisfile ngenerate
+arguments = $(modeldir)/$(filename).gmad $(outputdir)/$(filename) $(ProcId) $(modeldir)/../06_analysis/analysisConfig.txt 500
 
 # direct logging and screen out
-output = $(logdir)/$(ProcId).out
-error  = $(logdir)/$(ProcId).out
-log    = $(logdir)/$(ProcId).log
+output = $(logdir)/$(filename).out
+error  = $(logdir)/$(filename).out
+log    = $(logdir)/$(filename).log
 
 # resources
 request_cpus = 1

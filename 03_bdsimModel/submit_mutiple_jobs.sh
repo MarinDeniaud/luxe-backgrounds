@@ -1,0 +1,15 @@
+condor_submit htcondor.sub filename=T20_bias_0.025
+condor_submit htcondor.sub filename=T20_bias_0.05
+condor_submit htcondor.sub filename=T20_bias_0.075
+condor_submit htcondor.sub filename=T20_bias_0.1
+condor_submit htcondor.sub filename=T20_bias_0.2
+condor_submit htcondor.sub filename=T20_bias_0.3
+condor_submit htcondor.sub filename=T20_bias_0.4
+condor_submit htcondor.sub filename=T20_bias_0.5
+condor_submit htcondor.sub filename=T20_bias_0.6
+condor_submit htcondor.sub filename=T20_bias_0.7
+condor_submit htcondor.sub filename=T20_bias_0.8
+condor_submit htcondor.sub filename=T20_bias_1
+condor_submit htcondor.sub filename=T20_bias_2
+condor_submit htcondor.sub filename=T20_bias_3
+condor_submit htcondor.sub filename=T20_bias_4

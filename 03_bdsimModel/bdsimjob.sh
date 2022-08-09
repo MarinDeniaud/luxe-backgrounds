@@ -14,12 +14,12 @@ echo $3
 echo $4
 echo $5
 INPUTFILE=$1
-OUTPUTDIR=$2
+OUTPUTFILE=$2
 SEEDVALUE=$3
 ANALFILE=$4
 NGEN=$5
 echo "input file    = "${INPUTFILE}
-echo "output dir    = "${OUTPUTDIR}
+echo "output file   = "${OUTPUTFILE}
 echo "seed value    = "${SEEDVALUE}
 echo "analysis file = "${ANALFILE}
 echo "ngenerate     = "${NGEN}
@@ -31,7 +31,7 @@ echo ""
 
 # run bdsim
 # a common trick is to use the seed value as the output file name so we know what it was easily
-bdsim  --file=${INPUTFILE} --outfile=${SEEDVALUE}_raw --batch --seed=${SEEDVALUE} --ngenerate=${NGEN}
+bdsim  --file=${INPUTFILE} --outfile=${OUTPUTFILE} --batch --seed=${SEEDVALUE} --ngenerate=${NGEN}
 echo "job finished"
 date
 
@@ -39,9 +39,9 @@ date
 #rebdsim ${ANALFILE} ${SEEDVALUE}_raw.root ${SEEDVALUE}_ana.root
 
 # copy generated output to desired output directory
-mkdir -p ${OUTPUTDIR}
-cp *.root ${OUTPUTDIR}/.
+#mkdir -p ${OUTPUTDIR}
+#cp *.root ${OUTPUTDIR}/.
 
 # clean up
-rm *.root
+#rm *.root
 
