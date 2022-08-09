@@ -5,7 +5,7 @@
 #source /etc/profile.d/modules.sh
 
 # environment - bdsim, root, geant4 etc
-source /cvmfs/beam-physics.cern.ch/bdsim/x86_64-centos7-gcc8-opt/bdsim-env-v1.5.1-g4v10.7.1.1.sh 
+source /cvmfs/beam-physics.cern.ch/bdsim/x86_64-centos7-gcc8-opt/bdsim-env-v1.6.0-g4v10.7.2.3.sh
 
 # echo inputs
 echo $1
@@ -36,7 +36,7 @@ echo "job finished"
 date
 
 # run rebdsim analysis on output from bdsim
-rebdsim ${ANALFILE} ${SEEDVALUE}_raw.root ${SEEDVALUE}_ana.root
+#rebdsim ${ANALFILE} ${SEEDVALUE}_raw.root ${SEEDVALUE}_ana.root
 
 # copy generated output to desired output directory
 mkdir -p ${OUTPUTDIR}
