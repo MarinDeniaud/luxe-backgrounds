@@ -6,47 +6,57 @@ from scipy.optimize import curve_fit
 
 ELECTRONS_PER_BUNCH = 2e9
 
-FILES_DICT = {'Bias_0.025': {'filename': 'T20_bias_0.025_output.root', 'histname': 'T20_bias_0.025_output_hist.root', 'tag': 'T20_bias_0.025', 'factor': 0.025},
-              'Bias_0.05':  {'filename': 'T20_bias_0.05_output.root',  'histname': 'T20_bias_0.05_output_hist.root',  'tag': 'T20_bias_0.05',  'factor': 0.05},
-              'Bias_0.075': {'filename': 'T20_bias_0.075_output.root', 'histname': 'T20_bias_0.075_output_hist.root', 'tag': 'T20_bias_0.075', 'factor': 0.075},
-              'Bias_0.1':   {'filename': 'T20_bias_0.1_output.root',   'histname': 'T20_bias_0.1_output_hist.root',   'tag': 'T20_bias_0.1',   'factor': 0.1},
-              'Bias_0.2':   {'filename': 'T20_bias_0.2_output.root',   'histname': 'T20_bias_0.2_output_hist.root',   'tag': 'T20_bias_0.2',   'factor': 0.2},
-              'Bias_0.3':   {'filename': 'T20_bias_0.3_output.root',   'histname': 'T20_bias_0.3_output_hist.root',   'tag': 'T20_bias_0.3',   'factor': 0.3},
-              'Bias_0.4':   {'filename': 'T20_bias_0.4_output.root',   'histname': 'T20_bias_0.4_output_hist.root',   'tag': 'T20_bias_0.4',   'factor': 0.4},
-              'Bias_0.5':   {'filename': 'T20_bias_0.5_output.root',   'histname': 'T20_bias_0.5_output_hist.root',   'tag': 'T20_bias_0.5',   'factor': 0.5},
-              'Bias_0.6':   {'filename': 'T20_bias_0.6_output.root',   'histname': 'T20_bias_0.6_output_hist.root',   'tag': 'T20_bias_0.6',   'factor': 0.6},
-              'Bias_0.7':   {'filename': 'T20_bias_0.7_output.root',   'histname': 'T20_bias_0.7_output_hist.root',   'tag': 'T20_bias_0.7',   'factor': 0.7},
-              'Bias_0.8':   {'filename': 'T20_bias_0.8_output.root',   'histname': 'T20_bias_0.8_output_hist.root',   'tag': 'T20_bias_0.8',   'factor': 0.8},
-              'Bias_1':     {'filename': 'T20_bias_1_output.root',     'histname': 'T20_bias_1_output_hist.root',     'tag': 'T20_bias_1',     'factor': 1},
-              'Bias_2':     {'filename': 'T20_bias_2_output.root',     'histname': 'T20_bias_2_output_hist.root',     'tag': 'T20_bias_2',     'factor': 2},
-              'Bias_3':     {'filename': 'T20_bias_3_output.root',     'histname': 'T20_bias_3_output_hist.root',     'tag': 'T20_bias_3',     'factor': 3},
-              'Bias_4':     {'filename': 'T20_bias_4_output.root',     'histname': 'T20_bias_4_output_hist.root',     'tag': 'T20_bias_4',     'factor': 4},
+FILES_DICT = {'Bias_0.025': {'filename': '../04_dataLocal/T20_bias_0.025_output.root', 'histname': 'T20_bias_0.025_hist.root', 'factor': 0.025},
+              'Bias_0.050': {'filename': '../04_dataLocal/T20_bias_0.05_output.root',  'histname': 'T20_bias_0.050_hist.root', 'factor': 0.050},
+              'Bias_0.075': {'filename': '../04_dataLocal/T20_bias_0.075_output.root', 'histname': 'T20_bias_0.075_hist.root', 'factor': 0.075},
+              'Bias_0.100': {'filename': '../04_dataLocal/T20_bias_0.1_output.root',   'histname': 'T20_bias_0.100_hist.root', 'factor': 0.100},
+              'Bias_0.200': {'filename': '../04_dataLocal/T20_bias_0.2_output.root',   'histname': 'T20_bias_0.200_hist.root', 'factor': 0.200},
+              'Bias_0.300': {'filename': '../04_dataLocal/T20_bias_0.3_output.root',   'histname': 'T20_bias_0.300_hist.root', 'factor': 0.300},
+              'Bias_0.400': {'filename': '../04_dataLocal/T20_bias_0.4_output.root',   'histname': 'T20_bias_0.400_hist.root', 'factor': 0.400},
+              'Bias_0.500': {'filename': '../04_dataLocal/T20_bias_0.5_output.root',   'histname': 'T20_bias_0.500_hist.root', 'factor': 0.500},
+              'Bias_0.600': {'filename': '../04_dataLocal/T20_bias_0.6_output.root',   'histname': 'T20_bias_0.600_hist.root', 'factor': 0.600},
+              'Bias_0.700': {'filename': '../04_dataLocal/T20_bias_0.7_output.root',   'histname': 'T20_bias_0.700_hist.root', 'factor': 0.700},
+              'Bias_0.800': {'filename': '../04_dataLocal/T20_bias_0.8_output.root',   'histname': 'T20_bias_0.800_hist.root', 'factor': 0.800},
+              'Bias_1.000': {'filename': '../04_dataLocal/T20_bias_1_output.root',     'histname': 'T20_bias_1.000_hist.root', 'factor': 1.000},
+              'Bias_2.000': {'filename': '../04_dataLocal/T20_bias_2_output.root',     'histname': 'T20_bias_2.000_hist.root', 'factor': 2.000},
+              'Bias_3.000': {'filename': '../04_dataLocal/T20_bias_3_output.root',     'histname': 'T20_bias_3.000_hist.root', 'factor': 3.000},
+              'Bias_4.000': {'filename': '../04_dataLocal/T20_bias_4_output.root',     'histname': 'T20_bias_4.000_hist.root', 'factor': 4.000},
 
-              'Bias_0.01_eBrem': {'filename': 'T20_bias_0.01_eBrem_output.root', 'histname': 'T20_bias_0.01_eBrem_output_hist.root', 'tag': 'T20_bias_0.5'},
-              'Bias_0.25_eBrem': {'filename': 'T20_bias_0.25_eBrem_output.root', 'histname': 'T20_bias_0.25_eBrem_output_hist.root', 'tag': 'T20_bias_0.5'},
-              'Bias_0.5_eBrem':  {'filename': 'T20_bias_0.5_eBrem_output.root',  'histname': 'T20_bias_0.5_eBrem_output_hist.root',  'tag': 'T20_bias_0.5'}}
+              'Bias_0.025_farm': {'filename': '../05_dataFarm/T20_bias_0.025.root', 'histname': 'T20_bias_0.025_farm_hist.root', 'factor': 0.025},
+              # 'Bias_0.050_farm': {'filename': '../05_dataFarm/T20_bias_0.05.root',  'histname': 'T20_bias_0.050_farm_hist.root', 'factor': 0.050},
+              # 'Bias_0.075_farm': {'filename': '../05_dataFarm/T20_bias_0.075.root', 'histname': 'T20_bias_0.075_farm_hist.root', 'factor': 0.075},
+              # 'Bias_0.100_farm': {'filename': '../05_dataFarm/T20_bias_0.1.root',   'histname': 'T20_bias_0.100_farm_hist.root', 'factor': 0.100},
+              'Bias_0.200_farm': {'filename': '../05_dataFarm/T20_bias_0.2.root',   'histname': 'T20_bias_0.200_farm_hist.root', 'factor': 0.200},
+              'Bias_0.300_farm': {'filename': '../05_dataFarm/T20_bias_0.3.root',   'histname': 'T20_bias_0.300_farm_hist.root', 'factor': 0.300},
+              'Bias_0.400_farm': {'filename': '../05_dataFarm/T20_bias_0.4.root',   'histname': 'T20_bias_0.400_farm_hist.root', 'factor': 0.400},
+              'Bias_0.500_farm': {'filename': '../05_dataFarm/T20_bias_0.5.root',   'histname': 'T20_bias_0.500_farm_hist.root', 'factor': 0.500},
+              'Bias_0.600_farm': {'filename': '../05_dataFarm/T20_bias_0.6.root',   'histname': 'T20_bias_0.600_farm_hist.root', 'factor': 0.600},
+              'Bias_0.700_farm': {'filename': '../05_dataFarm/T20_bias_0.7.root',   'histname': 'T20_bias_0.700_farm_hist.root', 'factor': 0.700},
+              'Bias_0.800_farm': {'filename': '../05_dataFarm/T20_bias_0.8.root',   'histname': 'T20_bias_0.800_farm_hist.root', 'factor': 0.800},
+              'Bias_1.000_farm': {'filename': '../05_dataFarm/T20_bias_1.root',     'histname': 'T20_bias_1.000_farm_hist.root', 'factor': 1.000},
+              # 'Bias_2.000_farm': {'filename': '../05_dataFarm/T20_bias_2.root',     'histname': 'T20_bias_2.000_farm_hist.root', 'factor': 2.000},
+              # 'Bias_3.000_farm': {'filename': '../05_dataFarm/T20_bias_3.root',     'histname': 'T20_bias_3.000_farm_hist.root', 'factor': 3.000},
+              # 'Bias_4.000_farm': {'filename': '../05_dataFarm/T20_bias_4.root',     'histname': 'T20_bias_4.000_farm_hist.root', 'factor': 4.000},
+              }
 
-SCENAR_DICT = {'Primary First Hits all processes':               {'biaslist': ['Bias_0.2', 'Bias_0.5', 'Bias_1', 'Bias_2'], 'histlist': ['h_PFH_S'],
+SCENAR_DICT = {'Primary First Hits all processes':               {'biaslist': ['Bias_0.200', 'Bias_0.500', 'Bias_1.000', 'Bias_2.000'], 'histlist': ['h_PFH_S'],
                                                                   'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
-               'Primary First Hits all processes (unweighted)':  {'biaslist': ['Bias_0.2', 'Bias_0.5', 'Bias_1', 'Bias_2'], 'histlist': ['h_PFH_S_unweight'],
+               'Primary First Hits all processes (unweighted)':  {'biaslist': ['Bias_0.200', 'Bias_0.500', 'Bias_1.000', 'Bias_2.000'], 'histlist': ['h_PFH_S_unweight'],
                                                                   'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': True, 'logScale': True},
-               'Primary First Hits each processes':              {'biaslist': ['Bias_1'], 'histlist': ['h_PFH_S_eBrem', 'h_PFH_S_Coulomb', 'h_PFH_S_elecNuc'],
+               'Primary First Hits each processes':              {'biaslist': ['Bias_1.000'], 'histlist': ['h_PFH_S_eBrem', 'h_PFH_S_Coulomb', 'h_PFH_S_elecNuc'],
                                                                   'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
-               'Primary First Hits each processes (unweighted)': {'biaslist': ['Bias_1'],
+               'Primary First Hits each processes (unweighted)': {'biaslist': ['Bias_1.000'],
                                                                   'histlist': ['h_PFH_S_eBrem_unweight', 'h_PFH_S_Coulomb_unweight', 'h_PFH_S_elecNuc_unweight'],
                                                                   'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': False},
-               'Primary First Hits eBrem (unweighted)':          {'biaslist': ['Bias_1', 'Bias_0.5_eBrem', 'Bias_0.25_eBrem', 'Bias_0.01_eBrem'],
-                                                                  'histlist': ['h_PFH_S_eBrem_unweight'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
-               # 'Beam profile in x for 3 samplers':               {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_x', 'h_MidSampler_x', 'h_EndSampler_x'],
+               # 'Beam profile in x for 3 samplers':               {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_x', 'h_MidSampler_x', 'h_EndSampler_x'],
                #                                                    'xlabel': 'X [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               # 'Beam profile in xp for 3 samplers':              {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_xp', 'h_MidSampler_xp', 'h_EndSampler_xp'],
+               # 'Beam profile in xp for 3 samplers':              {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_xp', 'h_MidSampler_xp', 'h_EndSampler_xp'],
                #                                                    'xlabel': 'XP [rad]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               # 'Beam profile in y for 3 samplers':               {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_y', 'h_MidSampler_y', 'h_EndSampler_y'],
+               # 'Beam profile in y for 3 samplers':               {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_y', 'h_MidSampler_y', 'h_EndSampler_y'],
                #                                                    'xlabel': 'Y [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               # 'Beam profile in yp for 3 samplers':              {'biaslist': ['Bias_0.5'], 'histlist': ['h_StartSampler_yp', 'h_MidSampler_yp', 'h_EndSampler_yp'],
+               # 'Beam profile in yp for 3 samplers':              {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_yp', 'h_MidSampler_yp', 'h_EndSampler_yp'],
                #                                                    'xlabel': 'Y [rad]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               # 'Beam energy profile for 3 samplers':             {'biaslist': ['Bias_0.5'],
+               # 'Beam energy profile for 3 samplers':             {'biaslist': ['Bias_0.500'],
                #                                                    'histlist': ['h_StartSampler_energy', 'h_MidSampler_energy', 'h_EndSampler_energy'],
                #                                                    'xlabel': 'E [GeV]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
                }
@@ -65,14 +75,15 @@ def poly2(x, a, b, c):
     return a * X * X + b * X + c
 
 
-def analysis(inputfilename, nbins=50):
-    tag = inputfilename.split('.root')[0]
+def analysis(biasname, nbins=50):
+    inputfilename = FILES_DICT[biasname]['filename']
+    tag = inputfilename.split('/')[-1].split('.root')[0]
 
-    root_data = _bd.Data.Load('../04_dataLocal/'+inputfilename)
+    root_data = _bd.Data.Load(inputfilename)
     # e = root_data.GetEvent()
     t = root_data.GetEventTree()
 
-    print("File :", tag, " / Nb of entries = ", t.GetEntries())
+    print("File :", inputfilename, " / Nb of entries = ", t.GetEntries())
 
     h_PrimaryFirstHit_S_unweight         = _rt.TH1D("h_PFH_S_unweight",         "{} PFH wrt S all processes (unweighted)".format(tag), nbins, 0, 300)
     h_PrimaryFirstHit_S                  = _rt.TH1D("h_PFH_S",                  "{} PFH wrt S all processes".format(tag),              nbins, 0, 300)
@@ -232,7 +243,7 @@ def analysis(inputfilename, nbins=50):
     h_EndSampler_yp_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
     h_EndSampler_energy_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
 
-    f = _rt.TFile("{}_hist.root".format(tag), "recreate")
+    f = _rt.TFile(FILES_DICT[biasname]['histname'], "recreate")
     h_PrimaryFirstHit_S_unweight.Write()
     h_PrimaryFirstHit_S.Write()
     h_PrimaryFirstHit_S_eBrem_unweight.Write()
@@ -286,7 +297,8 @@ def analysis(inputfilename, nbins=50):
     f.Close()
 
 
-def plot_var(biaslist, histname):
+def plot_var(biaslist, histname, color=None):
+    X_fit = _np.linspace(0.025, 4, 200)
     X = _np.array([])
     Y = _np.array([])
     for name in biaslist:
@@ -295,11 +307,12 @@ def plot_var(biaslist, histname):
         python_hist = _bd.Data.TH1(root_hist)
         X = _np.append(X, FILES_DICT[name]['factor'])
         contents = python_hist.contents
+        entries = python_hist.entries
         Y = _np.append(Y, contents[0:-10].std()/contents[0:-10].mean()*100)
 
-    _plt.plot(X, Y, ls='', marker='+', label='Variance data')
+    _plt.plot(X, Y, ls='', marker='+', markersize=8, color=color, label='Variance data %2.3e particles' % entries)
     popt, pcov = curve_fit(poly2, X, Y)
-    _plt.plot(X, poly2(X, *popt), ls='-', label='Polynomial fit : min for factor = %5.3f' % _np.exp(-popt[1]/(2*popt[0])))
+    _plt.plot(X_fit, poly2(X_fit, *popt), ls='-', color=color, label='Polynomial fit : min for factor = %5.3f' % _np.exp(-popt[1]/(2*popt[0])))
 
     _plt.xscale("log")
     _plt.legend()
@@ -348,7 +361,7 @@ if __name__ == "__main__":
 
     if False:
         for bias_name in FILES_DICT:
-            analysis(FILES_DICT[bias_name]['filename'])
+            analysis(bias_name)
         print("Analysis Completed")
 
     for scenario in SCENAR_DICT:
@@ -365,10 +378,17 @@ if __name__ == "__main__":
         _plt.title(scenario)
 
     if True:
+        local_list = []
+        farm_list = []
+        for key in FILES_DICT:
+            if '_farm' in key:
+                farm_list.append(key)
+            else:
+                local_list.append(key)
+
         _plt.figure(figsize=(10, 7))
-        biaslist = ['Bias_0.025', 'Bias_0.05', 'Bias_0.075', 'Bias_0.1', 'Bias_0.2', 'Bias_0.3', 'Bias_0.4', 'Bias_0.5', 'Bias_0.6', 'Bias_0.7', 'Bias_0.8',
-                    'Bias_1', 'Bias_2', 'Bias_3', 'Bias_4']
-        plot_var(biaslist,"h_PFH_S")
+        plot_var(local_list, "h_PFH_S", color='C0')
+        plot_var(farm_list, "h_PFH_S", color='C1')
         _plt.ylabel("%")
         _plt.xlabel("Biasing factor")
         _plt.title("Variance")
