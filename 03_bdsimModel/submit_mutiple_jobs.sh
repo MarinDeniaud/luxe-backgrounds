@@ -1,15 +1,15 @@
-condor_submit htcondor.sub filename=T20_bias_0.025
-condor_submit htcondor.sub filename=T20_bias_0.05
-condor_submit htcondor.sub filename=T20_bias_0.075
-condor_submit htcondor.sub filename=T20_bias_0.1
-condor_submit htcondor.sub filename=T20_bias_0.2
-condor_submit htcondor.sub filename=T20_bias_0.3
-condor_submit htcondor.sub filename=T20_bias_0.4
-condor_submit htcondor.sub filename=T20_bias_0.5
-condor_submit htcondor.sub filename=T20_bias_0.6
-condor_submit htcondor.sub filename=T20_bias_0.7
-condor_submit htcondor.sub filename=T20_bias_0.8
-condor_submit htcondor.sub filename=T20_bias_1
-condor_submit htcondor.sub filename=T20_bias_2
-condor_submit htcondor.sub filename=T20_bias_3
-condor_submit htcondor.sub filename=T20_bias_4
+condor_submit htcondor.sub filename=T20_bias_0.025.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.05.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.075.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.1.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.2.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.3.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.4.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.5.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.6.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.7.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_0.8.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_1.gmad npart=5000 njobs=5
+condor_submit htcondor.sub filename=T20_bias_2.gmad npart=2500 njobs=10
+condor_submit htcondor.sub filename=T20_bias_3.gmad npart=2500 njobs=10
+condor_submit htcondor.sub filename=T20_bias_4.gmad npart=2500 njobs=10
