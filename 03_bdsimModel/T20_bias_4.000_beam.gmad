@@ -1,0 +1,22 @@
+! Sun, 14 Aug 2022 18:35:13 +0000
+! pybdsim.Builder Lattice, using pybdsim version 2.2.0 
+! BEAM DEFINITION
+
+beam,	X0=0.0*m,
+	Xp0=0.0, 
+	Y0=0.0*m, 
+	Yp0=0.0, 
+	alfx=0.0, 
+	alfy=0.0, 
+	betx=0.2*m, 
+	bety=3.0*m, 
+	dispx=0.0*m, 
+	dispxp=0.0, 
+	dispy=0.0*m, 
+	dispyp=0.0, 
+	distrType="gausstwiss", 
+	emitx=3.58e-11*m, 
+	emity=3.58e-11*m, 
+	energy=14.0*GeV, 
+	particle="e-", 
+	sigmaE=1e-06;
