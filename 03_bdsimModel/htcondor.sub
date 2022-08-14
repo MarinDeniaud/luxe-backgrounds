@@ -12,12 +12,12 @@ modeldir  = $(basedir)/phd/luxe-backgrounds/03_bdsimModel
 include command : mkdir -p $(logdir)
 
 # arguments : input.gmad outputfilename seed analysisfile ngenerate
-arguments = $(modeldir)/$(filename).gmad $(outputdir)/$(filename) $(ProcId) $(modeldir)/../06_analysis/analysisConfig.txt 500
+arguments = $(modeldir)/$(filename) $(outputdir)/$Fn(filename)_$(ClusterId)_$(ProcId) $(ProcId) $(modeldir)/../06_analysis/analysisConfig.txt $(npart)
 
 # direct logging and screen out
-output = $(logdir)/$(filename).out
-error  = $(logdir)/$(filename).out
-log    = $(logdir)/$(filename).log
+output = $(logdir)/$Fn(filename)_$(ClusterId)_$(ProcId).out
+error  = $(logdir)/$Fn(filename)_$(ClusterId)_$(ProcId).err
+log    = $(logdir)/$Fn(filename)_$(ClusterId)_$(ProcId).log
 
 # resources
 request_cpus = 1
@@ -30,5 +30,5 @@ when_to_transfer_output = ON_EXIT
 # queue name
 +JobFlavour = "medium"
 
-# submit 1000 jobs
-queue 1
+# submit jobs
+queue $(njobs)
