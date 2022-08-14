@@ -107,7 +107,7 @@ def biasConvert(tag, fact=[1.0, 1.0, 1.0]):
                           allelementdict={'biasVacuum': '"biasElecBeamGas"', 'vacuumMaterial': '"luxeVacuum"'},
                           optionsdict={'physicsList': '"em em_extra qgsp_bert decay"'})
 
-    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(OUT_DIR+tag), ngenerate=10000, batch=True)
+    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_10k'.format(OUT_DIR+tag), ngenerate=10000, batch=True)
 
 
 def run_all_bias():
