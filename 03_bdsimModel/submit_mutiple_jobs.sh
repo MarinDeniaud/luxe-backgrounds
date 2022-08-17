@@ -1,15 +1,15 @@
-condor_submit htcondor.sub filename=T20_bias_0.025.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.05.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.075.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.1.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.2.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.3.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.4.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.5.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.6.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.7.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_0.8.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_1.gmad npart=5000 njobs=5
-condor_submit htcondor.sub filename=T20_bias_2.gmad npart=2500 njobs=10
-condor_submit htcondor.sub filename=T20_bias_3.gmad npart=2500 njobs=10
-condor_submit htcondor.sub filename=T20_bias_4.gmad npart=2500 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.025.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.050.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.075.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.100.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.200.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.300.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.400.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.500.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.600.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.700.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_0.800.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_1.000.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_2.000.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_3.000.gmad seedstart=20 npart=1000 njobs=10
+condor_submit htcondor.sub filename=T20_bias_4.000.gmad seedstart=20 npart=1000 njobs=10

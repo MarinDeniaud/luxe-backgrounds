@@ -13,11 +13,12 @@ echo $2
 echo $3
 echo $4
 echo $5
+echo $6
 INPUTFILE=$1
 OUTPUTFILE=$2
-SEEDVALUE=$3
-ANALFILE=$4
-NGEN=$5
+SEEDVALUE=$(($3+$4))
+ANALFILE=$5
+NGEN=$6
 echo "input file    = "${INPUTFILE}
 echo "output file   = "${OUTPUTFILE}
 echo "seed value    = "${SEEDVALUE}
@@ -37,11 +38,3 @@ date
 
 # run rebdsim analysis on output from bdsim
 #rebdsim ${ANALFILE} ${SEEDVALUE}_raw.root ${SEEDVALUE}_ana.root
-
-# copy generated output to desired output directory
-#mkdir -p ${OUTPUTDIR}
-#cp *.root ${OUTPUTDIR}/.
-
-# clean up
-#rm *.root
-

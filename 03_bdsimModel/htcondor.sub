@@ -3,21 +3,25 @@ universe = vanilla
 executable = bdsimjob.sh
 
 # use some variables for various paths
-basedir   = /scratch2/mdeniaud
-outputdir = $(basedir)/phd/luxe-backgrounds/05_dataFarm
+basedir   = /scratch2/mdeniaud/phd/luxe-backgrounds
+modeldir  = $(basedir)/03_bdsimModel
+outputdir = $(basedir)/05_dataFarm
+analysdir = $(basedir)/06_analysis
 logdir    = $(outputdir)/log
-modeldir  = $(basedir)/phd/luxe-backgrounds/03_bdsimModel
 
 # make the output directory including one for the logs 
 include command : mkdir -p $(logdir)
 
-# arguments : input.gmad outputfilename seed analysisfile ngenerate
-arguments = $(modeldir)/$(filename) $(outputdir)/$Fn(filename)_$(ClusterId)_$(ProcId) $(ProcId) $(modeldir)/../06_analysis/analysisConfig.txt $(npart)
+# Prefix for file names
+prefix = $(ClusterId)-$(ProcId)_$(npart)_part
+
+# arguments : input.gmad outputfilename seedstart ProcessID analysisfile ngenerate
+arguments = $(modeldir)/$(filename) $(outputdir)/$(prefix)_$Fn(filename) $(seedstart) $(ProcID) $(analysdir)/analysisConfig.txt $(npart)
 
 # direct logging and screen out
-output = $(logdir)/$Fn(filename)_$(ClusterId)_$(ProcId).out
-error  = $(logdir)/$Fn(filename)_$(ClusterId)_$(ProcId).err
-log    = $(logdir)/$Fn(filename)_$(ClusterId)_$(ProcId).log
+output = $(logdir)/$(prefix)_$Fn(filename).out
+error  = $(logdir)/$(prefix)_$Fn(filename).err
+log    = $(logdir)/$(prefix)_$Fn(filename).log
 
 # resources
 request_cpus = 1
