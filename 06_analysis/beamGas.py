@@ -2,50 +2,21 @@ import pybdsim as _bd
 import ROOT as _rt
 import numpy as _np
 import matplotlib.pyplot as _plt
+import glob as _gl
 from scipy.optimize import curve_fit
 
 ELECTRONS_PER_BUNCH = 2e9
 
-FILES_DICT = {'Bias_0.025': {'filename': '../04_dataLocal/T20_bias_0.025_10k.root', 'histname': 'T20_bias_0.025_10k_hist.root', 'factor': 0.025},
-              'Bias_0.050': {'filename': '../04_dataLocal/T20_bias_0.050_10k.root', 'histname': 'T20_bias_0.050_10k_hist.root', 'factor': 0.050},
-              'Bias_0.075': {'filename': '../04_dataLocal/T20_bias_0.075_10k.root', 'histname': 'T20_bias_0.075_10k_hist.root', 'factor': 0.075},
-              'Bias_0.100': {'filename': '../04_dataLocal/T20_bias_0.100_10k.root', 'histname': 'T20_bias_0.100_10k_hist.root', 'factor': 0.100},
-              'Bias_0.200': {'filename': '../04_dataLocal/T20_bias_0.200_10k.root', 'histname': 'T20_bias_0.200_10k_hist.root', 'factor': 0.200},
-              'Bias_0.300': {'filename': '../04_dataLocal/T20_bias_0.300_10k.root', 'histname': 'T20_bias_0.300_10k_hist.root', 'factor': 0.300},
-              'Bias_0.400': {'filename': '../04_dataLocal/T20_bias_0.400_10k.root', 'histname': 'T20_bias_0.400_10k_hist.root', 'factor': 0.400},
-              'Bias_0.500': {'filename': '../04_dataLocal/T20_bias_0.500_10k.root', 'histname': 'T20_bias_0.500_10k_hist.root', 'factor': 0.500},
-              'Bias_0.600': {'filename': '../04_dataLocal/T20_bias_0.600_10k.root', 'histname': 'T20_bias_0.600_10k_hist.root', 'factor': 0.600},
-              'Bias_0.700': {'filename': '../04_dataLocal/T20_bias_0.700_10k.root', 'histname': 'T20_bias_0.700_10k_hist.root', 'factor': 0.700},
-              'Bias_0.800': {'filename': '../04_dataLocal/T20_bias_0.800_10k.root', 'histname': 'T20_bias_0.800_10k_hist.root', 'factor': 0.800},
-              'Bias_1.000': {'filename': '../04_dataLocal/T20_bias_1.000_10k.root', 'histname': 'T20_bias_1.000_10k_hist.root', 'factor': 1.000},
-              'Bias_2.000': {'filename': '../04_dataLocal/T20_bias_2.000_10k.root', 'histname': 'T20_bias_2.000_10k_hist.root', 'factor': 2.000},
-              'Bias_3.000': {'filename': '../04_dataLocal/T20_bias_3.000_10k.root', 'histname': 'T20_bias_3.000_10k_hist.root', 'factor': 3.000},
-              'Bias_4.000': {'filename': '../04_dataLocal/T20_bias_4.000_10k.root', 'histname': 'T20_bias_4.000_10k_hist.root', 'factor': 4.000},
-
-              'Bias_0.025_farm': {'filename': '../05_dataFarm/*0.025_15k.root', 'histname': 'T20_bias_0.025_15k_hist.root', 'factor': 0.025},
-              'Bias_0.050_farm': {'filename': '../05_dataFarm/*0.050_15k.root', 'histname': 'T20_bias_0.050_15k_hist.root', 'factor': 0.050},
-              'Bias_0.075_farm': {'filename': '../05_dataFarm/*0.075_15k.root', 'histname': 'T20_bias_0.075_15k_hist.root', 'factor': 0.075},
-              # 'Bias_0.100_farm': {'filename': '../05_dataFarm/*0.100_15k.root', 'histname': 'T20_bias_0.100_15k_hist.root', 'factor': 0.100},
-              'Bias_0.200_farm': {'filename': '../05_dataFarm/*0.200_15k.root', 'histname': 'T20_bias_0.200_15k_hist.root', 'factor': 0.200},
-              'Bias_0.300_farm': {'filename': '../05_dataFarm/*0.300_15k.root', 'histname': 'T20_bias_0.300_15k_hist.root', 'factor': 0.300},
-              'Bias_0.400_farm': {'filename': '../05_dataFarm/*0.400_15k.root', 'histname': 'T20_bias_0.400_15k_hist.root', 'factor': 0.400},
-              'Bias_0.500_farm': {'filename': '../05_dataFarm/*0.500_15k.root', 'histname': 'T20_bias_0.500_15k_hist.root', 'factor': 0.500},
-              'Bias_0.600_farm': {'filename': '../05_dataFarm/*0.600_15k.root', 'histname': 'T20_bias_0.600_15k_hist.root', 'factor': 0.600},
-              'Bias_0.700_farm': {'filename': '../05_dataFarm/*0.700_15k.root', 'histname': 'T20_bias_0.700_15k_hist.root', 'factor': 0.700},
-              'Bias_0.800_farm': {'filename': '../05_dataFarm/*0.800_15k.root', 'histname': 'T20_bias_0.800_15k_hist.root', 'factor': 0.800},
-              'Bias_1.000_farm': {'filename': '../05_dataFarm/*1.000_15k.root', 'histname': 'T20_bias_1.000_15k_hist.root', 'factor': 1.000},
-              'Bias_2.000_farm': {'filename': '../05_dataFarm/*2.000_15k.root', 'histname': 'T20_bias_2.000_15k_hist.root', 'factor': 2.000},
-              'Bias_3.000_farm': {'filename': '../05_dataFarm/*3.000_15k.root', 'histname': 'T20_bias_3.000_15k_hist.root', 'factor': 3.000},
-              'Bias_4.000_farm': {'filename': '../05_dataFarm/*4.000_15k.root', 'histname': 'T20_bias_4.000_15k_hist.root', 'factor': 4.000},
-              }
-
-SCENAR_DICT = {'Primary First Hits all processes':               {'biaslist': ['Bias_0.200', 'Bias_0.500', 'Bias_1.000', 'Bias_2.000'], 'histlist': ['h_PFH_S'],
+SCENAR_DICT = {'Primary First Hits all processes':               {'biaslist': ['T20_bias_0.200', 'T20_bias_0.500', 'T20_bias_1.000', 'T20_bias_2.000'],
+                                                                  'histlist': ['h_PFH_S'],
                                                                   'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
-               'Primary First Hits all processes (unweighted)':  {'biaslist': ['Bias_0.200', 'Bias_0.500', 'Bias_1.000', 'Bias_2.000'], 'histlist': ['h_PFH_S_unweight'],
+               'Primary First Hits all processes (unweighted)':  {'biaslist': ['T20_bias_0.200', 'T20_bias_0.500', 'T20_bias_1.000', 'T20_bias_2.000'],
+                                                                  'histlist': ['h_PFH_S_unweight'],
                                                                   'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': True, 'logScale': True},
-               'Primary First Hits each processes':              {'biaslist': ['Bias_1.000'], 'histlist': ['h_PFH_S_eBrem', 'h_PFH_S_Coulomb', 'h_PFH_S_elecNuc'],
+               'Primary First Hits each processes':              {'biaslist': ['T20_bias_1.000'],
+                                                                  'histlist': ['h_PFH_S_eBrem', 'h_PFH_S_Coulomb', 'h_PFH_S_elecNuc'],
                                                                   'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
-               'Primary First Hits each processes (unweighted)': {'biaslist': ['Bias_1.000'],
+               'Primary First Hits each processes (unweighted)': {'biaslist': ['T20_bias_1.000'],
                                                                   'histlist': ['h_PFH_S_eBrem_unweight', 'h_PFH_S_Coulomb_unweight', 'h_PFH_S_elecNuc_unweight'],
                                                                   'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': False},
                # 'Beam profile in x for 3 samplers':               {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_x', 'h_MidSampler_x', 'h_EndSampler_x'],
@@ -75,13 +46,60 @@ def poly2(x, a, b, c):
     return a * X * X + b * X + c
 
 
-def analysis(biasname, nbins=50):
-    inputfilename = FILES_DICT[biasname]['filename']
+def GetNbParticles(inputfilename):
+    root_data = _bd.Data.Load(inputfilename)
+    return root_data.header.nOriginalEvents
+
+
+def analysisFilelist(tagfilelist):
+    taglist = open(tagfilelist)
+    for tag in taglist:
+        analysis(_gl.glob('../04_dataLocal/*'+tag.replace('\n', '')+'*.root')[0])
+        farmfilelist = _gl.glob('../05_dataFarm/*'+tag.replace('\n', '')+'*.root')
+        for file in farmfilelist:
+            analysis(file)
+    taglist.close()
+
+
+def analysisCombine(tagfilelist):
+    taglist = open(tagfilelist)
+    for tag in taglist:
+        nb_part = 0
+        tagstring = '*_part_'+tag.replace('\n', '')+'_hist.root'
+        print(tagstring)
+        filelist = _gl.glob(tagstring)
+        print(filelist)
+        for file in filelist:
+            nb_part += GetNbParticles(file)
+        _bd.Run.RebdsimHistoMerge(str(nb_part)+'_part_'+tag+'_merged_hist.root', tagstring, rebdsimHistoExecutable='rebdsimCombine')
+    taglist.close()
+
+
+def makeFileLists(tagfilelist):
+    taglist = open(tagfilelist)
+    localhistlist = open("localhistlist", "w")
+    farmhistlist = open("farmhistlist", "w")
+    for tag in taglist:
+        for file in _gl.glob('10000*'+tag.replace('\n', '')+'*_hist.root'):
+            localhistlist.write(file+'\n')
+        for file in _gl.glob('*'+tag.replace('\n', '')+'*_merged_hist.root'):
+            farmhistlist.write(file+'\n')
+    taglist.close()
+    localhistlist.close()
+    farmhistlist.close()
+
+
+def analysis(inputfilename, nbins=50):
     tag = inputfilename.split('/')[-1].split('.root')[0]
 
     root_data = _bd.Data.Load(inputfilename)
     # e = root_data.GetEvent()
     t = root_data.GetEventTree()
+    header = root_data.GetHeader()
+    header.header.fileType = 'REBDSIM'
+    header.header.nOriginalEvents = t.GetEntries()
+    # header_tree = root_data.GetHeaderTree()
+    # header_tree.GetEntry(0)
 
     print("File :", inputfilename, " / Nb of entries = ", t.GetEntries())
 
@@ -96,44 +114,44 @@ def analysis(biasname, nbins=50):
 
     h_PrimaryFirstHit_x          = _rt.TH1D("h_PFH_x",               "{} PFH wrt x all processes".format(tag),              nbins, -2e-4, 2e-4)
     h_PrimaryFirstHit_y          = _rt.TH1D("h_PFH_y",               "{} PFH wrt y all processes".format(tag),              nbins, -2e-4, 2e-4)
-    h_PrimaryFirstHit_z          = _rt.TH1D("h_PFH_z",               "{} PFH wrt z all processes".format(tag),              nbins, -10, 10)
-    h_PrimaryFirstHit_energy     = _rt.TH1D("h_PFH_energy",          "{} PFH wrt energy all processes".format(tag),         nbins, 0, 2e-4)
+    h_PrimaryFirstHit_z          = _rt.TH1D("h_PFH_z",               "{} PFH wrt z all processes".format(tag),              nbins, -10,   10)
+    h_PrimaryFirstHit_energy     = _rt.TH1D("h_PFH_energy",          "{} PFH wrt energy all processes".format(tag),         nbins,  0,    2e-4)
 
-    h_StartSampler_x             = _rt.TH1D("h_StartSampler_x",      "{} Beam profile in x at start sampler".format(tag),   nbins, -3, 3)
+    h_StartSampler_x             = _rt.TH1D("h_StartSampler_x",      "{} Beam profile in x at start sampler".format(tag),   nbins, -3,   3)
     h_StartSampler_xp            = _rt.TH1D("h_StartSampler_xp",     "{} Beam profile in xp at start sampler".format(tag),  nbins, -1.5, 1.5)
-    h_StartSampler_y             = _rt.TH1D("h_StartSampler_y",      "{} Beam profile in y at start sampler".format(tag),   nbins, -3, 3)
+    h_StartSampler_y             = _rt.TH1D("h_StartSampler_y",      "{} Beam profile in y at start sampler".format(tag),   nbins, -3,   3)
     h_StartSampler_yp            = _rt.TH1D("h_StartSampler_yp",     "{} Beam profile in yp at start sampler".format(tag),  nbins, -1.5, 1.5)
-    h_StartSampler_energy        = _rt.TH1D("h_StartSampler_energy", "{} Beam energy profile at start sampler".format(tag), nbins, 0, 14)
+    h_StartSampler_energy        = _rt.TH1D("h_StartSampler_energy", "{} Beam energy profile at start sampler".format(tag), nbins,  0,   14)
 
-    h_MidSampler_x               = _rt.TH1D("h_MidSampler_x",        "{} Beam profile in x at mid sampler".format(tag),     nbins, -3, 3)
+    h_MidSampler_x               = _rt.TH1D("h_MidSampler_x",        "{} Beam profile in x at mid sampler".format(tag),     nbins, -3,   3)
     h_MidSampler_xp              = _rt.TH1D("h_MidSampler_xp",       "{} Beam profile in xp at mid sampler".format(tag),    nbins, -1.5, 1.5)
-    h_MidSampler_y               = _rt.TH1D("h_MidSampler_y",        "{} Beam profile in y at mid sampler".format(tag),     nbins, -3, 3)
+    h_MidSampler_y               = _rt.TH1D("h_MidSampler_y",        "{} Beam profile in y at mid sampler".format(tag),     nbins, -3,   3)
     h_MidSampler_yp              = _rt.TH1D("h_MidSampler_yp",       "{} Beam profile in yp at mid sampler".format(tag),    nbins, -1.5, 1.5)
-    h_MidSampler_energy          = _rt.TH1D("h_MidSampler_energy",   "{} Beam energy profile at mid sampler".format(tag),   nbins, 0, 14)
+    h_MidSampler_energy          = _rt.TH1D("h_MidSampler_energy",   "{} Beam energy profile at mid sampler".format(tag),   nbins,  0,   14)
 
-    h_EndSampler_x               = _rt.TH1D("h_EndSampler_x",        "{} Beam profile in x at end sampler".format(tag),     nbins, -3, 3)
+    h_EndSampler_x               = _rt.TH1D("h_EndSampler_x",        "{} Beam profile in x at end sampler".format(tag),     nbins, -3,   3)
     h_EndSampler_xp              = _rt.TH1D("h_EndSampler_xp",       "{} Beam profile in xp at end sampler".format(tag),    nbins, -1.5, 1.5)
-    h_EndSampler_y               = _rt.TH1D("h_EndSampler_y",        "{} Beam profile in y at end sampler".format(tag),     nbins, -3, 3)
+    h_EndSampler_y               = _rt.TH1D("h_EndSampler_y",        "{} Beam profile in y at end sampler".format(tag),     nbins, -3,   3)
     h_EndSampler_yp              = _rt.TH1D("h_EndSampler_yp",       "{} Beam profile in yp at end sampler".format(tag),    nbins, -1.5, 1.5)
-    h_EndSampler_energy          = _rt.TH1D("h_EndSampler_energy",   "{} Beam energy profile at end sampler".format(tag),   nbins, 0, 14)
+    h_EndSampler_energy          = _rt.TH1D("h_EndSampler_energy",   "{} Beam energy profile at end sampler".format(tag),   nbins,  0,   14)
 
-    h_EndSampler_x_electrons      = _rt.TH1D("h_EndSampler_x_electrons",      "{} Beam profile in x at end sampler for electrons".format(tag),      nbins, -3, 3)
+    h_EndSampler_x_electrons      = _rt.TH1D("h_EndSampler_x_electrons",      "{} Beam profile in x at end sampler for electrons".format(tag),      nbins, -3,   3)
     h_EndSampler_xp_electrons     = _rt.TH1D("h_EndSampler_xp_electrons",     "{} Beam profile in xp at end sampler for electrons".format(tag),     nbins, -1.5, 1.5)
-    h_EndSampler_y_electrons      = _rt.TH1D("h_EndSampler_y_electrons",      "{} Beam profile in y at end sampler for electrons".format(tag),      nbins, -3, 3)
+    h_EndSampler_y_electrons      = _rt.TH1D("h_EndSampler_y_electrons",      "{} Beam profile in y at end sampler for electrons".format(tag),      nbins, -3,   3)
     h_EndSampler_yp_electrons     = _rt.TH1D("h_EndSampler_yp_electrons",     "{} Beam profile in yp at end sampler for electrons".format(tag),     nbins, -1.5, 1.5)
-    h_EndSampler_energy_electrons = _rt.TH1D("h_EndSampler_energy_electrons", "{} Beam energy profile at end sampler for electrons".format(tag),    nbins, 0, 14)
+    h_EndSampler_energy_electrons = _rt.TH1D("h_EndSampler_energy_electrons", "{} Beam energy profile at end sampler for electrons".format(tag),    nbins,  0,   14)
 
-    h_EndSampler_x_positrons      = _rt.TH1D("h_EndSampler_x_positrons",      "{} Beam profile in x at end sampler for positrons".format(tag),      nbins, -3, 3)
+    h_EndSampler_x_positrons      = _rt.TH1D("h_EndSampler_x_positrons",      "{} Beam profile in x at end sampler for positrons".format(tag),      nbins, -3,   3)
     h_EndSampler_xp_positrons     = _rt.TH1D("h_EndSampler_xp_positrons",     "{} Beam profile in xp at end sampler for positrons".format(tag),     nbins, -1.5, 1.5)
-    h_EndSampler_y_positrons      = _rt.TH1D("h_EndSampler_y_positrons",      "{} Beam profile in y at end sampler for positrons".format(tag),      nbins, -3, 3)
+    h_EndSampler_y_positrons      = _rt.TH1D("h_EndSampler_y_positrons",      "{} Beam profile in y at end sampler for positrons".format(tag),      nbins, -3,   3)
     h_EndSampler_yp_positrons     = _rt.TH1D("h_EndSampler_yp_positrons",     "{} Beam profile in yp at end sampler for positrons".format(tag),     nbins, -1.5, 1.5)
-    h_EndSampler_energy_positrons = _rt.TH1D("h_EndSampler_energy_positrons", "{} Beam energy profile at end sampler for positrons".format(tag),    nbins, 0, 14)
+    h_EndSampler_energy_positrons = _rt.TH1D("h_EndSampler_energy_positrons", "{} Beam energy profile at end sampler for positrons".format(tag),    nbins,  0,   14)
 
-    h_EndSampler_x_photons        = _rt.TH1D("h_EndSampler_x_photons",        "{} Beam profile in x at end sampler for photons".format(tag),        nbins, -3, 3)
+    h_EndSampler_x_photons        = _rt.TH1D("h_EndSampler_x_photons",        "{} Beam profile in x at end sampler for photons".format(tag),        nbins, -3,   3)
     h_EndSampler_xp_photons       = _rt.TH1D("h_EndSampler_xp_photons",       "{} Beam profile in xp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
-    h_EndSampler_y_photons        = _rt.TH1D("h_EndSampler_y_photons",        "{} Beam profile in y at end sampler for photons".format(tag),        nbins, -3, 3)
+    h_EndSampler_y_photons        = _rt.TH1D("h_EndSampler_y_photons",        "{} Beam profile in y at end sampler for photons".format(tag),        nbins, -3,   3)
     h_EndSampler_yp_photons       = _rt.TH1D("h_EndSampler_yp_photons",       "{} Beam profile in yp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
-    h_EndSampler_energy_photons   = _rt.TH1D("h_EndSampler_energy_photons",   "{} Beam energy profile at end sampler for photons".format(tag),      nbins, 0, 14)
+    h_EndSampler_energy_photons   = _rt.TH1D("h_EndSampler_energy_photons",   "{} Beam energy profile at end sampler for photons".format(tag),      nbins,  0,   14)
 
     for i, evt in enumerate(t):
         h_PrimaryFirstHit_S_unweight.Fill(evt.PrimaryFirstHit.S[0])
@@ -243,7 +261,16 @@ def analysis(biasname, nbins=50):
     h_EndSampler_yp_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
     h_EndSampler_energy_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
 
-    f = _rt.TFile(FILES_DICT[biasname]['histname'], "recreate")
+    f = _rt.TFile("{}_hist.root".format(tag), "recreate")
+
+    t = _rt.TTree("Header", "BDSIM Header")
+    t.Branch("Header.", "BDSOutputROOTEventHeader", header.header, 32000, 1)
+    t.Fill()
+    t.Write()
+
+    f.mkdir("Event/MergedHistograms")
+    f.cd("Event/MergedHistograms")
+
     h_PrimaryFirstHit_S_unweight.Write()
     h_PrimaryFirstHit_S.Write()
     h_PrimaryFirstHit_S_eBrem_unweight.Write()
@@ -297,18 +324,21 @@ def analysis(biasname, nbins=50):
     f.Close()
 
 
-def plot_var(biaslist, histname, color=None):
+def plot_var(rootlistfile, histname, color=None):
+    entries = 0
     X_fit = _np.linspace(0.025, 4, 200)
     X = _np.array([])
     Y = _np.array([])
-    for name in biaslist:
-        f = _rt.TFile(FILES_DICT[name]['histname'])
-        root_hist = f.Get(histname)
+    filelist = open(rootlistfile)
+    for file in filelist:
+        f = _rt.TFile(file.replace('\n', ''))
+        root_hist = f.Get("Event/MergedHistograms/"+histname)
         python_hist = _bd.Data.TH1(root_hist)
-        X = _np.append(X, FILES_DICT[name]['factor'])
+        X = _np.append(X, float(file.replace('\n', '').split('/')[-1].split('_hist.root')[0].split('_merged')[0].split('_')[-1]))
         contents = python_hist.contents
-        entries = python_hist.entries
-        Y = _np.append(Y, contents[0:-10].std()/contents[0:-10].mean()*100)
+        entries = max(entries, python_hist.entries)
+        Y = _np.append(Y, contents[0:-1].std()/contents[0:-1].mean()*100)
+    filelist.close()
 
     _plt.plot(X, Y, ls='', marker='+', markersize=8, color=color, label='Variance data %2.3e particles' % entries)
     popt, pcov = curve_fit(poly2, X, Y)
@@ -320,7 +350,7 @@ def plot_var(biaslist, histname, color=None):
 
 def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None, color=None, logScale=False):
     f = _rt.TFile(inputfilename)
-    root_hist = f.Get(histname)
+    root_hist = f.Get("Event/MergedHistograms/"+histname)
     python_hist = _bd.Data.TH1(root_hist)
 
     title = python_hist.hist.GetTitle()
@@ -359,17 +389,19 @@ def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None
 
 if __name__ == "__main__":
 
-    if False:
-        for bias_name in FILES_DICT:
-            analysis(bias_name)
-        print("Analysis Completed")
+    makeFileLists("tagfilelist")
+    print("File Lists Created")
+    # analysisFilelist("tagfilelist")
+    # print("Analysis Completed")
+    # analysisCombine("tagfilelist")
+    # print("Histograms Combined")
 
     for scenario in SCENAR_DICT:
         color = 0
         _plt.figure(figsize=(10, 7))
         for bias in SCENAR_DICT[scenario]['biaslist']:
             for hist in SCENAR_DICT[scenario]['histlist']:
-                plot_hist(FILES_DICT[bias]['histname'], hist, linFit=SCENAR_DICT[scenario]['linFit'], expFit=SCENAR_DICT[scenario]['expFit'],
+                plot_hist(_gl.glob('*'+bias+'*_merged_hist.root')[0], hist, linFit=SCENAR_DICT[scenario]['linFit'], expFit=SCENAR_DICT[scenario]['expFit'],
                           logScale=SCENAR_DICT[scenario]['logScale'], fitRange=[0, -1], color='C{}'.format(color))
                 color += 1
 
@@ -377,20 +409,11 @@ if __name__ == "__main__":
         _plt.ylabel(SCENAR_DICT[scenario]['ylabel'])
         _plt.title(scenario)
 
-    if True:
-        local_list = []
-        farm_list = []
-        for key in FILES_DICT:
-            if '_farm' in key:
-                farm_list.append(key)
-            else:
-                local_list.append(key)
-
-        _plt.figure(figsize=(10, 7))
-        plot_var(local_list, "h_PFH_S", color='C0')
-        plot_var(farm_list, "h_PFH_S", color='C1')
-        _plt.ylabel("%")
-        _plt.xlabel("Biasing factor")
-        _plt.title("Variance")
+    _plt.figure(figsize=(10, 7))
+    plot_var("localhistlist", "h_PFH_S", color='C0')
+    plot_var("farmhistlist", "h_PFH_S", color='C1')
+    _plt.ylabel("%")
+    _plt.xlabel("Biasing factor")
+    _plt.title("Variance")
 
     _plt.show()
