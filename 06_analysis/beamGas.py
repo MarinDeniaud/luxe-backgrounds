@@ -261,7 +261,7 @@ def analysis(inputfilename, nbins=50):
     h_EndSampler_yp_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
     h_EndSampler_energy_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
 
-    f = _rt.TFile("../06_analysis/{}_hist.root".format(tag), "recreate")
+    f = _rt.TFile("{}_hist.root".format(tag), "recreate")
 
     t = _rt.TTree("Header", "BDSIM Header")
     t.Branch("Header.", "BDSOutputROOTEventHeader", header.header, 32000, 1)
