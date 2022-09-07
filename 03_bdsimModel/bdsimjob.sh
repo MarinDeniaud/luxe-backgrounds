@@ -36,5 +36,7 @@ bdsim  --file=${INPUTFILE} --outfile=${OUTPUTFILE} --batch --seed=${SEEDVALUE} -
 echo "job finished"
 date
 
-# run rebdsim analysis on output from bdsim
-#rebdsim ${ANALFILE} ${SEEDVALUE}_raw.root ${SEEDVALUE}_ana.root
+export PYTHONPATH="$PYTHONPATH:/scratch2/mdeniaud/phd/luxe-backgrounds/06_analysis"
+
+# run python analysis script to create the histogram root file
+/scratch2/mdeniaud/phd/luxe-backgrounds/03_bdsimModel/bdsimAnalysisJob.py -i ${OUTPUTFILE}.root
