@@ -90,7 +90,7 @@ def makeFileLists(tagfilelist):
 
 
 def analysis(inputfilename, nbins=50):
-    tag = inputfilename.split('/')[-1].split('.root')[0]
+    tag = inputfilename.split('/')[-1].split('.root')[0].split('part_')[-1]
 
     root_data = _bd.Data.Load(inputfilename)
     # e = root_data.GetEvent()
@@ -192,19 +192,21 @@ def analysis(inputfilename, nbins=50):
             h_EndSampler_yp.Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
             h_EndSampler_energy.Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
 
-            if evt.QFH41CL.partID[0] == 11:
+            if evt.D70899L.partID[0] == 11:
                 h_EndSampler_x_electrons.Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
                 h_EndSampler_xp_electrons.Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
                 h_EndSampler_y_electrons.Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
                 h_EndSampler_yp_electrons.Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
                 h_EndSampler_energy_electrons.Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
-            if evt.QFH41CL.partID[0] == -11:
+            if evt.D70899L.partID[0] == -11:
+                print(evt.D70899L.partID[0])
                 h_EndSampler_x_positrons.Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
                 h_EndSampler_xp_positrons.Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
                 h_EndSampler_y_positrons.Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
                 h_EndSampler_yp_positrons.Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
                 h_EndSampler_energy_positrons.Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
-            if evt.QFH41CL.partID[0] == 22:
+            if evt.D70899L.partID[0] == 22:
+                print(evt.D70899L.partID[0])
                 h_EndSampler_x_photons.Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
                 h_EndSampler_xp_photons.Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
                 h_EndSampler_y_photons.Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
@@ -389,8 +391,8 @@ def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None
 
 if __name__ == "__main__":
 
-    makeFileLists("tagfilelist")
-    print("File Lists Created")
+    # makeFileLists("tagfilelist")
+    # print("File Lists Created")
     # analysisFilelist("tagfilelist")
     # print("Analysis Completed")
     # analysisCombine("tagfilelist")
