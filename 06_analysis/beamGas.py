@@ -7,31 +7,6 @@ from scipy.optimize import curve_fit
 
 ELECTRONS_PER_BUNCH = 2e9
 
-SCENAR_DICT = {'Primary First Hits all processes':               {'biaslist': ['T20_bias_0.200', 'T20_bias_0.500', 'T20_bias_1.000', 'T20_bias_2.000'],
-                                                                  'histlist': ['h_PFH_S'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
-               'Primary First Hits all processes (unweighted)':  {'biaslist': ['T20_bias_0.200', 'T20_bias_0.500', 'T20_bias_1.000', 'T20_bias_2.000'],
-                                                                  'histlist': ['h_PFH_S_unweight'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': True, 'logScale': True},
-               'Primary First Hits each processes':              {'biaslist': ['T20_bias_1.000'],
-                                                                  'histlist': ['h_PFH_S_eBrem', 'h_PFH_S_Coulomb', 'h_PFH_S_elecNuc'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': True},
-               'Primary First Hits each processes (unweighted)': {'biaslist': ['T20_bias_1.000'],
-                                                                  'histlist': ['h_PFH_S_eBrem_unweight', 'h_PFH_S_Coulomb_unweight', 'h_PFH_S_elecNuc_unweight'],
-                                                                  'xlabel': 'S [m]', 'ylabel': 'Number of events', 'linFit': True, 'expFit': False, 'logScale': False},
-               # 'Beam profile in x for 3 samplers':               {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_x', 'h_MidSampler_x', 'h_EndSampler_x'],
-               #                                                    'xlabel': 'X [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               # 'Beam profile in xp for 3 samplers':              {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_xp', 'h_MidSampler_xp', 'h_EndSampler_xp'],
-               #                                                    'xlabel': 'XP [rad]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               # 'Beam profile in y for 3 samplers':               {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_y', 'h_MidSampler_y', 'h_EndSampler_y'],
-               #                                                    'xlabel': 'Y [m]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               # 'Beam profile in yp for 3 samplers':              {'biaslist': ['Bias_0.500'], 'histlist': ['h_StartSampler_yp', 'h_MidSampler_yp', 'h_EndSampler_yp'],
-               #                                                    'xlabel': 'Y [rad]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               # 'Beam energy profile for 3 samplers':             {'biaslist': ['Bias_0.500'],
-               #                                                    'histlist': ['h_StartSampler_energy', 'h_MidSampler_energy', 'h_EndSampler_energy'],
-               #                                                    'xlabel': 'E [GeV]', 'ylabel': 'Number of events', 'linFit': False, 'expFit': False, 'logScale': True},
-               }
-
 
 def linear(x, a, b):
     return a * x + b
@@ -103,165 +78,118 @@ def analysis(inputfilename, nbins=50):
 
     print("File :", inputfilename, " / Nb of entries = ", t.GetEntries())
 
-    h_PrimaryFirstHit_S_unweight         = _rt.TH1D("h_PFH_S_unweight",         "{} PFH wrt S all processes (unweighted)".format(tag), nbins, 0, 300)
-    h_PrimaryFirstHit_S                  = _rt.TH1D("h_PFH_S",                  "{} PFH wrt S all processes".format(tag),              nbins, 0, 300)
-    h_PrimaryFirstHit_S_eBrem_unweight   = _rt.TH1D("h_PFH_S_eBrem_unweight",   "{} PFH wrt S eBrem".format(tag),                      nbins, 0, 300)
-    h_PrimaryFirstHit_S_eBrem            = _rt.TH1D("h_PFH_S_eBrem",            "{} PFH wrt S eBrem".format(tag),                      nbins, 0, 300)
-    h_PrimaryFirstHit_S_Coulomb_unweight = _rt.TH1D("h_PFH_S_Coulomb_unweight", "{} PFH wrt S Coulomb".format(tag),                    nbins, 0, 300)
-    h_PrimaryFirstHit_S_Coulomb          = _rt.TH1D("h_PFH_S_Coulomb",          "{} PFH wrt S Coulomb".format(tag),                    nbins, 0, 300)
-    h_PrimaryFirstHit_S_elecNuc_unweight = _rt.TH1D("h_PFH_S_elecNuc_unweight", "{} PFH wrt S elecNuc".format(tag),                    nbins, 0, 300)
-    h_PrimaryFirstHit_S_elecNuc          = _rt.TH1D("h_PFH_S_elecNuc",          "{} PFH wrt S elecNuc".format(tag),                    nbins, 0, 300)
+    HIST_DICT = {}
 
-    h_PrimaryFirstHit_x          = _rt.TH1D("h_PFH_x",               "{} PFH wrt x all processes".format(tag),              nbins, -2e-4, 2e-4)
-    h_PrimaryFirstHit_y          = _rt.TH1D("h_PFH_y",               "{} PFH wrt y all processes".format(tag),              nbins, -2e-4, 2e-4)
-    h_PrimaryFirstHit_z          = _rt.TH1D("h_PFH_z",               "{} PFH wrt z all processes".format(tag),              nbins, -10,   10)
-    h_PrimaryFirstHit_energy     = _rt.TH1D("h_PFH_energy",          "{} PFH wrt energy all processes".format(tag),         nbins,  0,    2e-4)
+    HIST_DICT['PFH_S_unweight']          = _rt.TH1D("PFH_S_unweight",          "{} PFH wrt S all processes (unweighted)".format(tag), nbins, 0, 300)
+    HIST_DICT['PFH_S']                   = _rt.TH1D("PFH_S",                   "{} PFH wrt S all processes".format(tag),              nbins, 0, 300)
+    HIST_DICT['PFH_S_eBrem_unweight']    = _rt.TH1D("PFH_S_eBrem_unweight",    "{} PFH wrt S eBrem".format(tag),                      nbins, 0, 300)
+    HIST_DICT['PFH_S_eBrem']             = _rt.TH1D("PFH_S_eBrem",             "{} PFH wrt S eBrem".format(tag),                      nbins, 0, 300)
+    HIST_DICT['PFH_S_Coulomb_unweight']  = _rt.TH1D("PFH_S_Coulomb_unweight",  "{} PFH wrt S Coulomb".format(tag),                    nbins, 0, 300)
+    HIST_DICT['PFH_S_Coulomb']           = _rt.TH1D("PFH_S_Coulomb",           "{} PFH wrt S Coulomb".format(tag),                    nbins, 0, 300)
+    HIST_DICT['PFH_S_elecNuc_unweight']  = _rt.TH1D("PFH_S_elecNuc_unweight",  "{} PFH wrt S elecNuc".format(tag),                    nbins, 0, 300)
+    HIST_DICT['PFH_S_elecNuc']           = _rt.TH1D("PFH_S_elecNuc",           "{} PFH wrt S elecNuc".format(tag),                    nbins, 0, 300)
 
-    h_StartSampler_x             = _rt.TH1D("h_StartSampler_x",      "{} Beam profile in x at start sampler".format(tag),   nbins, -3,   3)
-    h_StartSampler_xp            = _rt.TH1D("h_StartSampler_xp",     "{} Beam profile in xp at start sampler".format(tag),  nbins, -1.5, 1.5)
-    h_StartSampler_y             = _rt.TH1D("h_StartSampler_y",      "{} Beam profile in y at start sampler".format(tag),   nbins, -3,   3)
-    h_StartSampler_yp            = _rt.TH1D("h_StartSampler_yp",     "{} Beam profile in yp at start sampler".format(tag),  nbins, -1.5, 1.5)
-    h_StartSampler_energy        = _rt.TH1D("h_StartSampler_energy", "{} Beam energy profile at start sampler".format(tag), nbins,  0,   14)
+    HIST_DICT['PFH_x']                   = _rt.TH1D("PFH_x",                   "{} PFH wrt x all processes".format(tag),              nbins, -2e-4, 2e-4)
+    HIST_DICT['PFH_y']                   = _rt.TH1D("PFH_y",                   "{} PFH wrt y all processes".format(tag),              nbins, -2e-4, 2e-4)
+    HIST_DICT['PFH_z']                   = _rt.TH1D("PFH_z",                   "{} PFH wrt z all processes".format(tag),              nbins, -10,   10)
+    HIST_DICT['PFH_E']                   = _rt.TH1D("PFH_E",                   "{} PFH wrt energy all processes".format(tag),         nbins,  0,    2e-4)
 
-    h_MidSampler_x               = _rt.TH1D("h_MidSampler_x",        "{} Beam profile in x at mid sampler".format(tag),     nbins, -3,   3)
-    h_MidSampler_xp              = _rt.TH1D("h_MidSampler_xp",       "{} Beam profile in xp at mid sampler".format(tag),    nbins, -1.5, 1.5)
-    h_MidSampler_y               = _rt.TH1D("h_MidSampler_y",        "{} Beam profile in y at mid sampler".format(tag),     nbins, -3,   3)
-    h_MidSampler_yp              = _rt.TH1D("h_MidSampler_yp",       "{} Beam profile in yp at mid sampler".format(tag),    nbins, -1.5, 1.5)
-    h_MidSampler_energy          = _rt.TH1D("h_MidSampler_energy",   "{} Beam energy profile at mid sampler".format(tag),   nbins,  0,   14)
+    HIST_DICT['StartSampler_x']          = _rt.TH1D("StartSampler_x",          "{} Beam profile in x at start sampler".format(tag),   nbins, -3,   3)
+    HIST_DICT['StartSampler_xp']         = _rt.TH1D("StartSampler_xp",         "{} Beam profile in xp at start sampler".format(tag),  nbins, -1.5, 1.5)
+    HIST_DICT['StartSampler_y']          = _rt.TH1D("StartSampler_y",          "{} Beam profile in y at start sampler".format(tag),   nbins, -3,   3)
+    HIST_DICT['StartSampler_yp']         = _rt.TH1D("StartSampler_yp",         "{} Beam profile in yp at start sampler".format(tag),  nbins, -1.5, 1.5)
+    HIST_DICT['StartSampler_E']          = _rt.TH1D("StartSampler_E",          "{} Beam energy profile at start sampler".format(tag), nbins,  0,   14)
 
-    h_EndSampler_x               = _rt.TH1D("h_EndSampler_x",        "{} Beam profile in x at end sampler".format(tag),     nbins, -3,   3)
-    h_EndSampler_xp              = _rt.TH1D("h_EndSampler_xp",       "{} Beam profile in xp at end sampler".format(tag),    nbins, -1.5, 1.5)
-    h_EndSampler_y               = _rt.TH1D("h_EndSampler_y",        "{} Beam profile in y at end sampler".format(tag),     nbins, -3,   3)
-    h_EndSampler_yp              = _rt.TH1D("h_EndSampler_yp",       "{} Beam profile in yp at end sampler".format(tag),    nbins, -1.5, 1.5)
-    h_EndSampler_energy          = _rt.TH1D("h_EndSampler_energy",   "{} Beam energy profile at end sampler".format(tag),   nbins,  0,   14)
+    HIST_DICT['MidSampler_x']            = _rt.TH1D("MidSampler_x",            "{} Beam profile in x at mid sampler".format(tag),     nbins, -3,   3)
+    HIST_DICT['MidSampler_xp']           = _rt.TH1D("MidSampler_xp",           "{} Beam profile in xp at mid sampler".format(tag),    nbins, -1.5, 1.5)
+    HIST_DICT['MidSampler_y']            = _rt.TH1D("MidSampler_y",            "{} Beam profile in y at mid sampler".format(tag),     nbins, -3,   3)
+    HIST_DICT['MidSampler_yp']           = _rt.TH1D("MidSampler_yp",           "{} Beam profile in yp at mid sampler".format(tag),    nbins, -1.5, 1.5)
+    HIST_DICT['MidSampler_E']            = _rt.TH1D("MidSampler_E",            "{} Beam energy profile at mid sampler".format(tag),   nbins,  0,   14)
 
-    h_EndSampler_x_electrons      = _rt.TH1D("h_EndSampler_x_electrons",      "{} Beam profile in x at end sampler for electrons".format(tag),      nbins, -3,   3)
-    h_EndSampler_xp_electrons     = _rt.TH1D("h_EndSampler_xp_electrons",     "{} Beam profile in xp at end sampler for electrons".format(tag),     nbins, -1.5, 1.5)
-    h_EndSampler_y_electrons      = _rt.TH1D("h_EndSampler_y_electrons",      "{} Beam profile in y at end sampler for electrons".format(tag),      nbins, -3,   3)
-    h_EndSampler_yp_electrons     = _rt.TH1D("h_EndSampler_yp_electrons",     "{} Beam profile in yp at end sampler for electrons".format(tag),     nbins, -1.5, 1.5)
-    h_EndSampler_energy_electrons = _rt.TH1D("h_EndSampler_energy_electrons", "{} Beam energy profile at end sampler for electrons".format(tag),    nbins,  0,   14)
+    HIST_DICT['EndSampler_x']            = _rt.TH1D("EndSampler_x",            "{} Beam profile in x at end sampler".format(tag),     nbins, -3,   3)
+    HIST_DICT['EndSampler_xp']           = _rt.TH1D("EndSampler_xp",           "{} Beam profile in xp at end sampler".format(tag),    nbins, -1.5, 1.5)
+    HIST_DICT['EndSampler_y']            = _rt.TH1D("EndSampler_y",            "{} Beam profile in y at end sampler".format(tag),     nbins, -3,   3)
+    HIST_DICT['EndSampler_yp']           = _rt.TH1D("EndSampler_yp",           "{} Beam profile in yp at end sampler".format(tag),    nbins, -1.5, 1.5)
+    HIST_DICT['EndSampler_E']            = _rt.TH1D("EndSampler_E",            "{} Beam energy profile at end sampler".format(tag),   nbins,  0,   14)
 
-    h_EndSampler_x_positrons      = _rt.TH1D("h_EndSampler_x_positrons",      "{} Beam profile in x at end sampler for positrons".format(tag),      nbins, -3,   3)
-    h_EndSampler_xp_positrons     = _rt.TH1D("h_EndSampler_xp_positrons",     "{} Beam profile in xp at end sampler for positrons".format(tag),     nbins, -1.5, 1.5)
-    h_EndSampler_y_positrons      = _rt.TH1D("h_EndSampler_y_positrons",      "{} Beam profile in y at end sampler for positrons".format(tag),      nbins, -3,   3)
-    h_EndSampler_yp_positrons     = _rt.TH1D("h_EndSampler_yp_positrons",     "{} Beam profile in yp at end sampler for positrons".format(tag),     nbins, -1.5, 1.5)
-    h_EndSampler_energy_positrons = _rt.TH1D("h_EndSampler_energy_positrons", "{} Beam energy profile at end sampler for positrons".format(tag),    nbins,  0,   14)
+    HIST_DICT['EndSampler_x_electrons']  = _rt.TH1D("EndSampler_x_electrons",  "{} Beam profile in x at end sampler for electrons".format(tag),      nbins, -3,   3)
+    HIST_DICT['EndSampler_xp_electrons'] = _rt.TH1D("EndSampler_xp_electrons", "{} Beam profile in xp at end sampler for electrons".format(tag),     nbins, -1.5, 1.5)
+    HIST_DICT['EndSampler_y_electrons']  = _rt.TH1D("EndSampler_y_electrons",  "{} Beam profile in y at end sampler for electrons".format(tag),      nbins, -3,   3)
+    HIST_DICT['EndSampler_yp_electrons'] = _rt.TH1D("EndSampler_yp_electrons", "{} Beam profile in yp at end sampler for electrons".format(tag),     nbins, -1.5, 1.5)
+    HIST_DICT['EndSampler_E_electrons']  = _rt.TH1D("EndSampler_E_electrons",  "{} Beam energy profile at end sampler for electrons".format(tag),    nbins,  0,   14)
 
-    h_EndSampler_x_photons        = _rt.TH1D("h_EndSampler_x_photons",        "{} Beam profile in x at end sampler for photons".format(tag),        nbins, -3,   3)
-    h_EndSampler_xp_photons       = _rt.TH1D("h_EndSampler_xp_photons",       "{} Beam profile in xp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
-    h_EndSampler_y_photons        = _rt.TH1D("h_EndSampler_y_photons",        "{} Beam profile in y at end sampler for photons".format(tag),        nbins, -3,   3)
-    h_EndSampler_yp_photons       = _rt.TH1D("h_EndSampler_yp_photons",       "{} Beam profile in yp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
-    h_EndSampler_energy_photons   = _rt.TH1D("h_EndSampler_energy_photons",   "{} Beam energy profile at end sampler for photons".format(tag),      nbins,  0,   14)
+    HIST_DICT['EndSampler_x_positrons']  = _rt.TH1D("EndSampler_x_positrons",  "{} Beam profile in x at end sampler for positrons".format(tag),      nbins, -3,   3)
+    HIST_DICT['EndSampler_xp_positrons'] = _rt.TH1D("EndSampler_xp_positrons", "{} Beam profile in xp at end sampler for positrons".format(tag),     nbins, -1.5, 1.5)
+    HIST_DICT['EndSampler_y_positrons']  = _rt.TH1D("EndSampler_y_positrons",  "{} Beam profile in y at end sampler for positrons".format(tag),      nbins, -3,   3)
+    HIST_DICT['EndSampler_yp_positrons'] = _rt.TH1D("EndSampler_yp_positrons", "{} Beam profile in yp at end sampler for positrons".format(tag),     nbins, -1.5, 1.5)
+    HIST_DICT['EndSampler_E_positrons']  = _rt.TH1D("EndSampler_E_positrons",  "{} Beam energy profile at end sampler for positrons".format(tag),    nbins,  0,   14)
+
+    HIST_DICT['EndSampler_x_photons']    = _rt.TH1D("EndSampler_x_photons",    "{} Beam profile in x at end sampler for photons".format(tag),        nbins, -3,   3)
+    HIST_DICT['EndSampler_xp_photons']   = _rt.TH1D("EndSampler_xp_photons",   "{} Beam profile in xp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
+    HIST_DICT['EndSampler_y_photons']    = _rt.TH1D("EndSampler_y_photons",    "{} Beam profile in y at end sampler for photons".format(tag),        nbins, -3,   3)
+    HIST_DICT['EndSampler_yp_photons']   = _rt.TH1D("EndSampler_yp_photons",   "{} Beam profile in yp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
+    HIST_DICT['EndSampler_E_photons']    = _rt.TH1D("EndSampler_E_photons",    "{} Beam energy profile at end sampler for photons".format(tag),      nbins,  0,   14)
 
     for i, evt in enumerate(t):
-        h_PrimaryFirstHit_S_unweight.Fill(evt.PrimaryFirstHit.S[0])
-        h_PrimaryFirstHit_S.Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
+        HIST_DICT['PFH_S_unweight'].Fill(evt.PrimaryFirstHit.S[0])
+        HIST_DICT['PFH_S'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
         if evt.PrimaryFirstHit.postStepProcessSubType[0] == 1:
-            h_PrimaryFirstHit_S_Coulomb_unweight.Fill(evt.PrimaryFirstHit.S[0])
-            h_PrimaryFirstHit_S_Coulomb.Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
+            HIST_DICT['PFH_S_Coulomb_unweight'].Fill(evt.PrimaryFirstHit.S[0])
+            HIST_DICT['PFH_S_Coulomb'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
         if evt.PrimaryFirstHit.postStepProcessSubType[0] == 3:
-            h_PrimaryFirstHit_S_eBrem_unweight.Fill(evt.PrimaryFirstHit.S[0])
-            h_PrimaryFirstHit_S_eBrem.Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
+            HIST_DICT['PFH_S_eBrem_unweight'].Fill(evt.PrimaryFirstHit.S[0])
+            HIST_DICT['PFH_S_eBrem'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
         if evt.PrimaryFirstHit.postStepProcessSubType[0] == 121:
-            h_PrimaryFirstHit_S_elecNuc_unweight.Fill(evt.PrimaryFirstHit.S[0])
-            h_PrimaryFirstHit_S_elecNuc.Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
+            HIST_DICT['PFH_S_elecNuc_unweight'].Fill(evt.PrimaryFirstHit.S[0])
+            HIST_DICT['PFH_S_elecNuc'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
 
-        h_PrimaryFirstHit_x.Fill(evt.PrimaryFirstHit.x[0], evt.PrimaryFirstHit.weight[0])
-        h_PrimaryFirstHit_y.Fill(evt.PrimaryFirstHit.y[0], evt.PrimaryFirstHit.weight[0])
-        h_PrimaryFirstHit_z.Fill(evt.PrimaryFirstHit.z[0], evt.PrimaryFirstHit.weight[0])
-        h_PrimaryFirstHit_energy.Fill(evt.PrimaryFirstHit.energy[0], evt.PrimaryFirstHit.weight[0])
+        HIST_DICT['PFH_x'].Fill(evt.PrimaryFirstHit.x[0], evt.PrimaryFirstHit.weight[0])
+        HIST_DICT['PFH_y'].Fill(evt.PrimaryFirstHit.y[0], evt.PrimaryFirstHit.weight[0])
+        HIST_DICT['PFH_z'].Fill(evt.PrimaryFirstHit.z[0], evt.PrimaryFirstHit.weight[0])
+        HIST_DICT['PFH_E'].Fill(evt.PrimaryFirstHit.energy[0], evt.PrimaryFirstHit.weight[0])
 
         if len(evt.QFH41CL.weight) != 0:
-            h_StartSampler_x.Fill(evt.QFH41CL.x[0], evt.QFH41CL.weight[0])
-            h_StartSampler_xp.Fill(evt.QFH41CL.xp[0], evt.QFH41CL.weight[0])
-            h_StartSampler_y.Fill(evt.QFH41CL.y[0], evt.QFH41CL.weight[0])
-            h_StartSampler_yp.Fill(evt.QFH41CL.yp[0], evt.QFH41CL.weight[0])
-            h_StartSampler_energy.Fill(evt.QFH41CL.energy[0], evt.QFH41CL.weight[0])
+            HIST_DICT['StartSampler_x'].Fill(evt.QFH41CL.x[0], evt.QFH41CL.weight[0])
+            HIST_DICT['StartSampler_xp'].Fill(evt.QFH41CL.xp[0], evt.QFH41CL.weight[0])
+            HIST_DICT['StartSampler_y'].Fill(evt.QFH41CL.y[0], evt.QFH41CL.weight[0])
+            HIST_DICT['StartSampler_yp'].Fill(evt.QFH41CL.yp[0], evt.QFH41CL.weight[0])
+            HIST_DICT['StartSampler_E'].Fill(evt.QFH41CL.energy[0], evt.QFH41CL.weight[0])
 
         if len(evt.KL2TL.weight) != 0:
-            h_MidSampler_x.Fill(evt.KL2TL.x[0], evt.KL2TL.weight[0])
-            h_MidSampler_xp.Fill(evt.KL2TL.xp[0], evt.KL2TL.weight[0])
-            h_MidSampler_y.Fill(evt.KL2TL.y[0], evt.KL2TL.weight[0])
-            h_MidSampler_yp.Fill(evt.KL2TL.yp[0], evt.KL2TL.weight[0])
-            h_MidSampler_energy.Fill(evt.KL2TL.energy[0], evt.KL2TL.weight[0])
+            HIST_DICT['MidSampler_x'].Fill(evt.KL2TL.x[0], evt.KL2TL.weight[0])
+            HIST_DICT['MidSampler_xp'].Fill(evt.KL2TL.xp[0], evt.KL2TL.weight[0])
+            HIST_DICT['MidSampler_y'].Fill(evt.KL2TL.y[0], evt.KL2TL.weight[0])
+            HIST_DICT['MidSampler_yp'].Fill(evt.KL2TL.yp[0], evt.KL2TL.weight[0])
+            HIST_DICT['MidSampler_E'].Fill(evt.KL2TL.energy[0], evt.KL2TL.weight[0])
 
         if len(evt.D70899L.weight) != 0:
-            h_EndSampler_x.Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
-            h_EndSampler_xp.Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
-            h_EndSampler_y.Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
-            h_EndSampler_yp.Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
-            h_EndSampler_energy.Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
+            HIST_DICT['EndSampler_x'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
+            HIST_DICT['EndSampler_xp'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
+            HIST_DICT['EndSampler_y'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
+            HIST_DICT['EndSampler_yp'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
+            HIST_DICT['EndSampler_E'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
 
             if evt.D70899L.partID[0] == 11:
-                h_EndSampler_x_electrons.Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
-                h_EndSampler_xp_electrons.Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
-                h_EndSampler_y_electrons.Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
-                h_EndSampler_yp_electrons.Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
-                h_EndSampler_energy_electrons.Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_x_electrons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_xp_electrons'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_y_electrons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_yp_electrons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_E_electrons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
             if evt.D70899L.partID[0] == -11:
-                print(evt.D70899L.partID[0])
-                h_EndSampler_x_positrons.Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
-                h_EndSampler_xp_positrons.Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
-                h_EndSampler_y_positrons.Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
-                h_EndSampler_yp_positrons.Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
-                h_EndSampler_energy_positrons.Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_x_positrons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_xp_positrons'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_y_positrons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_yp_positrons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_E_positrons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
             if evt.D70899L.partID[0] == 22:
-                print(evt.D70899L.partID[0])
-                h_EndSampler_x_photons.Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
-                h_EndSampler_xp_photons.Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
-                h_EndSampler_y_photons.Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
-                h_EndSampler_yp_photons.Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
-                h_EndSampler_energy_photons.Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_x_photons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_xp_photons'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_y_photons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_yp_photons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_E_photons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
 
-    h_PrimaryFirstHit_S_unweight.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
-    h_PrimaryFirstHit_S.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
-    h_PrimaryFirstHit_S_eBrem_unweight.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_PrimaryFirstHit_S_eBrem.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
-    h_PrimaryFirstHit_S_Coulomb_unweight.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_PrimaryFirstHit_S_Coulomb.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
-    h_PrimaryFirstHit_S_elecNuc_unweight.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_PrimaryFirstHit_S_elecNuc.Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
-
-    h_PrimaryFirstHit_x.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_PrimaryFirstHit_y.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_PrimaryFirstHit_z.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_PrimaryFirstHit_energy.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-
-    h_StartSampler_x.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_StartSampler_xp.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_StartSampler_y.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_StartSampler_yp.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_StartSampler_energy.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-
-    h_MidSampler_x.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_MidSampler_xp.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_MidSampler_y.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_MidSampler_yp.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_MidSampler_energy.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-
-    h_EndSampler_x.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_xp.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_y.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_yp.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_energy.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-
-    h_EndSampler_x_electrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_xp_electrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_y_electrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_yp_electrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_energy_electrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-
-    h_EndSampler_x_positrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_xp_positrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_y_positrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_yp_positrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_energy_positrons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-
-    h_EndSampler_x_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_xp_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_y_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_yp_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
-    h_EndSampler_energy_photons.Scale(ELECTRONS_PER_BUNCH / t.GetEntries())
+    for hist in HIST_DICT:
+        HIST_DICT[hist].Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
 
     f = _rt.TFile(inputfilename.replace('04_dataLocal', '06_analysis').replace('05_dataFarm', '06_analysis').replace('.root', '_hist.root'), "recreate")
 
@@ -273,60 +201,13 @@ def analysis(inputfilename, nbins=50):
     f.mkdir("Event/MergedHistograms")
     f.cd("Event/MergedHistograms")
 
-    h_PrimaryFirstHit_S_unweight.Write()
-    h_PrimaryFirstHit_S.Write()
-    h_PrimaryFirstHit_S_eBrem_unweight.Write()
-    h_PrimaryFirstHit_S_eBrem.Write()
-    h_PrimaryFirstHit_S_Coulomb_unweight.Write()
-    h_PrimaryFirstHit_S_Coulomb.Write()
-    h_PrimaryFirstHit_S_elecNuc_unweight.Write()
-    h_PrimaryFirstHit_S_elecNuc.Write()
-
-    h_PrimaryFirstHit_x.Write()
-    h_PrimaryFirstHit_y.Write()
-    h_PrimaryFirstHit_z.Write()
-    h_PrimaryFirstHit_energy.Write()
-
-    h_StartSampler_x.Write()
-    h_StartSampler_xp.Write()
-    h_StartSampler_y.Write()
-    h_StartSampler_yp.Write()
-    h_StartSampler_energy.Write()
-
-    h_MidSampler_x.Write()
-    h_MidSampler_xp.Write()
-    h_MidSampler_y.Write()
-    h_MidSampler_yp.Write()
-    h_MidSampler_energy.Write()
-
-    h_EndSampler_x.Write()
-    h_EndSampler_xp.Write()
-    h_EndSampler_y.Write()
-    h_EndSampler_yp.Write()
-    h_EndSampler_energy.Write()
-
-    h_EndSampler_x_electrons.Write()
-    h_EndSampler_xp_electrons.Write()
-    h_EndSampler_y_electrons.Write()
-    h_EndSampler_yp_electrons.Write()
-    h_EndSampler_energy_electrons.Write()
-
-    h_EndSampler_x_positrons.Write()
-    h_EndSampler_xp_positrons.Write()
-    h_EndSampler_y_positrons.Write()
-    h_EndSampler_yp_positrons.Write()
-    h_EndSampler_energy_positrons.Write()
-
-    h_EndSampler_x_photons.Write()
-    h_EndSampler_xp_photons.Write()
-    h_EndSampler_y_photons.Write()
-    h_EndSampler_yp_photons.Write()
-    h_EndSampler_energy_photons.Write()
+    for hist in HIST_DICT:
+        HIST_DICT[hist].Write()
 
     f.Close()
 
 
-def plot_var(rootlistfile, histname, color=None):
+def plot_var(rootlistfile, histname, fit=False, xLogScale=False, color=None, printLegend=True):
     entries = 0
     X_fit = _np.linspace(0.025, 4, 200)
     X = _np.array([])
@@ -340,17 +221,22 @@ def plot_var(rootlistfile, histname, color=None):
         contents = python_hist.contents
         entries = max(entries, python_hist.entries)
         Y = _np.append(Y, contents[0:-1].std()/contents[0:-1].mean()*100)
+        if X[-1] == 0.5:
+            print("Value for {} particles and {} biasing factor : {}%".format(entries,X[-1],Y[-1]))
     filelist.close()
 
     _plt.plot(X, Y, ls='', marker='+', markersize=8, color=color, label='Variance data %2.3e particles' % entries)
-    popt, pcov = curve_fit(poly2, X, Y)
-    _plt.plot(X_fit, poly2(X_fit, *popt), ls='-', color=color, label='Polynomial fit : min for factor = %5.3f' % _np.exp(-popt[1]/(2*popt[0])))
+    if fit:
+        popt, pcov = curve_fit(poly2, X, Y)
+        _plt.plot(X_fit, poly2(X_fit, *popt), ls='-', color=color, label='Polynomial fit : min for factor = %5.3f' % _np.exp(-popt[1]/(2*popt[0])))
 
-    _plt.xscale("log")
-    _plt.legend()
+    if xLogScale:
+        _plt.xscale("log")
+    if printLegend:
+        _plt.legend()
 
 
-def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None, color=None, logScale=False):
+def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None, yLogScale=False, color=None, printLegend=True):
     f = _rt.TFile(inputfilename)
     root_hist = f.Get("Event/MergedHistograms/"+histname)
     python_hist = _bd.Data.TH1(root_hist)
@@ -384,38 +270,26 @@ def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None
         popt, pcov = curve_fit(exponential, centres, contents, p0=[300, 0.01], sigma=errors, absolute_sigma=True)
         _plt.plot(centres, exponential(centres, *popt), ls='--', color=color, label='exponential fit: slope=-%1.3e' % popt[1])
 
-    if logScale:
+    if yLogScale:
         _plt.yscale("log")
-    _plt.legend()
+    if printLegend:
+        _plt.legend()
+
+
+def plot_multiple_hist(filelist, histlist, **args):
+    color = 0
+    for file in filelist:
+        for hist in histlist:
+            plot_hist(file, hist, color='C{}'.format(color), **args)
+            color += 1
+
 
 
 if __name__ == "__main__":
 
-    # makeFileLists("tagfilelist")
-    # print("File Lists Created")
-    # analysisFilelist("tagfilelist")
-    # print("Analysis Completed")
+    makeFileLists("tagfilelist")
+    print("File Lists Created")
+    analysisFilelist("tagfilelist")
+    print("Analysis Completed")
     # analysisCombine("tagfilelist")
     # print("Histograms Combined")
-
-    for scenario in SCENAR_DICT:
-        color = 0
-        _plt.figure(figsize=(10, 7))
-        for bias in SCENAR_DICT[scenario]['biaslist']:
-            for hist in SCENAR_DICT[scenario]['histlist']:
-                plot_hist(_gl.glob('*'+bias+'*_merged_hist.root')[0], hist, linFit=SCENAR_DICT[scenario]['linFit'], expFit=SCENAR_DICT[scenario]['expFit'],
-                          logScale=SCENAR_DICT[scenario]['logScale'], fitRange=[0, -1], color='C{}'.format(color))
-                color += 1
-
-        _plt.xlabel(SCENAR_DICT[scenario]['xlabel'])
-        _plt.ylabel(SCENAR_DICT[scenario]['ylabel'])
-        _plt.title(scenario)
-
-    _plt.figure(figsize=(10, 7))
-    plot_var("localhistlist", "h_PFH_S", color='C0')
-    plot_var("farmhistlist", "h_PFH_S", color='C1')
-    _plt.ylabel("%")
-    _plt.xlabel("Biasing factor")
-    _plt.title("Variance")
-
-    _plt.show()
