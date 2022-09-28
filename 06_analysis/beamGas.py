@@ -130,6 +130,16 @@ def analysis(inputfilename, nbins=50):
     HIST_DICT['EndSampler_yp_photons']   = _rt.TH1D("EndSampler_yp_photons",   "{} Beam profile in yp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
     HIST_DICT['EndSampler_E_photons']    = _rt.TH1D("EndSampler_E_photons",    "{} Beam energy profile at end sampler for photons".format(tag),      nbins,  0,   14)
 
+    HIST_DICT['EndSampler_partID']       = _rt.TH1D("EndSampler_partID",       "{} Particles in the beam at end sampler".format(tag), 6, 0, 6)
+    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(1, "elecrtons")
+    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(2, "positrons")
+    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(3, "photons")
+    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(4, "protons")
+    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(5, "neutrinos")
+    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(6, "others")
+
+    # L=[]
+
     for i, evt in enumerate(t):
         HIST_DICT['PFH_S_unweight'].Fill(evt.PrimaryFirstHit.S[0])
         HIST_DICT['PFH_S'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
@@ -175,18 +185,30 @@ def analysis(inputfilename, nbins=50):
                 HIST_DICT['EndSampler_y_electrons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_yp_electrons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_E_electrons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
-            if evt.D70899L.partID[0] == -11:
+                HIST_DICT['EndSampler_partID'].AddBinContent(1)
+            elif evt.D70899L.partID[0] == -11:
                 HIST_DICT['EndSampler_x_positrons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_xp_positrons'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_y_positrons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_yp_positrons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_E_positrons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
-            if evt.D70899L.partID[0] == 22:
+                HIST_DICT['EndSampler_partID'].AddBinContent(2)
+            elif evt.D70899L.partID[0] == 22:
                 HIST_DICT['EndSampler_x_photons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_xp_photons'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_y_photons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_yp_photons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_E_photons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
+                HIST_DICT['EndSampler_partID'].AddBinContent(3)
+            elif evt.D70899L.partID[0] == 2112:
+                HIST_DICT['EndSampler_partID'].AddBinContent(4)
+            elif evt.D70899L.partID[0] == 12:
+                HIST_DICT['EndSampler_partID'].AddBinContent(5)
+            else:
+                HIST_DICT['EndSampler_partID'].AddBinContent(6)
+                # if evt.D70899L.partID[0] not in L:
+                #     L.append(evt.D70899L.partID[0])
+    # print("particle types : ", L)
 
     for hist in HIST_DICT:
         HIST_DICT[hist].Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
@@ -222,7 +244,7 @@ def plot_var(rootlistfile, histname, fit=False, xLogScale=False, color=None, pri
         entries = max(entries, python_hist.entries)
         Y = _np.append(Y, contents[0:-1].std()/contents[0:-1].mean()*100)
         if X[-1] == 0.5:
-            print("Value for {} particles and {} biasing factor : {}%".format(entries,X[-1],Y[-1]))
+            print("Value for {} particles and {} biasing factor : {}%".format(entries, X[-1], Y[-1]))
     filelist.close()
 
     _plt.plot(X, Y, ls='', marker='+', markersize=8, color=color, label='Variance data %2.3e particles' % entries)
@@ -282,7 +304,6 @@ def plot_multiple_hist(filelist, histlist, **args):
         for hist in histlist:
             plot_hist(file, hist, color='C{}'.format(color), **args)
             color += 1
-
 
 
 if __name__ == "__main__":
