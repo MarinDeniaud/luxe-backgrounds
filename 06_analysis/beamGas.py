@@ -131,12 +131,12 @@ def analysis(inputfilename, nbins=50):
     HIST_DICT['EndSampler_E_photons']    = _rt.TH1D("EndSampler_E_photons",    "{} Beam energy profile at end sampler for photons".format(tag),      nbins,  0,   14)
 
     HIST_DICT['EndSampler_partID']       = _rt.TH1D("EndSampler_partID",       "{} Particles in the beam at end sampler".format(tag), 6, 0, 6)
-    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(1, "elecrtons")
-    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(2, "positrons")
-    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(3, "photons")
-    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(4, "protons")
-    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(5, "neutrinos")
-    HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(6, "others")
+    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(1, "elecrtons")
+    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(2, "positrons")
+    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(3, "photons")
+    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(4, "protons")
+    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(5, "neutrinos")
+    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(6, "others")
 
     # L=[]
 
