@@ -64,6 +64,14 @@ def testMaterialConvert():
     _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(OUT_DIR+tag), ngenerate=1000, batch=True)
 
 
+def testRmatConvert():
+    tag = 'T20_rmat_test'
+    d = {'twiss': '../01_mad8/TWISS_CL_T20', 'rmat': '../01_mad8/RMAT_CL_T20'}
+    _bd.Convert.Mad8Twiss2Gmad(d, tag,
+                               beamparamsdict={'EX': 3.58 * 10 ** -11, 'EY': 3.58 * 10 ** -11, 'Esprd': 1 * 10 ** -6, 'particletype': 'e-'})
+    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(OUT_DIR + tag), ngenerate=1000, batch=True)
+
+
 def simpleConvert():
     tag = 'T20_simple'
     _bd.Convert.Mad8Twiss2Gmad('../01_mad8/TWISS_CL_T20', tag,
