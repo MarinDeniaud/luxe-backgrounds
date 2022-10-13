@@ -7,6 +7,8 @@ from scipy.optimize import curve_fit
 
 ELECTRONS_PER_BUNCH = 2e9
 
+PART_DICT = {11: 0, 22: 1, -11: 2, 2112: 3, 12: 4}
+
 
 def linear(x, a, b):
     return a * x + b
@@ -131,14 +133,6 @@ def analysis(inputfilename, nbins=50):
     HIST_DICT['EndSampler_E_photons']    = _rt.TH1D("EndSampler_E_photons",    "{} Beam energy profile at end sampler for photons".format(tag),      nbins,  0,   14)
 
     HIST_DICT['EndSampler_partID']       = _rt.TH1D("EndSampler_partID",       "{} Particles in the beam at end sampler".format(tag), 6, 0, 6)
-    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(1, "elecrtons")
-    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(2, "positrons")
-    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(3, "photons")
-    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(4, "protons")
-    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(5, "neutrinos")
-    # HIST_DICT['EndSampler_partID'].GetXaxis().SetBinLabel(6, "others")
-
-    # L=[]
 
     for i, evt in enumerate(t):
         HIST_DICT['PFH_S_unweight'].Fill(evt.PrimaryFirstHit.S[0])
@@ -179,36 +173,30 @@ def analysis(inputfilename, nbins=50):
             HIST_DICT['EndSampler_yp'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
             HIST_DICT['EndSampler_E'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
 
-            if evt.D70899L.partID[0] == 11:
+            partID = evt.D70899L.partID[0]
+            if partID in PART_DICT:
+                HIST_DICT['EndSampler_partID'].Fill(PART_DICT[partID])
+            else:
+                HIST_DICT['EndSampler_partID'].Fill(-1)
+
+            if partID == 11:
                 HIST_DICT['EndSampler_x_electrons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_xp_electrons'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_y_electrons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_yp_electrons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_E_electrons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
-                HIST_DICT['EndSampler_partID'].AddBinContent(1)
-            elif evt.D70899L.partID[0] == -11:
+            elif partID == -11:
                 HIST_DICT['EndSampler_x_positrons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_xp_positrons'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_y_positrons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_yp_positrons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_E_positrons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
-                HIST_DICT['EndSampler_partID'].AddBinContent(2)
-            elif evt.D70899L.partID[0] == 22:
+            elif partID == 22:
                 HIST_DICT['EndSampler_x_photons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_xp_photons'].Fill(evt.D70899L.xp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_y_photons'].Fill(evt.D70899L.y[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_yp_photons'].Fill(evt.D70899L.yp[0], evt.D70899L.weight[0])
                 HIST_DICT['EndSampler_E_photons'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
-                HIST_DICT['EndSampler_partID'].AddBinContent(3)
-            elif evt.D70899L.partID[0] == 2112:
-                HIST_DICT['EndSampler_partID'].AddBinContent(4)
-            elif evt.D70899L.partID[0] == 12:
-                HIST_DICT['EndSampler_partID'].AddBinContent(5)
-            else:
-                HIST_DICT['EndSampler_partID'].AddBinContent(6)
-                # if evt.D70899L.partID[0] not in L:
-                #     L.append(evt.D70899L.partID[0])
-    # print("particle types : ", L)
 
     for hist in HIST_DICT:
         HIST_DICT[hist].Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
@@ -258,7 +246,7 @@ def plot_var(rootlistfile, histname, fit=False, xLogScale=False, color=None, pri
         _plt.legend()
 
 
-def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None, yLogScale=False, color=None, printLegend=True):
+def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, steps=True, linFit=False, expFit=False, fitRange=None, yLogScale=False, color=None, printLegend=True):
     f = _rt.TFile(inputfilename)
     root_hist = f.Get("Event/MergedHistograms/"+histname)
     python_hist = _bd.Data.TH1(root_hist)
@@ -269,8 +257,13 @@ def plot_hist(inputfilename, histname, linFit=False, expFit=False, fitRange=None
     errors = python_hist.errors
     widths = python_hist.xwidths
 
-    #_plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color)#, label=title)
-    _plt.step(centres, contents, where='mid', color=color, label=title)
+    if particlenames:
+        centres = ["electrons", "positrons", "photons", "neutrons", "neutrinos", "others"]
+        _plt.plot(centres, contents, ls='', marker='o')
+    if errorbars:
+        _plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color)# , label=title)
+    if steps:
+        _plt.step(centres, contents, where='mid', color=color, label=title)
 
     empty_bins = []
     for i, val in enumerate(contents):
