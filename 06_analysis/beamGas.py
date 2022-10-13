@@ -72,11 +72,6 @@ def analysis(inputfilename, nbins=50):
     root_data = _bd.Data.Load(inputfilename)
     # e = root_data.GetEvent()
     t = root_data.GetEventTree()
-    header = root_data.GetHeader()
-    header.header.fileType = 'REBDSIM'
-    header.header.nOriginalEvents = t.GetEntries()
-    # header_tree = root_data.GetHeaderTree()
-    # header_tree.GetEntry(0)
 
     print("File :", inputfilename, " / Nb of entries = ", t.GetEntries())
 
@@ -177,7 +172,7 @@ def analysis(inputfilename, nbins=50):
             if partID in PART_DICT:
                 HIST_DICT['EndSampler_partID'].Fill(PART_DICT[partID])
             else:
-                HIST_DICT['EndSampler_partID'].Fill(-1)
+                HIST_DICT['EndSampler_partID'].Fill(5)
 
             if partID == 11:
                 HIST_DICT['EndSampler_x_electrons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
@@ -201,20 +196,10 @@ def analysis(inputfilename, nbins=50):
     for hist in HIST_DICT:
         HIST_DICT[hist].Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
 
-    f = _rt.TFile(inputfilename.replace('04_dataLocal', '06_analysis').replace('05_dataFarm', '06_analysis').replace('.root', '_hist.root'), "recreate")
-
-    t = _rt.TTree("Header", "BDSIM Header")
-    t.Branch("Header.", "BDSOutputROOTEventHeader", header.header, 32000, 1)
-    t.Fill()
-    t.Write()
-
-    f.mkdir("Event/MergedHistograms")
-    f.cd("Event/MergedHistograms")
-
-    for hist in HIST_DICT:
-        HIST_DICT[hist].Write()
-
-    f.Close()
+    outputfilename = inputfilename.replace('04_dataLocal', '06_analysis').replace('05_dataFarm', '06_analysis').replace('.root', '_hist.root')
+    outfile = _bd.Data.CreateEmptyRebdsimFile(outputfilename, root_data.header.nOriginalEvents)
+    _bd.Data.WriteROOTHistogramsToDirectory(outfile, "Event/MergedHistograms", list(HIST_DICT.values()))
+    outfile.Close()
 
 
 def plot_var(rootlistfile, histname, fit=False, xLogScale=False, color=None, printLegend=True):
@@ -258,10 +243,10 @@ def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, ste
     widths = python_hist.xwidths
 
     if particlenames:
-        centres = ["electrons", "positrons", "photons", "neutrons", "neutrinos", "others"]
-        _plt.plot(centres, contents, ls='', marker='o')
+        bins_labels = ["electrons", "photons", "positrons", "neutrons", "neutrinos", "others"]
+        _plt.plot(bins_labels, contents, ls='', marker='o')
     if errorbars:
-        _plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color)# , label=title)
+        _plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color)  # , label=title)
     if steps:
         _plt.step(centres, contents, where='mid', color=color, label=title)
 

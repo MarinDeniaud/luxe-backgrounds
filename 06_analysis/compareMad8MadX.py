@@ -17,9 +17,7 @@ class Plot :
 		'''Load from form the two filenames both the twiss files and 
 		the twiss DataFrame and save them as internal variables.
 		Also match the positions from the tow lines with respect to the LUXE IP'''
-		r = pymad8.Output.OutputReader()
-		[c,self.twiss_mad8] = r.readFile(mad8file)
-		self.df_twiss_mad8 = pymad8.OutputPandas(mad8file)
+		self.df_twiss_mad8 = pymad8.Output(mad8file)
 		
 		self.twiss_madx = pymadx.Data.Tfs(madxfile)
 		self.df_twiss_madx = _pd.DataFrame(self.twiss_madx.data,index=self.twiss_madx.columns).transpose()
