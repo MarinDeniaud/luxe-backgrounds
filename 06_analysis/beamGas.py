@@ -7,7 +7,7 @@ from scipy.optimize import curve_fit
 
 ELECTRONS_PER_BUNCH = 2e9
 
-PART_DICT = {11: 0, 22: 1, -11: 2, 2112: 3, 12: 4}
+PART_DICT = {11: 0, 22: 1, -11: 2, 2112: 3, 12: 4, 13: 5}
 
 
 def linear(x, a, b):
@@ -127,7 +127,7 @@ def analysis(inputfilename, nbins=50):
     HIST_DICT['EndSampler_yp_photons']   = _rt.TH1D("EndSampler_yp_photons",   "{} Beam profile in yp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
     HIST_DICT['EndSampler_E_photons']    = _rt.TH1D("EndSampler_E_photons",    "{} Beam energy profile at end sampler for photons".format(tag),      nbins,  0,   14)
 
-    HIST_DICT['EndSampler_partID']       = _rt.TH1D("EndSampler_partID",       "{} Particles in the beam at end sampler".format(tag), 6, 0, 6)
+    HIST_DICT['EndSampler_partID']       = _rt.TH1D("EndSampler_partID",       "{} Particles in the beam at end sampler".format(tag), 7, 0, 7)
 
     for i, evt in enumerate(t):
         HIST_DICT['PFH_S_unweight'].Fill(evt.PrimaryFirstHit.S[0])
@@ -172,7 +172,7 @@ def analysis(inputfilename, nbins=50):
             if partID in PART_DICT:
                 HIST_DICT['EndSampler_partID'].Fill(PART_DICT[partID])
             else:
-                HIST_DICT['EndSampler_partID'].Fill(5)
+                HIST_DICT['EndSampler_partID'].Fill(6)
 
             if partID == 11:
                 HIST_DICT['EndSampler_x_electrons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
@@ -243,7 +243,7 @@ def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, ste
     widths = python_hist.xwidths
 
     if particlenames:
-        bins_labels = ["electrons", "photons", "positrons", "neutrons", "neutrinos", "others"]
+        bins_labels = ["electrons", "photons", "positrons", "neutrons", "neutrinos", "muons", "others"]
         _plt.plot(bins_labels, contents, ls='', marker='o')
     if errorbars:
         _plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color)  # , label=title)
