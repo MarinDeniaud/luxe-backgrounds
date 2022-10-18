@@ -104,18 +104,27 @@ def nonBiasConvert():
     _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_output'.format(OUT_DIR+tag), ngenerate=10000, batch=True)
 
 
-def biasConvert(tag, fact=[1.0, 1.0, 1.0]):
+def biasConvert(tag, biasfact=[0.5, 0.5, 0.5], dens=1e-12):
     bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear',
-                                xsecfact=[5e7*fact[0], 2.1e12*fact[1], 7.4e11*fact[2]], flag=[2, 2, 2])
-    vacuum = _bd.Builder.Material('luxeVacuum', density=1e-12, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
+                                xsecfact=[5e7*biasfact[0], 2.1e12*biasfact[1], 7.4e11*biasfact[2]], flag=[2, 2, 2])
+    vacuum = _bd.Builder.Material('luxeVacuum', density=dens, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
     _bd.Convert.Mad8Twiss2Gmad('../01_mad8/TWISS_CL_T20', tag,
                           beamparamsdict={'EX': 3.58*10**-11, 'EY': 3.58*10**-11, 'Esprd': 1*10**-6, 'particletype': 'e-'},
                           biases=bias,
                           materials=vacuum,
                           allelementdict={'biasVacuum': '"biasElecBeamGas"', 'vacuumMaterial': '"luxeVacuum"'},
-                          optionsdict={'physicsList': '"em em_extra qgsp_bert decay"'})
+                          optionsdict={'physicsList': '"em em_extra qgsp_bert decay"',
+                                       'useLENDGammaNuclear': '0',
+                                       'useElectroNuclear': '1',
+                                       'useMuonNuclear': '1',
+                                       'useGammaToMuMu': '1',
+                                       'usePositronToMuMu': '1',
+                                       'usePositronToHadrons': '1',
+                                       'printPhysicsProcesses': '1',
+                                       'worldMaterial': '"vacuum"',
+                                       'checkOverlaps': '1'})
 
-    _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_10k'.format(OUT_DIR+tag), ngenerate=10000, batch=True)
+    # _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_10k'.format(OUT_DIR+tag), ngenerate=10000, batch=True)
 
 
 def run_all_bias():
@@ -135,3 +144,6 @@ def run_all_bias():
     biasConvert('T20_bias_3.000', fact=[3.000, 3.000, 3.000])
     biasConvert('T20_bias_4.000', fact=[4.000, 4.000, 4.000])
 
+
+def run_all_dens():
+    biasConvert('T20_dens_1e-12')

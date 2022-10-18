@@ -22,8 +22,8 @@ class Plot:
 
 		Also match the positions from the two lines with respect to the LUXE IP
 		"""
-		self.df_twiss_mad8 = pymad8.Output.Load(mad8file)
-		
+		self.df_twiss_mad8 = pymad8.Output(mad8file)
+
 		self.twiss_madx = pymadx.Data.Tfs(madxfile)
 		self.df_twiss_madx = _pd.DataFrame(self.twiss_madx.data, index=self.twiss_madx.columns).transpose()
 
@@ -37,11 +37,13 @@ class Plot:
 		# self.df_twiss_mad8.data.plot('S',['BETX','BETY'],subplots=True)
 		# self.df_twiss_madx.plot('S',['BETX','BETY'],subplots=True)
 
-		_plt.figure(1, figsize=(10, 6))
+		fig1 = _plt.figure(1, figsize=(10, 6))
 		_plt.plot(self.df_twiss_mad8.data['S'], self.df_twiss_mad8.data['BETX'], label='Beta_x Mad8')
 		_plt.plot(self.df_twiss_madx['S'], self.df_twiss_madx['BETX'], label='Beta_x MadX')
 		_plt.plot(self.df_twiss_mad8.data['S'], self.df_twiss_mad8.data['BETY'], label='Beta_y Mad8')
 		_plt.plot(self.df_twiss_madx['S'], self.df_twiss_madx['BETY'], label='Beta_y MadX')
+
+		pymad8.Plot.AddMachineLatticeToFigure(fig1, {'twiss': self.df_twiss_mad8})
 
 		_plt.xlabel('S [m]')
 		_plt.ylabel('Beta [m]')
