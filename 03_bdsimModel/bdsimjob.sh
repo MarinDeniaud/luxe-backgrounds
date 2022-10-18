@@ -5,7 +5,7 @@
 #source /etc/profile.d/modules.sh
 
 # environment - bdsim, root, geant4 etc
-source /cvmfs/beam-physics.cern.ch/bdsim/x86_64-centos7-gcc8-opt/bdsim-env-v1.6.0-g4v10.7.2.3.sh
+source /cvmfs/beam-physics.cern.ch/bdsim/x86_64-centos7-gcc11-opt/bdsim-env-develop-g4v11.0.2-boost.sh
 
 # echo inputs
 echo $1
@@ -36,6 +36,8 @@ bdsim  --file=${INPUTFILE} --outfile=${OUTPUTFILE} --batch --seed=${SEEDVALUE} -
 echo "job finished"
 date
 
+export PYTHONPATH="/scratch2/mdeniaud/phd/pybdsim:$PYTHONPATH"
+export PYTHONPATH="/scratch2/mdeniaud/phd/pymad8:$PYTHONPATH"
 export PYTHONPATH="$PYTHONPATH:/scratch2/mdeniaud/phd/luxe-backgrounds/06_analysis"
 
 # run python analysis script to create the histogram root file
