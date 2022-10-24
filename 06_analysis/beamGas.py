@@ -3,11 +3,11 @@ import ROOT as _rt
 import numpy as _np
 import matplotlib.pyplot as _plt
 import glob as _gl
+import pickle as _pk
 from scipy.optimize import curve_fit
+from collections import defaultdict
 
 ELECTRONS_PER_BUNCH = 2e9
-
-PART_DICT = {11: 0, 22: 1, -11: 2, 2112: 3, 12: 4, 13: 5}
 
 
 def linear(x, a, b):
@@ -67,6 +67,11 @@ def makeFileLists(tagfilelist):
 
 
 def analysis(inputfilename, nbins=50):
+    if type(inputfilename) == list:
+        for file in inputfilename:
+            analysis(file)
+        return 0
+
     tag = inputfilename.split('/')[-1].split('.root')[0].split('part_')[-1]
 
     root_data = _bd.Data.Load(inputfilename)
@@ -127,25 +132,27 @@ def analysis(inputfilename, nbins=50):
     HIST_DICT['EndSampler_yp_photons']   = _rt.TH1D("EndSampler_yp_photons",   "{} Beam profile in yp at end sampler for photons".format(tag),       nbins, -1.5, 1.5)
     HIST_DICT['EndSampler_E_photons']    = _rt.TH1D("EndSampler_E_photons",    "{} Beam energy profile at end sampler for photons".format(tag),      nbins,  0,   14)
 
-    HIST_DICT['EndSampler_partID']       = _rt.TH1D("EndSampler_partID",       "{} Particles in the beam at end sampler".format(tag), 7, 0, 7)
+    PART_DICT = defaultdict(float)
 
     for i, evt in enumerate(t):
-        HIST_DICT['PFH_S_unweight'].Fill(evt.PrimaryFirstHit.S[0])
-        HIST_DICT['PFH_S'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
-        if evt.PrimaryFirstHit.postStepProcessSubType[0] == 1:
-            HIST_DICT['PFH_S_Coulomb_unweight'].Fill(evt.PrimaryFirstHit.S[0])
-            HIST_DICT['PFH_S_Coulomb'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
-        if evt.PrimaryFirstHit.postStepProcessSubType[0] == 3:
-            HIST_DICT['PFH_S_eBrem_unweight'].Fill(evt.PrimaryFirstHit.S[0])
-            HIST_DICT['PFH_S_eBrem'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
-        if evt.PrimaryFirstHit.postStepProcessSubType[0] == 121:
-            HIST_DICT['PFH_S_elecNuc_unweight'].Fill(evt.PrimaryFirstHit.S[0])
-            HIST_DICT['PFH_S_elecNuc'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
 
-        HIST_DICT['PFH_x'].Fill(evt.PrimaryFirstHit.x[0], evt.PrimaryFirstHit.weight[0])
-        HIST_DICT['PFH_y'].Fill(evt.PrimaryFirstHit.y[0], evt.PrimaryFirstHit.weight[0])
-        HIST_DICT['PFH_z'].Fill(evt.PrimaryFirstHit.z[0], evt.PrimaryFirstHit.weight[0])
-        HIST_DICT['PFH_E'].Fill(evt.PrimaryFirstHit.energy[0], evt.PrimaryFirstHit.weight[0])
+        if len(evt.PrimaryFirstHit.weight) != 0:
+            HIST_DICT['PFH_S_unweight'].Fill(evt.PrimaryFirstHit.S[0])
+            HIST_DICT['PFH_S'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
+            if evt.PrimaryFirstHit.postStepProcessSubType[0] == 1:
+                HIST_DICT['PFH_S_Coulomb_unweight'].Fill(evt.PrimaryFirstHit.S[0])
+                HIST_DICT['PFH_S_Coulomb'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
+            if evt.PrimaryFirstHit.postStepProcessSubType[0] == 3:
+                HIST_DICT['PFH_S_eBrem_unweight'].Fill(evt.PrimaryFirstHit.S[0])
+                HIST_DICT['PFH_S_eBrem'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
+            if evt.PrimaryFirstHit.postStepProcessSubType[0] == 121:
+                HIST_DICT['PFH_S_elecNuc_unweight'].Fill(evt.PrimaryFirstHit.S[0])
+                HIST_DICT['PFH_S_elecNuc'].Fill(evt.PrimaryFirstHit.S[0], evt.PrimaryFirstHit.weight[0])
+
+            HIST_DICT['PFH_x'].Fill(evt.PrimaryFirstHit.x[0], evt.PrimaryFirstHit.weight[0])
+            HIST_DICT['PFH_y'].Fill(evt.PrimaryFirstHit.y[0], evt.PrimaryFirstHit.weight[0])
+            HIST_DICT['PFH_z'].Fill(evt.PrimaryFirstHit.z[0], evt.PrimaryFirstHit.weight[0])
+            HIST_DICT['PFH_E'].Fill(evt.PrimaryFirstHit.energy[0], evt.PrimaryFirstHit.weight[0])
 
         if len(evt.QFH41CL.weight) != 0:
             HIST_DICT['StartSampler_x'].Fill(evt.QFH41CL.x[0], evt.QFH41CL.weight[0])
@@ -169,10 +176,8 @@ def analysis(inputfilename, nbins=50):
             HIST_DICT['EndSampler_E'].Fill(evt.D70899L.energy[0], evt.D70899L.weight[0])
 
             partID = evt.D70899L.partID[0]
-            if partID in PART_DICT:
-                HIST_DICT['EndSampler_partID'].Fill(PART_DICT[partID])
-            else:
-                HIST_DICT['EndSampler_partID'].Fill(6)
+            PART_DICT[0] += evt.D70899L.weight[0]
+            PART_DICT[partID] += evt.D70899L.weight[0]
 
             if partID == 11:
                 HIST_DICT['EndSampler_x_electrons'].Fill(evt.D70899L.x[0], evt.D70899L.weight[0])
@@ -196,8 +201,16 @@ def analysis(inputfilename, nbins=50):
     for hist in HIST_DICT:
         HIST_DICT[hist].Scale(ELECTRONS_PER_BUNCH/t.GetEntries())
 
-    outputfilename = inputfilename.replace('04_dataLocal', '06_analysis').replace('05_dataFarm', '06_analysis').replace('.root', '_hist.root')
-    outfile = _bd.Data.CreateEmptyRebdsimFile(outputfilename, root_data.header.nOriginalEvents)
+    for key in PART_DICT:
+        PART_DICT[key] = PART_DICT[key]*ELECTRONS_PER_BUNCH/t.GetEntries()
+
+    outputfilename = inputfilename.replace('04_dataLocal', '06_analysis').replace('05_dataFarm', '06_analysis').replace('.root', '')
+
+    partfile = open('{}_partfile.pk'.format(outputfilename), 'wb')
+    _pk.dump(PART_DICT, partfile)
+    partfile.close()
+
+    outfile = _bd.Data.CreateEmptyRebdsimFile('{}_hist.root'.format(outputfilename), root_data.header.nOriginalEvents)
     _bd.Data.WriteROOTHistogramsToDirectory(outfile, "Event/MergedHistograms", list(HIST_DICT.values()))
     outfile.Close()
 
@@ -243,8 +256,7 @@ def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, ste
     widths = python_hist.xwidths
 
     if particlenames:
-        bins_labels = ["electrons", "photons", "positrons", "neutrons", "neutrinos", "muons", "others"]
-        _plt.plot(bins_labels, contents, ls='', marker='o')
+        _plt.plot([root_hist.GetXaxis().GetBinLabel(i+1) for i in range(len(centres))], contents, ls='', marker='o')
     if errorbars:
         _plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color)  # , label=title)
     if steps:
