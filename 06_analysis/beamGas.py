@@ -246,6 +246,8 @@ def plot_var(rootlistfile, histname, fit=False, xLogScale=False, color=None, pri
 
 def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, steps=True, linFit=False, expFit=False, fitRange=None, yLogScale=False, color=None, printLegend=True):
     f = _rt.TFile(inputfilename)
+    test_bd_load = _bd.Data.Load(inputfilename)
+    npart = test_bd_load.header.nOriginalEvents
     root_hist = f.Get("Event/MergedHistograms/"+histname)
     python_hist = _bd.Data.TH1(root_hist)
 
@@ -256,7 +258,7 @@ def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, ste
     widths = python_hist.xwidths
 
     if particlenames:
-        _plt.plot([root_hist.GetXaxis().GetBinLabel(i+1) for i in range(len(centres))], contents, ls='', marker='o')
+        _plt.plot([root_hist.GetXaxis().GetBinLabel(i+1) for i in range(len(centres))], contents, ls='', marker='o', label=' %2.3e initial particles' % npart)
     if errorbars:
         _plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color)  # , label=title)
     if steps:
