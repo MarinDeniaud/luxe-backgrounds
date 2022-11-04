@@ -224,6 +224,10 @@ print, #s/#e
 twiss, beta0=B0_CL.QFH, save, couple, tape=twiss_CL_T20, rtape=rmat_CL_T20
 twiss, beta0=B0_CL.QFH, save, chrom, tape=chrom_CL_T20
 
+select, optics, full
+optics, beta0=B0_CL.QFH, filename=optics_CL_T20, &
+column=NAME,TYPE,S,BETX,BETY,K4L,K5L,K6L,K7L,K8L,K9L,RADLOSS
+
 structure, filename=test_structure_CL_T20 8
 
 track, onepass
