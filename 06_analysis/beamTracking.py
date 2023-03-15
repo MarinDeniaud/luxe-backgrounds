@@ -38,26 +38,26 @@ def PlotTheoryFitAndChi2(Track, coord, ref_S, ref_coord, initial_fit, bdsimCompa
     S = _np.unique(Track.twiss.getColumnsByKeys('S'))
 
     Curve_Theory, S_list = Track.getTheoryAndFit(coord, ref_S, ref_coord, initial_fit)
-    ax1.plot(S, _np.abs(Curve_Theory(S)), ls='-', color='C0', label='Theory for {}'.format(ref_coord))
-    ax1.set_ylabel("Theory : $|sin(\mu_{IP}-\mu)|$")
+    ax1.plot(S, _np.abs(Curve_Theory(S)), ls='-', color='C0', label='Theory for ${{{c}}}$'.format(c=ref_coord))
+    ax1.set_ylabel("$|sin(\mu_{\\rm IP}-\mu (s))|$")
     ax1.set_yscale('log')
 
     Curve_Chi2_pymad8 = Track.pymad8.getChi2(coord, ref_S, ref_coord)
-    ax2.plot(S, Curve_Chi2_pymad8(S), ls='--', color='C1', label='Chi2 for {} with pymad8'.format(ref_coord))
-    ax2.set_ylabel("Chi2")
+    ax2.plot(S, Curve_Chi2_pymad8(S), ls='--', color='C1', label='$\chi^2$ for ${{{c}}}$ from Mad8'.format(c=ref_coord))
+    ax2.set_ylabel("$\chi^2$")
     ax2.set_yscale('log')
 
     if bdsimCompare:
         Curve_Chi2_bdsim = Track.bdsim.getChi2(coord, ref_S, ref_coord)
-        ax2.plot(S, Curve_Chi2_bdsim(S), ls='', color='C3', marker='+', label='Chi2 for {} with BDSIM'.format(ref_coord))
+        ax2.plot(S, Curve_Chi2_bdsim(S), ls='', color='C3', marker='+', label='$\chi^2$ for ${{{c}}}$ from BDSIM'.format(c=ref_coord))
 
-    label = 'Fitted S positions'
+    label = 'Fitted $s$ positions'
     for s in S_list:
         ax1.axvline(s, ls=':', color='C4', label=label)
         label = None
 
     ax1.axvline(ref_S, ls='--', color='C2', label='Reference Sampler')
-    ax1.set_xlabel('S [m]')
+    ax1.set_xlabel('$s$ [m]')
     h1, l1 = ax1.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
     _plt.legend(h1 + h2, l1 + l2)
@@ -95,7 +95,6 @@ def PlotMuSimulation(Track, coord, S_list):
 
 
 def PlotPhaseAdvanceCheck(Track, coord, S_list, ref_name='IP.LUXE.T20'):
-    _plt.rcParams['font.size'] = 15
     ref_S = Track.twiss.getElementByNames(ref_name, 'S')
     _plt.axvline(ref_S, ls='-', color='C2', label=ref_name)
 
@@ -107,30 +106,29 @@ def PlotPhaseAdvanceCheck(Track, coord, S_list, ref_name='IP.LUXE.T20'):
     PlotMuTheory(Track, coord, ref_name=ref_name)
     PlotMuSimulation(Track, coord, S_list)
 
-    _plt.xlabel('S [m]')
-    _plt.ylabel('Mu [2$\pi$ rad]')
+    _plt.xlabel('$s$ [m]')
+    _plt.ylabel('$\mu$ [2$\pi$ rad]')
     _plt.legend()
 
 
 def PlotSVDCoeff(Track, ref_S, ref_coord='X', BPM_list=None, BPM_list_type='pos', s_range=[-_np.inf, _np.inf],
                  noise=10e-6, mean_sub=False, predicted_S_list=None, printLabels=True, bdsimCompare=False):
-    _plt.rcParams['font.size'] = 15
     M, ref_vect, S_vect = Track.pymad8.buildBPMmatrix(ref_S, ref_coord, BPM_list=BPM_list, BPM_list_type=BPM_list_type,
                                                       s_range=s_range, noise=noise, mean_sub=mean_sub)
     C_vect = Track.pymad8.SVD(M, ref_vect)
     C_X, C_Y = _np.split(C_vect, 2)
-    _plt.plot(S_vect, _np.abs(C_X), '+-', color='C0', markersize=15, markeredgewidth=2, label='$c_x$ from Mad8')
-    _plt.plot(S_vect, _np.abs(C_Y), '+-', color='C1', markersize=15, markeredgewidth=2, label='$c_y$ from Mad8')
+    _plt.plot(S_vect, _np.abs(C_X), '+-', color='C0', markersize=15, markeredgewidth=2, label='$|c_x|$ from Mad8')
+    _plt.plot(S_vect, _np.abs(C_Y), '+-', color='C1', markersize=15, markeredgewidth=2, label='$|c_y|$ from Mad8')
 
     if bdsimCompare:
         M_bdsim, ref_vect_bdsim, S_vect_bdsim = Track.bdsim.buildBPMmatrix(ref_S, ref_coord, BPM_list=BPM_list, BPM_list_type=BPM_list_type,
                                                                            s_range=s_range, noise=noise, mean_sub=mean_sub)
         C_vect_bdsim = Track.bdsim.SVD(M_bdsim, ref_vect_bdsim)
         C_X_bdsim, C_Y_bdsim = _np.split(C_vect_bdsim, 2)
-        _plt.plot(S_vect_bdsim, _np.abs(C_X_bdsim), 'o--', color='C0', markersize=15, markeredgewidth=2, markerfacecolor='None',
-                  label='$c_x$ from BDSIM')
-        _plt.plot(S_vect_bdsim, _np.abs(C_Y_bdsim), 'o--', color='C1', markersize=15, markeredgewidth=2, markerfacecolor='None',
-                  label='$c_y$ from BDSIM')
+        _plt.plot(S_vect_bdsim, _np.abs(C_X_bdsim), 'o--', color='C0',
+                  markersize=15, markeredgewidth=2, markerfacecolor='None', label='$|c_x|$ from BDSIM')
+        _plt.plot(S_vect_bdsim, _np.abs(C_Y_bdsim), 'o--', color='C1',
+                  markersize=15, markeredgewidth=2, markerfacecolor='None', label='$|c_y|$ from BDSIM')
 
     if predicted_S_list is not None:
         label = 'Previously found positions'
@@ -139,26 +137,25 @@ def PlotSVDCoeff(Track, ref_S, ref_coord='X', BPM_list=None, BPM_list_type='pos'
             label = None
 
     _plt.axvline(ref_S, ls='--', color='C2', label='Reference Sampler')
-    _plt.ylabel('Correlation factors (ABSOLUTE)')
-    _plt.xlabel('S [m]')
+    _plt.ylabel('$|c_x|$ / $|c_y|$')
+    _plt.xlabel('$s$ [m]')
     if printLabels:
         _plt.legend()
 
 
 def PlotResolution(Track, ref_coord, ref_S, S_dict, noise=10e-6, bins=50, bdsimCompare=False):
-    _plt.rcParams['font.size'] = 15
     unit = _m8.Sim.CheckUnits(ref_coord)
 
     Res = Track.pymad8.CalcResolution(ref_coord, ref_S, S_dict[ref_coord], noise=noise)
     _plt.hist(Res, bins=bins, histtype='step', color=getColor(ref_coord),
-              label='Mad8 : $R_{}$ = {:1.3f} u{}'.format(ref_coord, (_np.std(Res) * 1e6), unit))
+              label='$R_{{{c}}}$ = {:1.3f} $\\mu${} from Mad8'.format(_np.std(Res)*1e6, unit, c=getLabelCoord(ref_coord)))
 
     if bdsimCompare:
         Res_bdsim = Track.bdsim.CalcResolution(ref_coord, ref_S, S_dict[ref_coord], noise=noise)
         _plt.hist(Res_bdsim, bins=bins, histtype='step', ls='--', color=getColor(ref_coord),
-                  label='BDSIM : $R_{}$ = {:1.3f} u{}'.format(ref_coord, (_np.std(Res_bdsim) * 1e6), unit))
+                  label='$R_{{{c}}}$ = {:1.3f} $\\mu${} from BDSIM'.format(_np.std(Res_bdsim)*1e6, unit, c=getLabelCoord(ref_coord)))
 
-    _plt.xlabel('IP_meas-IP_real [{}]'.format(unit))
+    _plt.xlabel('${}_{{{m}}}-{}_{{{t}}}$ [{}]'.format(getLabelCoord(ref_coord), getLabelCoord(ref_coord), unit, m='IP,meas', t='IP,track'))
     _plt.ylabel('Number of Events')
     _plt.legend()
 
@@ -171,7 +168,7 @@ def PlotResWrtBPMnoise(Track, ref_coord, ref_S, S_dict, noise_range, bdsimCompar
         Res = Track.pymad8.CalcResolution(ref_coord, ref_S, S_dict[ref_coord], noise=noise)
         std_list.append(_np.std(Res))
     _plt.plot(noise_range, std_list, '+-', color=getColor(ref_coord), markersize=15, markeredgewidth=2,
-              label='$R_{}$ for {} BPMs from Mad8'.format(ref_coord, len(S_dict[ref_coord])))
+              label='$R_{{{c}}}$ ({} BPMs / Mad8)'.format(len(S_dict[ref_coord]), c=getLabelCoord(ref_coord)))
 
     if bdsimCompare:
         std_list_bdsim = []
@@ -179,11 +176,10 @@ def PlotResWrtBPMnoise(Track, ref_coord, ref_S, S_dict, noise_range, bdsimCompar
             Res_bdsim = Track.bdsim.CalcResolution(ref_coord, ref_S, S_dict[ref_coord], noise=noise)
             std_list_bdsim.append(_np.std(Res_bdsim))
         _plt.plot(noise_range, std_list_bdsim, 'o--', color=getColor(ref_coord), markersize=15, markeredgewidth=2, markerfacecolor='None',
-                  label='$R_{}$ for {} BPMs from BDSIM'.format(ref_coord, len(S_dict[ref_coord])))
+                  label='$R_{{{c}}}$ ({} BPMs / BDSIM)'.format(len(S_dict[ref_coord]), c=getLabelCoord(ref_coord)))
 
-    _plt.rcParams['font.size'] = 15
     _plt.xlabel('Noise at BPMs [m]')
-    _plt.ylabel('Resolution at the IP [{}]'.format(unit))
+    _plt.ylabel('$R_{{{c}}}$ [{}]'.format(unit, c=getLabelCoord(ref_coord)))
     _plt.legend()
 
 
@@ -201,7 +197,7 @@ def PlotResWrtNumberOfBPM(Track, ref_coord, ref_S, S_dict, noise=10e-6, sortcoef
         Res = Track.pymad8.CalcResolution(ref_coord, ref_S, BPM_sorted_list[:i], noise=noise)
         std_list.append(_np.std(Res))
     _plt.plot(BPM_nb, std_list, '+-', color=getColor(ref_coord), markersize=15, markeredgewidth=2,
-              label='$R_{}$ for {} m of BPM noise from Mad8'.format(ref_coord, noise))
+              label='$R_{{{c}}}$ ({} m of BPM noise / Mad8)'.format(noise, c=getLabelCoord(ref_coord)))
 
     if bdsimCompare:
         std_list_bdsim = []
@@ -209,11 +205,10 @@ def PlotResWrtNumberOfBPM(Track, ref_coord, ref_S, S_dict, noise=10e-6, sortcoef
             Res_bdsim = Track.pymad8.CalcResolution(ref_coord, ref_S, BPM_sorted_list[:i], noise=noise)
             std_list_bdsim.append(_np.std(Res_bdsim))
         _plt.plot(BPM_nb, std_list_bdsim, 'o--', color=getColor(ref_coord), markersize=15, markeredgewidth=2, markerfacecolor='None',
-                  label='$R_{}$ for {} m of BPM noise from BDSIM'.format(ref_coord, noise))
+                  label='$R_{{{c}}}$ ({} m of BPM noise / BDSIM)'.format(noise, c=getLabelCoord(ref_coord)))
 
-    _plt.rcParams['font.size'] = 15
     _plt.xlabel('Number of BPM used')
-    _plt.ylabel('Resolution at the IP [{}]'.format(unit))
+    _plt.ylabel('$R_{{{c}}}$ [{}]'.format(unit, c=getLabelCoord(ref_coord)))
     _plt.legend()
 
 
@@ -246,5 +241,18 @@ def getColor(coord):
         return 'C0'
     elif coord in ['Y', 'PY']:
         return 'C1'
+    else:
+        raise ValueError('Input coord should be X, Y, PX or PY')
+
+
+def getLabelCoord(coord):
+    if coord == 'X':
+        return "x"
+    elif coord == 'Y':
+        return "y"
+    elif coord == 'PX':
+        return "x'"
+    elif coord == 'PY':
+        return "y'"
     else:
         raise ValueError('Input coord should be X, Y, PX or PY')
