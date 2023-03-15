@@ -215,25 +215,38 @@ def analysis(inputfilename, nbins=50):
     outfile.Close()
 
 
-def plot_var(rootlistfile, histname, fit=False, xLogScale=False, color=None, printLegend=True):
+def plot_var(rootlistfile, histname, errorBars=False, fit=False, xLogScale=False, color=None, printLegend=True):
     entries = 0
     X_fit = _np.linspace(0.025, 4, 200)
     X = _np.array([])
     Y = _np.array([])
+    ERR = _np.array([])
     filelist = open(rootlistfile)
     for file in filelist:
         f = _rt.TFile(file.replace('\n', ''))
         root_hist = f.Get("Event/MergedHistograms/"+histname)
         python_hist = _bd.Data.TH1(root_hist)
         X = _np.append(X, float(file.replace('\n', '').split('/')[-1].split('_hist.root')[0].split('_merged')[0].split('_')[-1]))
-        contents = python_hist.contents
+
+        contents = python_hist.contents[0:-1]
+        VALUE = contents.std()/contents.mean()*100
+
+        errors = python_hist.errors[0:-1]
+        error_mean = 1/python_hist.entries * _np.sqrt(sum(errors**2))
+        error_std = contents.std() / _np.sqrt(python_hist.entries)
+        ERR = _np.append(ERR, VALUE*_np.sqrt((error_std/contents.std())**2 + (error_mean/contents.mean())**2))
+
         entries = max(entries, python_hist.entries)
-        Y = _np.append(Y, contents[0:-1].std()/contents[0:-1].mean()*100)
+        Y = _np.append(Y, VALUE)
         if X[-1] == 0.5:
             print("Value for {} particles and {} biasing factor : {}%".format(entries, X[-1], Y[-1]))
     filelist.close()
 
-    _plt.plot(X, Y, ls='', marker='+', markersize=8, color=color, label='Variance data %2.3e particles' % entries)
+    if errorBars:
+        _plt.errorbar(X, Y, yerr=ERR, fmt='.{}'.format(color), capsize=3, label='$V_{\\rm PFH}$ for %1.1e particles' % entries)
+    else:
+        _plt.plot(X, Y, ls='', marker='+', markersize=13, markeredgewidth=2, color=color, label='$V_{\\rm PFH}$ for %1.1e particles' % entries)
+
     if fit:
         popt, pcov = curve_fit(poly2, X, Y)
         _plt.plot(X_fit, poly2(X_fit, *popt), ls='-', color=color, label='Polynomial fit : min for factor = %5.3f' % _np.exp(-popt[1]/(2*popt[0])))
@@ -244,7 +257,8 @@ def plot_var(rootlistfile, histname, fit=False, xLogScale=False, color=None, pri
         _plt.legend()
 
 
-def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, steps=True, linFit=False, expFit=False, fitRange=None, yLogScale=False, color=None, printLegend=True):
+def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, steps=True,
+              linFit=False, expFit=False, fitRange=None, yLogScale=False, color=None, printLegend=True):
     f = _rt.TFile(inputfilename)
     test_bd_load = _bd.Data.Load(inputfilename)
     npart = test_bd_load.header.nOriginalEvents
@@ -252,13 +266,14 @@ def plot_hist(inputfilename, histname, particlenames=False, errorbars=False, ste
     python_hist = _bd.Data.TH1(root_hist)
 
     title = python_hist.hist.GetTitle()
-    centres = python_hist.xcentres
-    contents = python_hist.contents
-    errors = python_hist.errors
-    widths = python_hist.xwidths
+    centres = python_hist.xcentres[:-2]
+    contents = python_hist.contents[:-2]
+    errors = python_hist.errors[:-2]
+    widths = python_hist.xwidths[:-2]
 
     if particlenames:
-        _plt.plot([root_hist.GetXaxis().GetBinLabel(i+1) for i in range(len(centres))], contents, ls='', marker='o', label=' %2.3e initial particles' % npart)
+        _plt.plot([root_hist.GetXaxis().GetBinLabel(i+1) for i in range(len(centres))], contents,
+                  ls='', marker='o', markersize=12, label=' %2.3e initial particles' % npart)
     if errorbars:
         _plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color)  # , label=title)
     if steps:
