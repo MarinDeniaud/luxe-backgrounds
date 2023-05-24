@@ -1,0 +1,40 @@
+universe = vanilla
+
+executable = bdsimjob_wire.sh
+
+# use some variables for various paths
+basedir   = /scratch2/mdeniaud/phd/luxe-backgrounds
+modeldir  = $(basedir)/03_bdsimModel
+outputdir = $(basedir)/05_dataFarm
+logdir    = $(outputdir)/log
+
+# make the output directory including one for the logs
+include command : mkdir -p $(logdir)
+
+# Prefix for file names
+prefix = $(ClusterId)-$(ProcId)_$(npart)_part
+
+# arguments : input.gmad outputfilename seedstart ProcessID wireOffset ngenerate
+arguments = $(modeldir)/$(filename) $(outputdir)/$(prefix)_$Fn(filename) $(seedstart) $(ProcID) $(wireOffset) $(npart)
+
+# direct logging and screen out
+output = $(logdir)/$(prefix)_$Fn(filename).out
+error  = $(logdir)/$(prefix)_$Fn(filename).err
+log    = $(logdir)/$(prefix)_$Fn(filename).log
+
+# resources
+request_cpus = 1
+request_disk = 500MB
+request_memory = 500MB
+
+# Remove job if it takes too long
+periodic_remove = (JobStatus == 2) && (time() - EnteredCurrentStatus) > (5 * 3600)
+
+ShouldTransferFiles = YES
+when_to_transfer_output = ON_EXIT
+
+# queue name
++JobFlavour = "medium"
+
+# submit jobs
+queue $(njobs)

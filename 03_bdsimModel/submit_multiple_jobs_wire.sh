@@ -1,0 +1,22 @@
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.50
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.45
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.40
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.35
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.30
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.25
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.20
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.15
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.10
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=-0.05
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.00
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.05
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.10
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.15
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.20
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.25
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.30
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.35
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.40
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.45
+condor_submit htcondor_wire.sub filename=T20_for_wire.gmad seedstart=0 npart=1000 njobs=100 wireOffset=0.50
+

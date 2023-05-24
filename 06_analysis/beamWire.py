@@ -88,11 +88,15 @@ def SetWire(inputfilename, templatefilename, diameter=0.1, length=0.03, material
     f.close()
 
 
-def runOneOffset(inputfilename, npart=100, diameter=0.5, offsetX=0):
+def runOneOffset(inputfilename, outputfilename=None, npart=100, diameter=0.5, offsetX=0, seed=None):
     templatefilename = "T20_for_wire_components_template.gmad"
-    outputfilename = inputfilename.replace("../03_bdsimModel/", "../04_dataLocal/{}_part_".format(npart)).replace(".gmad", "_{}".format(offsetX))
+    if outputfilename is None:
+        outputfilename = inputfilename.replace("../03_bdsimModel/", "../04_dataLocal/{}_part_".format(npart)).replace(".gmad", "_{}".format(offsetX))
     SetWire(inputfilename.replace(".gmad", '_components.gmad'), templatefilename, diameter=diameter, offsetX=offsetX)
-    _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, silent=True)
+    if seed is not None:
+        _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, options="--seed={}".format(seed), silent=True)
+    else:
+        _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, silent=True)
 
 
 def runScanOffset(inputfilename, npart=100, diameter=0.5, offsetXmin=-0.5, offsetXmax=0.5, nbpts=21):
