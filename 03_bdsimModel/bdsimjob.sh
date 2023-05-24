@@ -30,9 +30,12 @@ echo ""
 hostname
 echo ""
 
+logfile=/juicefs/data/mdeniaud/bdsim_$(uuidgen).log; 
+echo "Logging bdsim stdout+stderr to $logfile"
+
 # run bdsim
 # a common trick is to use the seed value as the output file name so we know what it was easily
-bdsim  --file=${INPUTFILE} --outfile=${OUTPUTFILE} --batch --seed=${SEEDVALUE} --ngenerate=${NGEN}
+bdsim  --file=${INPUTFILE} --outfile=${OUTPUTFILE} --batch --seed=${SEEDVALUE} --ngenerate=${NGEN} >& $logfile 2>&1
 echo "job finished"
 date
 
