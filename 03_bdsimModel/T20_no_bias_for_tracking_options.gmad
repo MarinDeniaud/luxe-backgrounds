@@ -1,0 +1,14 @@
+! Fri, 11 Nov 2022 14:25:08 +0000
+! pybdsim.Builder Lattice, using pybdsim version 2.2.0 
+! OPTIONS DEFINITION
+
+option,	physicsList="em em_extra qgsp_bert decay",
+	useLENDGammaNuclear=0, 
+	useElectroNuclear=1, 
+	useMuonNuclear=1, 
+	useGammaToMuMu=1, 
+	usePositronToMuMu=1, 
+	usePositronToHadrons=1, 
+	printPhysicsProcesses=1, 
+	worldMaterial="vacuum", 
+	checkOverlaps=0;

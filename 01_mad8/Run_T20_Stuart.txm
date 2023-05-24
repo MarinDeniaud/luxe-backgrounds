@@ -223,6 +223,24 @@ use, CLTT20
 print, #s/#e
 twiss, beta0=B0_CL.QFH, save, couple, tape=twiss_CL_T20, rtape=rmat_CL_T20
 twiss, beta0=B0_CL.QFH, save, chrom, tape=chrom_CL_T20
+
+select, optics, full
+optics, beta0=B0_CL.QFH, filename=optics_CL_T20, &
+column=NAME,TYPE,S,BETX,BETY,K4L,K5L,K6L,K7L,K8L,K9L,RADLOSS
+
+structure, filename=test_structure_CL_T20 8
+
+track, onepass
+observe, TARGET.LUXE.T20, mkr1tab
+observe, IP.LUXE.T20, mkr2tab
+start, x=0, px=0,     y=0, py=0, t=0, deltap=0;
+start, x=0, px=0.001, y=0, py=0, t=0, deltap=0;
+start, x=0.001, px=0.0, y=0, py=0, t=0, deltap=0;
+run, method=transport;
+archive, mkr1tab, filename=track_mkr1_CL_T20
+archive, mkr2tab, filename=track_mkr2_CL_T20
+endtrack
+
 !
 plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
      vmin=0,vmax=100, vaxis2=dx,dy

@@ -127,22 +127,46 @@ def biasConvert(tag, biasfact=[0.5, 0.5, 0.5], dens=1e-12):
     # _bd.Run.Bdsim('{}.gmad'.format(tag), '{}_10k'.format(OUT_DIR+tag), ngenerate=10000, batch=True)
 
 
+def testbiasWireConvert(tag, biasfact=[0.5, 0.5, 0.5], dens=1e-12, biasMatFact=1e2):
+    bias = _bd.Builder.XSecBias('biasElecBeamGas', particle='e-', proc='eBrem CoulombScat electronNuclear',
+                                xsecfact=[5e7*biasfact[0], 2.1e12*biasfact[1], 7.4e11*biasfact[2]], flag=[2, 2, 2])
+    biasMat = _bd.Builder.XSecBias('biasElecMat', particle='e-', proc='eBrem', xsecfact=biasMatFact, flag=2)
+    vacuum = _bd.Builder.Material('luxeVacuum', density=dens, T=300, components=['"G4_H"', '"G4_C"', '"G4_O"'], componentsFractions={0.482, 0.221, 0.297})
+    _bd.Convert.Mad8Twiss2Gmad('../01_mad8/TWISS_CL_T20', tag,
+                          beamparamsdict={'EX': 3.58*10**-11, 'EY': 3.58*10**-11, 'Esprd': 1*10**-6, 'particletype': 'e-'},
+                          biases=[bias, biasMat],
+                          materials=vacuum,
+                          allelementdict={'biasVacuum': '"biasElecBeamGas"', 'vacuumMaterial': '"luxeVacuum"', 'biasMaterial': '"biasElecMat"'},
+                          optionsdict={'physicsList': '"em em_extra qgsp_bert decay"',
+                                       'useLENDGammaNuclear': '0',
+                                       'useElectroNuclear': '1',
+                                       'useMuonNuclear': '1',
+                                       'useGammaToMuMu': '1',
+                                       'usePositronToMuMu': '1',
+                                       'usePositronToHadrons': '1',
+                                       'printPhysicsProcesses': '1',
+                                       'worldMaterial': '"vacuum"',
+                                       'checkOverlaps': '0'})
+    # WIRE: wirescanner, aper1=0.1, apertureType="circular", l=0.1, wireDiameter=0.1*mm, wireLength=0.03, material="tungsten", wireOffsetX=0.0*mm;
+    # DRIFT: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=1, vacuumMaterial="luxeVacuum";
+
+
 def run_all_bias():
-    biasConvert('T20_bias_0.025', fact=[0.025, 0.025, 0.025])
-    biasConvert('T20_bias_0.050', fact=[0.050, 0.050, 0.050])
-    biasConvert('T20_bias_0.075', fact=[0.075, 0.075, 0.075])
-    biasConvert('T20_bias_0.100', fact=[0.100, 0.100, 0.100])
-    biasConvert('T20_bias_0.200', fact=[0.200, 0.200, 0.200])
-    biasConvert('T20_bias_0.300', fact=[0.300, 0.300, 0.300])
-    biasConvert('T20_bias_0.400', fact=[0.400, 0.400, 0.400])
-    biasConvert('T20_bias_0.500', fact=[0.500, 0.500, 0.500])
-    biasConvert('T20_bias_0.600', fact=[0.600, 0.600, 0.600])
-    biasConvert('T20_bias_0.700', fact=[0.700, 0.700, 0.700])
-    biasConvert('T20_bias_0.800', fact=[0.800, 0.800, 0.800])
-    biasConvert('T20_bias_1.000', fact=[1.000, 1.000, 1.000])
-    biasConvert('T20_bias_2.000', fact=[2.000, 2.000, 2.000])
-    biasConvert('T20_bias_3.000', fact=[3.000, 3.000, 3.000])
-    biasConvert('T20_bias_4.000', fact=[4.000, 4.000, 4.000])
+    biasConvert('T20_bias_0.025', biasfact=[0.025, 0.025, 0.025])
+    biasConvert('T20_bias_0.050', biasfact=[0.050, 0.050, 0.050])
+    biasConvert('T20_bias_0.075', biasfact=[0.075, 0.075, 0.075])
+    biasConvert('T20_bias_0.100', biasfact=[0.100, 0.100, 0.100])
+    biasConvert('T20_bias_0.200', biasfact=[0.200, 0.200, 0.200])
+    biasConvert('T20_bias_0.300', biasfact=[0.300, 0.300, 0.300])
+    biasConvert('T20_bias_0.400', biasfact=[0.400, 0.400, 0.400])
+    biasConvert('T20_bias_0.500', biasfact=[0.500, 0.500, 0.500])
+    biasConvert('T20_bias_0.600', biasfact=[0.600, 0.600, 0.600])
+    biasConvert('T20_bias_0.700', biasfact=[0.700, 0.700, 0.700])
+    biasConvert('T20_bias_0.800', biasfact=[0.800, 0.800, 0.800])
+    biasConvert('T20_bias_1.000', biasfact=[1.000, 1.000, 1.000])
+    biasConvert('T20_bias_2.000', biasfact=[2.000, 2.000, 2.000])
+    biasConvert('T20_bias_3.000', biasfact=[3.000, 3.000, 3.000])
+    biasConvert('T20_bias_4.000', biasfact=[4.000, 4.000, 4.000])
 
 
 def run_all_dens():
