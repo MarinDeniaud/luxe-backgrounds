@@ -81,7 +81,7 @@ def analyticConvolution():
 
 
 def SetWire(inputfilename, templatefilename, diameter=0.1, length=0.03, material="tungsten", offsetX=0):
-    env = _jj.Environment(loader=_jj.FileSystemLoader("../03_bdsimModel"))
+    env = _jj.Environment(loader=_jj.FileSystemLoader("../03_bdsimModel/"))
     template = env.get_template(templatefilename)
     f = open(inputfilename, 'w')
     f.write(template.render(diameter=diameter, length=length, material=material, offsetX=offsetX))
@@ -90,21 +90,34 @@ def SetWire(inputfilename, templatefilename, diameter=0.1, length=0.03, material
 
 def runOneOffset(inputfilename, npart=100, diameter=0.5, offsetX=0):
     templatefilename = "T20_for_wire_components_template.gmad"
-    outputfilename = inputfilename.replace("../03_bdsimModel", "../04_dataLocal").replace(".gmad", "_{}".format(offsetX))
+    outputfilename = inputfilename.replace("../03_bdsimModel/", "../04_dataLocal/{}_part_".format(npart)).replace(".gmad", "_{}".format(offsetX))
     SetWire(inputfilename.replace(".gmad", '_components.gmad'), templatefilename, diameter=diameter, offsetX=offsetX)
     _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, silent=True)
 
 
 def runScanOffset(inputfilename, npart=100, diameter=0.5, offsetXmin=-0.5, offsetXmax=0.5, nbpts=21):
+    tagfilelistwire = open("tagfilelistwire", "w")
     for i, offsetX in enumerate(_np.linspace(offsetXmin, offsetXmax, nbpts)):
         _printProgressBar(i, nbpts,
                           prefix='Loading file {}. Scan {} particles with {} diameter:'.format(inputfilename, npart, diameter),
                           suffix='Complete', length=50)
         offsetX = round(offsetX, 2)
+        tagfilelistwire.write(inputfilename.replace("../03_bdsimModel/", '').replace(".gmad", '') + '\n')
         runOneOffset(inputfilename, npart=npart, diameter=diameter, offsetX=offsetX)
+    tagfilelistwire.close()
     _printProgressBar(nbpts, nbpts,
                       prefix='Loading file {}. Scan {} particles with {} diameter:'.format(inputfilename, npart, diameter),
                       suffix='Complete', length=50)
+
+
+def analysisFilelist(tagfilelistwire):
+    taglist = open(tagfilelistwire)
+    for tag in taglist:
+        analysis(_gl.glob('../04_dataLocal/*'+tag.replace('\n', '')+'*.root')[0])
+        farmfilelist = _gl.glob('../05_dataFarm/*'+tag.replace('\n', '')+'*.root')
+        for file in farmfilelist:
+            analysis(file)
+    taglist.close()
 
 
 def analysis(inputfilename, nbins=50):
@@ -175,12 +188,12 @@ def countPhotons(inputfilename):
     npart = et.GetEntries()
     sampler_data = e.GetSampler("DRIFT.")
 
-    C = 0
+    nbphotons = 0
     for evt in et:
         for i, partID in enumerate(sampler_data.partID):
             if partID == 22:
-                C += sampler_data.weight[i]
-    return C * (ELECTRONS_PER_BUNCH/npart)
+                nbphotons += sampler_data.weight[i]
+    return nbphotons * (ELECTRONS_PER_BUNCH/npart)
 
 
 def countPhotonsAllFiles(tag):
@@ -196,6 +209,35 @@ def countPhotonsAllFiles(tag):
     return OFFSETS_sorted, NPHOTONS_sorted
 
 
+def countPhotonsInHist(inputfilename, histname):
+    f = _rt.TFile(inputfilename)
+    test_bd_load = _bd.Data.Load(inputfilename)
+    npart = test_bd_load.header.nOriginalEvents
+    root_hist = f.Get("Event/MergedHistograms/" + histname)
+    python_hist = _bd.Data.TH1(root_hist)
+
+    nbphotons = sum(python_hist.contents)
+    error = _np.sqrt(sum(python_hist.errors**2))
+    return nbphotons, error
+
+
+def countPhotonsInHistAllFiles(tag, histname):
+    filelist = _gl.glob('../06_analysis/*' + tag + '*_hist.root')
+    OFFSETS = []
+    NPHOTONS = []
+    ERRORS = []
+    for file in filelist:
+        OFFSETS.append(float(file.replace('_hist.root', '').replace('../06_analysis/{}_'.format(tag), '')))
+        nphotons, error = countPhotonsInHist(file, histname)
+        NPHOTONS.append(nphotons)
+        ERRORS.append(error)
+
+    OFFSETS_sorted =    [x for x, _, _ in sorted(zip(OFFSETS, NPHOTONS, ERRORS))]
+    NPHOTONS_sorted =   [y for _, y, _ in sorted(zip(OFFSETS, NPHOTONS, ERRORS))]
+    ERRORS_sorted =     [z for _, _, z in sorted(zip(OFFSETS, NPHOTONS, ERRORS))]
+    return OFFSETS_sorted, NPHOTONS_sorted, ERRORS_sorted
+
+
 def PlotConvolutionExample():
     _plt.rcParams['font.size'] = 17
     fig, ax = _plt.subplots(1, 1, figsize=(9, 4))
@@ -208,12 +250,12 @@ def PlotConvolutionExample():
     _plt.legend()
 
 
-def PlotConvolution(OFFSETS, NPHOTONS, A=None, sigma=50e-3, mu=0, wireRadius=250e-3, manualFit=False):
+def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=50e-3, mu=0, wireRadius=250e-3, manualFit=False):
     _plt.rcParams['font.size'] = 17
     fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
     fig.tight_layout()
 
-    _plt.plot(OFFSETS, NPHOTONS, '+--', color="k", markersize=15, markeredgewidth=2, label='data')
+    _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=0, capsize=3, label='data')
 
     X = _np.linspace(-0.5, 0.5, 500)
 
