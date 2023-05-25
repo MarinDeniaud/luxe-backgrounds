@@ -16,5 +16,6 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     beamWire.runOneOffset(options.__dict__['input'], outputfilename=options.__dict__['output'], npart=options.__dict__['npart'],
-                          diameter=options.__dict__['diameter'], offsetX=options.__dict__['offsetX'], seed=options.__dict__['seed'])
+                          diameter=options.__dict__['diameter'], offsetX=options.__dict__['offsetX'], seed=options.__dict__['seed'],
+                          templatefolder=options.__dict__['modeldir'])
     beamWire.analysis(options.__dict__['output']+".root", nbins=options.__dict__['nbins'])
