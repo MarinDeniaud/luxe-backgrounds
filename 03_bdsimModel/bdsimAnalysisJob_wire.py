@@ -12,6 +12,7 @@ if __name__ == "__main__":
     parser.add_option("-s", "--seed",       help="seed for bdsim simulation",       dest="seed",        action="store", type="int",     default=None)
     parser.add_option("-o", "--output",     help="bdsim output for analysis",       dest="output",      action="store", type="string")
     parser.add_option("-n", "--nbins",      help="number of bins for histograms",   dest="nbins",       action="store", type="int",     default=50)
+    parser.add_option("-m", "--modeldir",   help="bdsim model directory",           dest="modeldir",    action="store", type="string")
     (options, args) = parser.parse_args()
 
     beamWire.runOneOffset(options.__dict__['input'], outputfilename=options.__dict__['output'], npart=options.__dict__['npart'],

@@ -80,19 +80,20 @@ def analyticConvolution():
     # _sp.integrate(integ, (xt,  -_sp.oo, _sp.oo))
 
 
-def SetWire(inputfilename, templatefilename, diameter=0.1, length=0.03, material="tungsten", offsetX=0):
-    env = _jj.Environment(loader=_jj.FileSystemLoader("../03_bdsimModel/"))
+def SetWire(inputfilename, templatefilename="T20_for_wire_components_template.gmad", templatefolder="../03_bdsimModel/",
+            diameter=0.1, length=0.03, material="tungsten", offsetX=0):
+    env = _jj.Environment(loader=_jj.FileSystemLoader(templatefolder))
     template = env.get_template(templatefilename)
     f = open(inputfilename, 'w')
     f.write(template.render(diameter=diameter, length=length, material=material, offsetX=offsetX))
     f.close()
 
 
-def runOneOffset(inputfilename, outputfilename=None, npart=100, diameter=0.5, offsetX=0, seed=None):
-    templatefilename = "T20_for_wire_components_template.gmad"
+def runOneOffset(inputfilename, outputfilename=None, templatefilename="T20_for_wire_components_template.gmad", templatefolder="../03_bdsimModel/",
+                 npart=100, diameter=0.5, offsetX=0, seed=None):
     if outputfilename is None:
         outputfilename = inputfilename.replace("../03_bdsimModel/", "../04_dataLocal/{}_part_".format(npart)).replace(".gmad", "_{}".format(offsetX))
-    SetWire(inputfilename.replace(".gmad", '_components.gmad'), templatefilename, diameter=diameter, offsetX=offsetX)
+    SetWire(inputfilename.replace(".gmad", '_components.gmad'), templatefilename, templatefolder, diameter=diameter, offsetX=offsetX)
     if seed is not None:
         _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, options="--seed={}".format(seed), silent=True)
     else:

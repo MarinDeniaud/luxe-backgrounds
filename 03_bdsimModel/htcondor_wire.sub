@@ -14,8 +14,8 @@ include command : mkdir -p $(logdir)
 # Prefix for file names
 prefix = $(ClusterId)-$(ProcId)_$(npart)_part
 
-# arguments : input.gmad outputfilename seedstart ProcessID wireOffset ngenerate
-arguments = $(modeldir)/$(filename) $(outputdir)/$(prefix)_$Fn(filename) $(seedstart) $(ProcID) $(wireOffset) $(npart)
+# arguments : input.gmad outputfilename seedstart ProcessID wireOffset ngenerate modeldir
+arguments = $(modeldir)/$(filename) $(outputdir)/$(prefix)_$Fn(filename) $(seedstart) $(ProcID) $(wireOffset) $(npart) $(modeldir)
 
 # direct logging and screen out
 output = $(logdir)/$(prefix)_$Fn(filename).out
