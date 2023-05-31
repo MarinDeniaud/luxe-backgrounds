@@ -8,7 +8,7 @@ if __name__ == "__main__":
     parser.add_option("-i", "--input",      help="input file for bdsim",            dest="input",       action="store", type="string")
     parser.add_option("-p", "--npart",      help="number of initial particles",     dest="npart",       action="store", type="int",     default=100)
     parser.add_option("-d", "--diameter",   help="wire diameter",                   dest="diameter",    action="store", type="int",     default=0.5)
-    parser.add_option("-x", "--offsetX",    help="wire offset",                     dest="offsetX",     action="store", type="int",     default=0)
+    parser.add_option("-x", "--offsetX",    help="wire offset",                     dest="offsetX",     action="store", type="float",   default=0.0)
     parser.add_option("-s", "--seed",       help="seed for bdsim simulation",       dest="seed",        action="store", type="int",     default=None)
     parser.add_option("-o", "--output",     help="bdsim output for analysis",       dest="output",      action="store", type="string")
     parser.add_option("-n", "--nbins",      help="number of bins for histograms",   dest="nbins",       action="store", type="int",     default=50)
