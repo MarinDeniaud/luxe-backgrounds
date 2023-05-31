@@ -260,7 +260,7 @@ def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=50e-3, mu=0, wireRa
     fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
     fig.tight_layout()
 
-    _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=0, capsize=3, label='data')
+    _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=1, capsize=3, label='data')
 
     X = _np.linspace(-0.5, 0.5, 500)
 
