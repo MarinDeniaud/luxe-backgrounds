@@ -12,7 +12,7 @@ logdir    = $(outputdir)/log
 include command : mkdir -p $(logdir)
 
 # Prefix for file names
-prefix = $(ClusterId)-$(ProcId)_$(npart)_part
+prefix = $(ClusterId)-$(ProcId)_$(npart)_part_$(wireOffset)_offset
 
 # arguments : input.gmad outputfilename seedstart ProcessID wireOffset ngenerate modeldir
 arguments = $(modeldir)/$(filename) $(outputdir)/$(prefix)_$Fn(filename) $(seedstart) $(ProcID) $(wireOffset) $(npart) $(modeldir)
