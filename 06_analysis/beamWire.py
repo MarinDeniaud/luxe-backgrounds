@@ -1,4 +1,5 @@
 import pybdsim as _bd
+import pymad8 as _m8
 import ROOT as _rt
 import numpy as _np
 import matplotlib.pyplot as _plt
@@ -78,6 +79,19 @@ def analyticConvolution():
 
     # integ = _sp.sqrt(R**2-xt**2)*_sp.exp(-xt**2/(2*sigma**2))*_sp.exp(x*xt/sigma**2)
     # _sp.integrate(integ, (xt,  -_sp.oo, _sp.oo))
+
+
+def generateTracks(outputfilename, npart=1000, energy=14):
+    paramdict = {'x': {'mean': 0, 'std': 10e-6},  # 10e-6
+                 'xp': {'mean': 0, 'std': 10e-6},  # 10e-6
+                 'y': {'mean': 0, 'std': 10e-6},  # 10e-6
+                 'yp': {'mean': 0, 'std': 10e-6},  # 10e-6
+                 'z': {'mean': 0, 'std': 30e-6},  # 30e-6
+                 'DE': {'mean': 0, 'std': 3e-3},  # 3e-3
+                 }
+    T_C = _m8.Sim.Track_Collection(energy)
+    T_C.GenerateNtracks(npart, paramdict)
+    T_C.WriteBdsimTrack(outputfilename)
 
 
 def SetWire(inputfilename, templatefilename="T20_for_wire_components_template.gmad", templatefolder="../03_bdsimModel/",
@@ -227,12 +241,12 @@ def countPhotonsInHist(inputfilename, histname):
 
 
 def countPhotonsInHistAllFiles(tag, histname):
-    filelist = _gl.glob('../06_analysis/*' + tag + '*_hist.root')
+    filelist = _gl.glob('../06_analysis/*' + tag + '*_merged_hist.root')
     OFFSETS = []
     NPHOTONS = []
     ERRORS = []
     for file in filelist:
-        OFFSETS.append(float(file.replace('_hist.root', '').replace('../06_analysis/{}_'.format(tag), '')))
+        OFFSETS.append(float(file.split('_offset')[0].split('_')[-1]))
         nphotons, error = countPhotonsInHist(file, histname)
         NPHOTONS.append(nphotons)
         ERRORS.append(error)

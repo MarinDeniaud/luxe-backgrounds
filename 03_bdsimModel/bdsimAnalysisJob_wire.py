@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import beamWire
+import pymad8 as _m8
 from optparse import OptionParser
 
 if __name__ == "__main__":
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     parser.add_option("-m", "--modeldir",   help="bdsim model directory",           dest="modeldir",    action="store", type="string")
     (options, args) = parser.parse_args()
 
+    beamWire.generateTracks("../03_bdsimModel/track_input_bdsim_wire", npart=options.__dict__['npart'])
     beamWire.runOneOffset(options.__dict__['input'], outputfilename=options.__dict__['output'], npart=options.__dict__['npart'],
                           diameter=options.__dict__['diameter'], offsetX=options.__dict__['offsetX'], seed=options.__dict__['seed'],
                           templatefolder=options.__dict__['modeldir'])
