@@ -22,8 +22,8 @@ echo ""
 hostname
 echo ""
 
-export PYTHONPATH="/scratch2/mdeniaud/phd/pybdsim:$PYTHONPATH"
-export PYTHONPATH="/scratch2/mdeniaud/phd/pymad8:$PYTHONPATH"
+export PYTHONPATH="/scratch2/mdeniaud/phd/pybdsim/src:$PYTHONPATH"
+export PYTHONPATH="/scratch2/mdeniaud/phd/pymad8/src:$PYTHONPATH"
 export PYTHONPATH="$PYTHONPATH:/scratch2/mdeniaud/phd/luxe-backgrounds/06_analysis"
 
 # run bdsim and python analysis script to create the histogram root file

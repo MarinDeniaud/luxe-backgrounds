@@ -7,6 +7,7 @@ import glob as _gl
 import pickle as _pk
 import sympy as _sp
 import jinja2 as _jj
+import subprocess as _sub
 from scipy.optimize import curve_fit
 from collections import defaultdict
 from scipy.integrate import simps
@@ -81,19 +82,6 @@ def analyticConvolution():
     # _sp.integrate(integ, (xt,  -_sp.oo, _sp.oo))
 
 
-def generateTracks(outputfilename, npart=1000, energy=14):
-    paramdict = {'x': {'mean': 0, 'std': 10e-6},  # 10e-6
-                 'xp': {'mean': 0, 'std': 10e-6},  # 10e-6
-                 'y': {'mean': 0, 'std': 10e-6},  # 10e-6
-                 'yp': {'mean': 0, 'std': 10e-6},  # 10e-6
-                 'z': {'mean': 0, 'std': 30e-6},  # 30e-6
-                 'DE': {'mean': 0, 'std': 3e-3},  # 3e-3
-                 }
-    T_C = _m8.Sim.Track_Collection(energy)
-    T_C.GenerateNtracks(npart, paramdict)
-    T_C.WriteBdsimTrack(outputfilename)
-
-
 def SetWire(inputfilename, templatefilename="T20_for_wire_components_template.gmad", templatefolder="../03_bdsimModel/",
             diameter=0.1, length=0.03, material="tungsten", offsetX=0):
     env = _jj.Environment(loader=_jj.FileSystemLoader(templatefolder))
@@ -106,7 +94,7 @@ def SetWire(inputfilename, templatefilename="T20_for_wire_components_template.gm
 def runOneOffset(inputfilename, outputfilename=None, templatefilename="T20_for_wire_components_template.gmad", templatefolder="../03_bdsimModel/",
                  npart=100, diameter=0.5, offsetX=0, seed=None):
     if outputfilename is None:
-        outputfilename = inputfilename.replace("../03_bdsimModel/", "../04_dataLocal/{}_part_".format(npart)).replace(".gmad", "_{}".format(offsetX))
+        outputfilename = inputfilename.replace("../03_bdsimModel/", "../04_dataLocal/{}_part_{}_offset_".format(npart, offsetX)).replace(".gmad", "")
     SetWire(inputfilename.replace(".gmad", '_components.gmad'), templatefilename, templatefolder, diameter=diameter, offsetX=offsetX)
     if seed is not None:
         _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, options="--seed={}".format(seed), silent=True)
@@ -200,6 +188,24 @@ def analysis(inputfilename, nbins=50):
     outfile.Close()
 
 
+def combineHistFiles(tag):
+    globstring = "../06_analysis/*" + tag + "*T20_for_wire_hist.root"
+    filelist = _gl.glob(globstring)
+    if not filelist:
+        raise FileNotFoundError("Glob did not find any files")
+    npart = 0
+    for filename in filelist:
+        npart += int(filename.split('/')[-1].split('_part')[0].split('_')[-1])
+    outputfile = "{}_part".format(npart) + filelist[0].split('_part')[-1].replace('hist', 'merged_hist')
+    _sub.call('rebdsimCombine ' + outputfile + ' ' + globstring, shell=True)
+
+
+def combineAllHistFiles(tagfilelist):
+    taglist = open(tagfilelist)
+    for tag in taglist:
+        combineHistFiles(tag)
+
+
 def countPhotons(inputfilename):
     data = _bd.Data.Load(inputfilename)
     e = data.GetEvent()
@@ -241,7 +247,7 @@ def countPhotonsInHist(inputfilename, histname):
 
 
 def countPhotonsInHistAllFiles(tag, histname):
-    filelist = _gl.glob('../06_analysis/*' + tag + '*_merged_hist.root')
+    filelist = _gl.glob(tag)
     OFFSETS = []
     NPHOTONS = []
     ERRORS = []
