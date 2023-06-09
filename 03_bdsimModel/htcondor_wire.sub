@@ -12,10 +12,10 @@ logdir    = $(outputdir)/log
 include command : mkdir -p $(logdir)
 
 # Prefix for file names
-prefix = $(ClusterId)-$(ProcId)_$(npart)_part_$(wireOffset)_offset
+prefix = $(ClusterId)-$(ProcId)_$(npart)_part
 
-# arguments : input.gmad outputfilename seedstart ProcessID wireOffset ngenerate modeldir
-arguments = $(modeldir)/$(filename) $(outputdir)/$(prefix)_$Fn(filename) $(seedstart) $(ProcID) $(wireOffset) $(npart) $(modeldir)
+# arguments : input.gmad outputfilename seedstart ProcessID ngenerate
+arguments = $(modeldir)/$(filename) $(outputdir)/$(prefix)_$Fn(filename) $(seedstart) $(ProcID) $(npart)
 
 # direct logging and screen out
 output = $(logdir)/$(prefix)_$Fn(filename).out
@@ -24,8 +24,8 @@ log    = $(logdir)/$(prefix)_$Fn(filename).log
 
 # resources
 request_cpus = 1
-request_disk = 1GB
-request_memory = 1GB
+request_disk = 500MB
+request_memory = 500MB
 
 # Remove job if it takes too long
 periodic_remove = (JobStatus == 2) && (time() - EnteredCurrentStatus) > (5 * 3600)
