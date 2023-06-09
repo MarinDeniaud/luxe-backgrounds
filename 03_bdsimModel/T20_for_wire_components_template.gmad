@@ -168,5 +168,5 @@ D08500: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas",
 D46200: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=4.62, vacuumMaterial="luxeVacuum";
 D2890L: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=2.890001, vacuumMaterial="luxeVacuum";
 D70899L: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=7.089999, vacuumMaterial="luxeVacuum";
-WIRE: wirescanner, aper1=0.1, apertureType="circular", l=0.1, wireDiameter={{diameter}}*mm, wireLength={{length}}, material="{{material}}", wireOffsetX={{offsetX}}*mm, biasMaterial="biasElecMat";
+WIRE: wirescanner, aper1=0.1, apertureType="circular", l=0.1, wireDiameter={{wireDiameter|default(0.1,true)}}*mm, wireLength={{wireLength|default(0.03,true)}}, material="{{material|default('tungsten',true)}}", wireOffsetX={{wireOffsetX|default(0,true)}}*mm, biasMaterial="biasElecMat";
 DRIFT: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=1, vacuumMaterial="luxeVacuum";
