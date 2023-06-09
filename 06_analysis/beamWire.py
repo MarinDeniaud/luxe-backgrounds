@@ -79,7 +79,34 @@ def analyticConvolution():
     return 0
 
     # integ = _sp.sqrt(R**2-xt**2)*_sp.exp(-xt**2/(2*sigma**2))*_sp.exp(x*xt/sigma**2)
-    # _sp.integrate(integ, (xt,  -_sp.oo, _sp.oo))
+    # _sp.integrate(integ, (xt,  -_sp.oo, _sp.oo)
+
+
+def GenerateGmadFileFromTemplate(gmadfilename, templatefilename, templatefolder="../03_bdsimModel/", paramdict=None):
+    env = _jj.Environment(loader=_jj.FileSystemLoader(templatefolder))
+    template = env.get_template(templatefilename)
+    if paramdict is None:
+        raise ValueError("No dictionary is provided to set the different parameters in file {}".format(templatefolder+templatefilename))
+    f = open(gmadfilename, 'w')
+    f.write(template.render(paramdict))
+    f.close()
+
+
+def GenerateAllGmadFiles(tag="T20_for_wire", X0=0, Xp0=0, Y0=0, Yp0=0,
+                         sigmaX=10e-6, sigmaXp=10e-6, sigmaY=10e-6, sigmaYp=10e-6, sigmaT=100e-15, sigmaE=1e-6, energy=14,
+                         wireDiameter=0.1, wireLength=0.03, material='tungsten', wireOffsetX='0.00',
+                         T=300, density=1e-12, xsecfact='5e0', printPhysicsProcesses=0, checkOverlaps=0, line='l6, l7'):
+    extendedtag = tag+"_offset_"+wireOffsetX+"_bias_"+xsecfact
+    beamdict = dict(X0=X0, Xp0=Xp0, Y0=Y0, Yp0=Yp0, sigmaX=sigmaX, sigmaXp=sigmaXp, sigmaY=sigmaY, sigmaYp=sigmaYp, sigmaT=sigmaT, sigmaE=sigmaE, energy=energy)
+    componentdict = dict(wireDiameter=wireDiameter, wireLength=wireLength, material=material, wireOffsetX=float(wireOffsetX))
+    optiondict = dict(printPhysicsProcesses=printPhysicsProcesses, checkOverlaps=checkOverlaps)
+    GenerateGmadFileFromTemplate(extendedtag+".gmad", "T20_for_wire_template.gmad", paramdict=dict(tag=extendedtag))
+    GenerateGmadFileFromTemplate(extendedtag+"_beam.gmad", "T20_for_wire_beam_template.gmad", paramdict=beamdict)
+    GenerateGmadFileFromTemplate(extendedtag+"_components.gmad", "T20_for_wire_components_template.gmad", paramdict=componentdict)
+    GenerateGmadFileFromTemplate(extendedtag+"_material.gmad", "T20_for_wire_material_template.gmad", paramdict=dict(T=T, density=density))
+    GenerateGmadFileFromTemplate(extendedtag+"_objects.gmad", "T20_for_wire_objects_template.gmad", paramdict=dict(xsecfact=float(xsecfact)))
+    GenerateGmadFileFromTemplate(extendedtag+"_options.gmad", "T20_for_wire_options_template.gmad", paramdict=optiondict)
+    GenerateGmadFileFromTemplate(extendedtag+"_sequence.gmad", "T20_for_wire_sequence_template.gmad", paramdict=dict(line=line))
 
 
 def SetWire(inputfilename, templatefilename="T20_for_wire_components_template.gmad", templatefolder="../03_bdsimModel/",
