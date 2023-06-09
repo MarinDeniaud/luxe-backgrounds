@@ -82,66 +82,63 @@ def analyticConvolution():
     # _sp.integrate(integ, (xt,  -_sp.oo, _sp.oo)
 
 
-def GenerateGmadFileFromTemplate(gmadfilename, templatefilename, templatefolder="../03_bdsimModel/", paramdict=None):
+def GenerateOneGmadFile(gmadfilename, templatefilename, templatefolder="../03_bdsimModel/", paramdict=None):
     env = _jj.Environment(loader=_jj.FileSystemLoader(templatefolder))
     template = env.get_template(templatefilename)
     if paramdict is None:
         raise ValueError("No dictionary is provided to set the different parameters in file {}".format(templatefolder+templatefilename))
-    f = open(gmadfilename, 'w')
+    f = open(templatefolder+gmadfilename, 'w')
     f.write(template.render(paramdict))
     f.close()
 
 
-def GenerateAllGmadFiles(tag="T20_for_wire", X0=0, Xp0=0, Y0=0, Yp0=0,
+def GenerateSetGmadFiles(tag="T20_for_wire", X0=0, Xp0=0, Y0=0, Yp0=0,
                          sigmaX=10e-6, sigmaXp=10e-6, sigmaY=10e-6, sigmaYp=10e-6, sigmaT=100e-15, sigmaE=1e-6, energy=14,
-                         wireDiameter=0.1, wireLength=0.03, material='tungsten', wireOffsetX='0.00',
+                         wireDiameter=0.5, wireLength=0.03, material='tungsten', wireOffsetX='0.00',
                          T=300, density=1e-12, xsecfact='5e0', printPhysicsProcesses=0, checkOverlaps=0, line='l6, l7'):
-    extendedtag = tag+"_offset_"+wireOffsetX+"_bias_"+xsecfact
+    extendedtag = tag+"_with_offset_"+wireOffsetX+"_bias_"+xsecfact
     beamdict = dict(X0=X0, Xp0=Xp0, Y0=Y0, Yp0=Yp0, sigmaX=sigmaX, sigmaXp=sigmaXp, sigmaY=sigmaY, sigmaYp=sigmaYp, sigmaT=sigmaT, sigmaE=sigmaE, energy=energy)
     componentdict = dict(wireDiameter=wireDiameter, wireLength=wireLength, material=material, wireOffsetX=float(wireOffsetX))
     optiondict = dict(printPhysicsProcesses=printPhysicsProcesses, checkOverlaps=checkOverlaps)
-    GenerateGmadFileFromTemplate(extendedtag+".gmad", "T20_for_wire_template.gmad", paramdict=dict(tag=extendedtag))
-    GenerateGmadFileFromTemplate(extendedtag+"_beam.gmad", "T20_for_wire_beam_template.gmad", paramdict=beamdict)
-    GenerateGmadFileFromTemplate(extendedtag+"_components.gmad", "T20_for_wire_components_template.gmad", paramdict=componentdict)
-    GenerateGmadFileFromTemplate(extendedtag+"_material.gmad", "T20_for_wire_material_template.gmad", paramdict=dict(T=T, density=density))
-    GenerateGmadFileFromTemplate(extendedtag+"_objects.gmad", "T20_for_wire_objects_template.gmad", paramdict=dict(xsecfact=float(xsecfact)))
-    GenerateGmadFileFromTemplate(extendedtag+"_options.gmad", "T20_for_wire_options_template.gmad", paramdict=optiondict)
-    GenerateGmadFileFromTemplate(extendedtag+"_sequence.gmad", "T20_for_wire_sequence_template.gmad", paramdict=dict(line=line))
+    GenerateOneGmadFile(extendedtag+".gmad", "T20_for_wire_template.gmad", paramdict=dict(tag=extendedtag))
+    GenerateOneGmadFile(extendedtag+"_beam.gmad", "T20_for_wire_beam_template.gmad", paramdict=beamdict)
+    GenerateOneGmadFile(extendedtag+"_components.gmad", "T20_for_wire_components_template.gmad", paramdict=componentdict)
+    GenerateOneGmadFile(extendedtag+"_material.gmad", "T20_for_wire_material_template.gmad", paramdict=dict(T=T, density=density))
+    GenerateOneGmadFile(extendedtag+"_objects.gmad", "T20_for_wire_objects_template.gmad", paramdict=dict(xsecfact=float(xsecfact)))
+    GenerateOneGmadFile(extendedtag+"_options.gmad", "T20_for_wire_options_template.gmad", paramdict=optiondict)
+    GenerateOneGmadFile(extendedtag+"_sequence.gmad", "T20_for_wire_sequence_template.gmad", paramdict=dict(line=line))
+
+    return extendedtag
 
 
-def SetWire(inputfilename, templatefilename="T20_for_wire_components_template.gmad", templatefolder="../03_bdsimModel/",
-            diameter=0.1, length=0.03, material="tungsten", offsetX=0):
-    env = _jj.Environment(loader=_jj.FileSystemLoader(templatefolder))
-    template = env.get_template(templatefilename)
-    f = open(inputfilename, 'w')
-    f.write(template.render(diameter=diameter, length=length, material=material, offsetX=offsetX))
-    f.close()
-
-
-def runOneOffset(inputfilename, outputfilename=None, templatefilename="T20_for_wire_components_template.gmad", templatefolder="../03_bdsimModel/",
-                 npart=100, diameter=0.5, offsetX=0, seed=None):
-    if outputfilename is None:
-        outputfilename = inputfilename.replace("../03_bdsimModel/", "../04_dataLocal/{}_part_{}_offset_".format(npart, offsetX)).replace(".gmad", "")
-    SetWire(inputfilename.replace(".gmad", '_components.gmad'), templatefilename, templatefolder, diameter=diameter, offsetX=offsetX)
-    if seed is not None:
-        _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, options="--seed={}".format(seed), silent=True)
-    else:
-        _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, silent=True)
-
-
-def runScanOffset(inputfilename, npart=100, diameter=0.5, offsetXmin=-0.5, offsetXmax=0.5, nbpts=21):
+def GenerateAllGmadFilesAndList(tag="T20_for_wire", valuetoscan='wireOffsetX',
+                                valuelist=['-0.50', '-0.40', '-0.30', '-0.20', '-0.10', '+0.00', '+0.10', '+0.20', '+0.30', '+0.40', '+0.50']):
     tagfilelistwire = open("tagfilelistwire", "w")
-    for i, offsetX in enumerate(_np.linspace(offsetXmin, offsetXmax, nbpts)):
-        _printProgressBar(i, nbpts,
-                          prefix='Loading file {}. Scan {} particles with {} diameter:'.format(inputfilename, npart, diameter),
-                          suffix='Complete', length=50)
-        offsetX = round(offsetX, 2)
-        tagfilelistwire.write(inputfilename.replace("../03_bdsimModel/", '').replace(".gmad", '') + '\n')
-        runOneOffset(inputfilename, npart=npart, diameter=diameter, offsetX=offsetX)
-    tagfilelistwire.close()
-    _printProgressBar(nbpts, nbpts,
-                      prefix='Loading file {}. Scan {} particles with {} diameter:'.format(inputfilename, npart, diameter),
-                      suffix='Complete', length=50)
+    for val in valuelist:
+        paramdict = {valuetoscan: val}
+        tagfilelistwire.write(GenerateSetGmadFiles(tag=tag, **paramdict)+'\n')
+
+
+def runOneOffset(inputfilename, outputfilename=None, npart=100, seed=None, silent=False):
+    if outputfilename is None:
+        outputfilename = inputfilename.replace("../03_bdsimModel/", "../04_dataLocal/{}_part_".format(npart)).replace(".gmad", "")
+    if seed is not None:
+        _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, options="--seed={}".format(seed), silent=silent)
+    else:
+        _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, silent=silent)
+
+
+def runScanOffset(tagfilelist="tagfilelistwire", npart=100, seed=None, silent=False):
+    taglist = open(tagfilelist)
+    nbpts = len(taglist.readlines())
+    taglist.close()
+    taglist = open(tagfilelist)
+    for i, tag in enumerate(taglist):
+        file = "../03_bdsimModel/" + tag.replace('\n', '.gmad')
+        _printProgressBar(i, nbpts, prefix='Loading file {}. Run {} particles:'.format(file, npart), suffix='Complete', length=50)
+        runOneOffset(file, npart=npart, seed=seed, silent=silent)
+    taglist.close()
+    _printProgressBar(nbpts, nbpts, prefix='Loading of {} files done. Run {} particles:'.format(nbpts, npart), suffix='Complete', length=50)
 
 
 def analysisFilelist(tagfilelistwire):
@@ -279,7 +276,7 @@ def countPhotonsInHistAllFiles(tag, histname):
     NPHOTONS = []
     ERRORS = []
     for file in filelist:
-        OFFSETS.append(float(file.split('_offset')[0].split('_')[-1]))
+        OFFSETS.append(float(file.split('_offset_')[-1].split('_')[0]))
         nphotons, error = countPhotonsInHist(file, histname)
         NPHOTONS.append(nphotons)
         ERRORS.append(error)
