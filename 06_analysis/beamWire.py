@@ -94,7 +94,7 @@ def GenerateOneGmadFile(gmadfilename, templatefilename, templatefolder="../03_bd
 
 def GenerateSetGmadFiles(tag="T20_for_wire", X0=0, Xp0=0, Y0=0, Yp0=0,
                          sigmaX=10e-6, sigmaXp=10e-6, sigmaY=10e-6, sigmaYp=10e-6, sigmaT=100e-15, sigmaE=1e-6, energy=14,
-                         wireDiameter=0.5, wireLength=0.03, material='tungsten', wireOffsetX='0.00',
+                         wireDiameter=0.5, wireLength=0.03, material='tungsten', wireOffsetX='+0.00',
                          T=300, density=1e-12, xsecfact='5e0', printPhysicsProcesses=0, checkOverlaps=0, line='l6, l7'):
     extendedtag = tag+"_with_offset_"+wireOffsetX+"_bias_"+xsecfact
     beamdict = dict(X0=X0, Xp0=Xp0, Y0=Y0, Yp0=Yp0, sigmaX=sigmaX, sigmaXp=sigmaXp, sigmaY=sigmaY, sigmaYp=sigmaYp, sigmaT=sigmaT, sigmaE=sigmaE, energy=energy)
