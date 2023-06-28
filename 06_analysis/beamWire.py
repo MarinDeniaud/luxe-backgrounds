@@ -294,6 +294,41 @@ def countPhotonsInHistAllFiles(tag, histname):
     return OFFSETS_sorted, NPHOTONS_sorted, ERRORS_sorted
 
 
+def CalcVariance(inputfilename, histname):
+    f = _rt.TFile(inputfilename)
+    test_bd_load = _bd.Data.Load(inputfilename)
+    npart = test_bd_load.header.nOriginalEvents
+    root_hist = f.Get("Event/MergedHistograms/" + histname)
+    python_hist = _bd.Data.TH1(root_hist)
+
+    contents = python_hist.contents
+    variance = contents.std() / contents.mean() * 100
+
+    errors = python_hist.errors
+    error_mean = 1 / python_hist.entries * _np.sqrt(sum(errors ** 2))
+    error_std = contents.std() / _np.sqrt(python_hist.entries)
+    variance_error = variance * _np.sqrt((error_std / contents.std()) ** 2 + (error_mean / contents.mean()) ** 2)
+
+    return variance, variance_error
+
+
+def CalcAllVariance(tag, histname):
+    filelist = _gl.glob(tag)
+    BIAS = []
+    VAR = []
+    ERR = []
+    for file in filelist:
+        BIAS.append(float(file.split('_bias_')[-1].split('_')[0]))
+        variance, variance_error = CalcVariance(file, histname)
+        VAR.append(variance)
+        ERR.append(variance_error)
+
+    BIAS_sorted = [x for x, _, _ in sorted(zip(BIAS, VAR, ERR))]
+    VAR_sorted = [y for _, y, _ in sorted(zip(BIAS, VAR, ERR))]
+    ERR_sorted = [z for _, _, z in sorted(zip(BIAS, VAR, ERR))]
+    return BIAS_sorted, VAR_sorted, ERR_sorted
+
+
 def PlotConvolutionExample():
     _plt.rcParams['font.size'] = 17
     fig, ax = _plt.subplots(1, 1, figsize=(9, 4))
