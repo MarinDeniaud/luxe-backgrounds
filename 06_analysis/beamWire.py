@@ -169,18 +169,22 @@ def analysis(inputfilename, nbins=50):
 
     HIST_DICT = {}
 
-    HIST_DICT['PHOTONS_X'] =     _rt.TH1D('PHOTONS_X',      "{} Photons wrt x at sampler".format(tag), nbins, -1e-3, 1e-3)
-    HIST_DICT['PHOTONS_Y'] =     _rt.TH1D('PHOTONS_Y',      "{} Photons wrt y at sampler".format(tag), nbins, -1e-3, 1e-3)
+    HIST_DICT['PHOTONS_X']          = _rt.TH1D('PHOTONS_X',      "{} Photons wrt x at sampler".format(tag), nbins, -1e-3, 1e-3)
+    HIST_DICT['PHOTONS_Y']          = _rt.TH1D('PHOTONS_Y',      "{} Photons wrt y at sampler".format(tag), nbins, -1e-3, 1e-3)
 
-    HIST_DICT['PHOTONS_R'] =     _rt.TH1D('PHOTONS_R',      "{} Photons wrt R at sampler".format(tag), nbins, 0, 1e-3)
-    HIST_DICT['PHOTONS_Theta'] = _rt.TH1D('PHOTONS_Theta',  "{} Photons wrt theta at sampler".format(tag), nbins, 0, 1e-3)
-    HIST_DICT['PHOTONS_E'] =     _rt.TH1D('PHOTONS_E',      "{} Photons wrt energy at sampler".format(tag), nbins, 0, 14)
+    HIST_DICT['PHOTONS_R']          = _rt.TH1D('PHOTONS_R',      "{} Photons wrt R at sampler".format(tag), nbins, 0, 1e-3)
+    HIST_DICT['PHOTONS_Theta']      = _rt.TH1D('PHOTONS_Theta',  "{} Photons wrt theta at sampler".format(tag), nbins, 0, 1e-3)
+    HIST_DICT['PHOTONS_E']          = _rt.TH1D('PHOTONS_E',      "{} Photons wrt energy at sampler".format(tag), nbins, 0, 14)
 
-    HIST_DICT['PHOTONS_R_cut']     = _rt.TH1D('PHOTONS_R_cut',      "{} Photons wrt R at sampler cutted".format(tag), nbins, 0.1, 0.5)
-    HIST_DICT['PHOTONS_Theta_cut'] = _rt.TH1D('PHOTONS_Theta_cut',  "{} Photons wrt theta at sampler cutted".format(tag), nbins, 0.1, 0.5)
-    HIST_DICT['PHOTONS_E_cut']     = _rt.TH1D('PHOTONS_E_cut',      "{} Photons wrt energy at sampler cutted".format(tag), nbins, 2, 14)
+    HIST_DICT['PHOTONS_E_Theta']    = _rt.TH2D('PHOTONS_E_Theta', r"{} E-$\theta$ photons correl at sampler".format(tag),
+                                               2*nbins, _np.exp(_np.linspace(_np.log(1e-12), _np.log(14), 2*nbins+1)),
+                                               2*nbins, 0, 1e-3)
 
-    HIST_DICT['PHOTONS_CUT'] = _rt.TH1D('PHOTONS_CUT', "{} Photons wrt theta at sampler cutted with enegy cut".format(tag), nbins, 0.1, 0.5)
+    HIST_DICT['PHOTONS_R_cut']      = _rt.TH1D('PHOTONS_R_cut',      "{} Photons wrt R at sampler cutted".format(tag), nbins, 0.1, 0.5)
+    HIST_DICT['PHOTONS_Theta_cut']  = _rt.TH1D('PHOTONS_Theta_cut',  "{} Photons wrt theta at sampler cutted".format(tag), nbins, 0.1, 0.5)
+    HIST_DICT['PHOTONS_E_cut']      = _rt.TH1D('PHOTONS_E_cut',      "{} Photons wrt energy at sampler cutted".format(tag), nbins, 2, 14)
+
+    HIST_DICT['PHOTONS_CUT']        = _rt.TH1D('PHOTONS_CUT', "{} Photons wrt theta at sampler cutted with enegy cut".format(tag), nbins, 0.1, 0.5)
 
     for evt in et:
         if len(sampler_data.weight) != 0:
@@ -195,6 +199,9 @@ def analysis(inputfilename, nbins=50):
                     HIST_DICT['PHOTONS_R'].Fill(R, sampler_data.weight[i])
                     HIST_DICT['PHOTONS_Theta'].Fill(theta, sampler_data.weight[i])
                     HIST_DICT['PHOTONS_E'].Fill(sampler_data.energy[i], sampler_data.weight[i])
+
+                    HIST_DICT['PHOTONS_E_Theta'].Fill(sampler_data.energy[i], theta, sampler_data.weight[i])
+
                     if R >= 0.1:
                         HIST_DICT['PHOTONS_R_cut'].Fill(R, sampler_data.weight[i])
                         HIST_DICT['PHOTONS_Theta_cut'].Fill(theta, sampler_data.weight[i])
