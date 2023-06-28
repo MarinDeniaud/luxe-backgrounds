@@ -346,8 +346,6 @@ def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=50e-3, mu=0, wireRa
     fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
     fig.tight_layout()
 
-    _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=1, capsize=3, label='data')
-
     X = _np.linspace(-0.5, 0.5, 500)
 
     if A is None:
@@ -363,6 +361,8 @@ def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=50e-3, mu=0, wireRa
     popt, pcov = curve_fit(lambda x, _A, _sigma, _mu: func_conv(x, _A, _sigma, _mu, R=wireRadius), OFFSETS, NPHOTONS, p0=[A, sigma, mu])
     _plt.plot(X, func_conv(X, A=popt[0], sigma=popt[1], mu=popt[2], R=wireRadius), '-', color="C3",
               label='conv fit (fixed R): $\sigma$ = {:1.2e} / $R$ = {:1.2e}'.format(popt[1], wireRadius))
+
+    _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=2, capsize=4, label='data')
 
     _plt.xlabel('Offset from center of pipe [mm]')
     _plt.ylabel('Number of photons')
@@ -381,14 +381,13 @@ def plot_hist(inputfilename, histname, errorbars=False, steps=True, fitFunction=
     centres = python_hist.xcentres
     contents = python_hist.contents
     errors = python_hist.errors
-    widths = python_hist.xwidths
 
     _plt.rcParams['font.size'] = 17
     fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
     fig.tight_layout()
 
     if errorbars:
-        _plt.errorbar(centres, contents, yerr=errors, xerr=widths * 0.5, ls='', marker='+', color=color, label=title)
+        _plt.errorbar(centres, contents, yerr=errors, ls='', marker='+', elinewidth=2, capsize=4, color=color, label=title)
     if steps:
         _plt.step(centres, contents, where='mid', color=color, label=title)
 
@@ -416,3 +415,103 @@ def plot_hist(inputfilename, histname, errorbars=False, steps=True, fitFunction=
 
     _plt.xlabel(histname.split('_')[1])
     _plt.ylabel(histname.split('_')[0])
+
+
+def plot_hist_2d(inputfilename, histname, nbins=50, xLogScale=False, yLogScale=False, zLogScale=False, printLegend=True):
+    f = _rt.TFile(inputfilename)
+    test_bd_load = _bd.Data.Load(inputfilename)
+    npart = test_bd_load.header.nOriginalEvents
+    root_hist = f.Get("Event/MergedHistograms/" + histname)
+    python_hist = _bd.Data.TH2(root_hist)
+
+    title = python_hist.hist.GetTitle()
+    xcentres = python_hist.xcentres
+    ycentres = python_hist.ycentres
+    contents = python_hist.contents
+
+    X = []
+    Y = []
+    W = []
+    for i in range(len(xcentres)):
+        for j in range(len(ycentres)):
+            if contents[i][j] != 0:
+                X.append(xcentres[i])
+                Y.append(ycentres[j])
+                if zLogScale:
+                    W.append(_np.log(contents[i][j]))
+                else:
+                    W.append(contents[i][j])
+
+    _plt.rcParams['font.size'] = 17
+    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
+    fig.tight_layout()
+
+    _plt.hist2d(X, Y, bins=(nbins, nbins), weights=W)
+
+    if xLogScale:
+        _plt.xscale("log")
+    if yLogScale:
+        _plt.yscale("log")
+    if printLegend:
+        cb = _plt.colorbar()
+        if zLogScale:
+            cb.set_label(r"$\log(N)$", rotation=0)
+        else:
+            cb.set_label(r"$N$", rotation=0)
+
+
+def plot_Theta_E(inputfilename, histname="PHOTONS_E_Theta", xLogScale=False, yLogScale=False, printLegend=True):
+    f = _rt.TFile(inputfilename)
+    test_bd_load = _bd.Data.Load(inputfilename)
+    npart = test_bd_load.header.nOriginalEvents
+    root_hist = f.Get("Event/MergedHistograms/" + histname)
+    python_hist = _bd.Data.TH2(root_hist)
+
+    title = python_hist.hist.GetTitle()
+    xcentres = python_hist.xcentres
+    ycentres = python_hist.ycentres
+    contents = python_hist.contents
+
+    E = ycentres
+    Theta = []
+    for j in range(len(ycentres)):
+        Theta_temp = 0
+        nb = 0
+        for i in range(len(xcentres)):
+            if contents[i][j] != 0:
+                Theta_temp += (xcentres[i]*contents[i][j])
+                nb += contents[i][j]
+        Theta.append(Theta_temp/nb)
+
+    _plt.rcParams['font.size'] = 17
+    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
+    fig.tight_layout()
+
+    _plt.step(E, Theta, where='mid', label=title)
+
+    if xLogScale:
+        _plt.xscale("log")
+    if yLogScale:
+        _plt.yscale("log")
+    if printLegend:
+        _plt.legend()
+
+
+def plot_var(tag, histname, errorbars=False, steps=True, xLogScale=False, yLogScale=False, color=None, printLegend=True):
+    BIAS, VAR, ERR = CalcAllVariance(tag, histname)
+
+    _plt.rcParams['font.size'] = 17
+    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
+    fig.tight_layout()
+
+    if errorbars:
+        _plt.errorbar(BIAS, VAR, yerr=ERR, ls='', marker='+', color=color, elinewidth=2, capsize=4, label=tag)
+    if steps:
+        _plt.step(BIAS, VAR, where='mid', color=color, label=tag)
+
+    if xLogScale:
+        _plt.xscale("log")
+    if yLogScale:
+        _plt.yscale("log")
+    if printLegend:
+        _plt.legend()
