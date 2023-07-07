@@ -1,15 +1,12 @@
 import pybdsim as _bd
-import pymad8 as _m8
 import ROOT as _rt
 import numpy as _np
 import matplotlib.pyplot as _plt
 import glob as _gl
-import pickle as _pk
 import sympy as _sp
 import jinja2 as _jj
 import subprocess as _sub
 from scipy.optimize import curve_fit
-from collections import defaultdict
 from scipy.integrate import simps
 from scipy.interpolate import interp1d
 
