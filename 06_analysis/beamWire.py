@@ -439,15 +439,17 @@ def plot_Theta_E(inputfilename, histname="PHOTONS_E_Theta", xLogScale=False, yLo
     ycentres = python_hist.ycentres
     contents = python_hist.contents
 
-    E = ycentres
+    E = xcentres
     Theta = []
-    for j in range(len(ycentres)):
+    for i in range(len(xcentres)):
         Theta_temp = 0
         nb = 0
-        for i in range(len(xcentres)):
+        for j in range(len(ycentres)):
             if contents[i][j] != 0:
-                Theta_temp += (xcentres[i]*contents[i][j])
+                Theta_temp += (ycentres[j]*contents[i][j])
                 nb += contents[i][j]
+        if nb == 0:
+            nb = 1
         Theta.append(Theta_temp/nb)
 
     _plt.rcParams['font.size'] = 17
