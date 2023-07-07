@@ -417,47 +417,17 @@ def plot_hist(inputfilename, histname, errorbars=False, steps=True, fitFunction=
     _plt.ylabel(histname.split('_')[0])
 
 
-def plot_hist_2d(inputfilename, histname, nbins=50, xLogScale=False, yLogScale=False, zLogScale=False, printLegend=True):
+def plot_hist_2d(inputfilename, histname, xLogScale=False, yLogScale=False, zLogScale=False):
     f = _rt.TFile(inputfilename)
     test_bd_load = _bd.Data.Load(inputfilename)
     npart = test_bd_load.header.nOriginalEvents
     root_hist = f.Get("Event/MergedHistograms/" + histname)
     python_hist = _bd.Data.TH2(root_hist)
 
-    title = python_hist.hist.GetTitle()
-    xcentres = python_hist.xcentres
-    ycentres = python_hist.ycentres
-    contents = python_hist.contents
-
-    X = []
-    Y = []
-    W = []
-    for i in range(len(xcentres)):
-        for j in range(len(ycentres)):
-            if contents[i][j] != 0:
-                X.append(xcentres[i])
-                Y.append(ycentres[j])
-                if zLogScale:
-                    W.append(_np.log(contents[i][j]))
-                else:
-                    W.append(contents[i][j])
-
     _plt.rcParams['font.size'] = 17
-    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
+    fig =_bd.Plot.Histogram2D(python_hist, xLogScale=xLogScale, yLogScale=yLogScale, logNorm=zLogScale,
+                              xlabel="E [Gev]", ylabel=r"$\theta$ [rad]", zlabel=r"$N_{photons}$", title=str(npart), figsize=(9, 6))
     fig.tight_layout()
-
-    _plt.hist2d(X, Y, bins=(nbins, nbins), weights=W)
-
-    if xLogScale:
-        _plt.xscale("log")
-    if yLogScale:
-        _plt.yscale("log")
-    if printLegend:
-        cb = _plt.colorbar()
-        if zLogScale:
-            cb.set_label(r"$\log(N)$", rotation=0)
-        else:
-            cb.set_label(r"$N$", rotation=0)
 
 
 def plot_Theta_E(inputfilename, histname="PHOTONS_E_Theta", xLogScale=False, yLogScale=False, printLegend=True):
