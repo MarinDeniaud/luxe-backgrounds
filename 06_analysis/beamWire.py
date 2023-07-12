@@ -89,30 +89,36 @@ def GenerateOneGmadFile(gmadfilename, templatefilename, templatefolder="../03_bd
     f.close()
 
 
-def GenerateSetGmadFiles(tag="T20_for_wire", X0=0, Xp0=0, Y0=0, Yp0=0,
+def GenerateSetGmadFiles(tag="T20_wire", X0=0, Xp0=0, Y0=0, Yp0=0,
+                         alfx=0, alfy=0, betx=0.2, bety=3, dispx=0, dispxp=0, dispy=0, dispyp=0, emitx=3.58e-11, emity=3.58e-11,
                          sigmaX=10e-6, sigmaXp=10e-6, sigmaY=10e-6, sigmaYp=10e-6, sigmaT=100e-15, sigmaE=1e-6, energy=14,
-                         wireDiameter=0.5, wireLength=0.03, material='tungsten', wireOffsetX='+0.00',
-                         T=300, density=1e-12, xsecfact='5e0', printPhysicsProcesses=0, checkOverlaps=0, line='l6, l7'):
-    extendedtag = tag+"_with_offset_"+wireOffsetX+"_bias_"+xsecfact
-    beamdict = dict(X0=X0, Xp0=Xp0, Y0=Y0, Yp0=Yp0, sigmaX=sigmaX, sigmaXp=sigmaXp, sigmaY=sigmaY, sigmaYp=sigmaYp, sigmaT=sigmaT, sigmaE=sigmaE, energy=energy)
+                         wireDiameter=0.1, wireLength=0.03, material='tungsten', wireOffsetX='+0.00',
+                         T=300, density=1e-12, xsecfact='1e0', printPhysicsProcesses=0, checkOverlaps=0, line='l0, l1, l2, l3, l4, l5, l6, l7'):
+    extendedtag = tag+"_offset_"+wireOffsetX+"_bias_"+xsecfact
+    beamdict = dict(X0=X0, Xp0=Xp0, Y0=Y0, Yp0=Yp0,
+                    alfx=alfx, alfy=alfy, betx=betx, bety=bety, dispx=dispx, dispxp=dispxp, dispy=dispy, dispyp=dispyp, emitx=emitx, emity=emity,
+                    sigmaX=sigmaX, sigmaXp=sigmaXp, sigmaY=sigmaY, sigmaYp=sigmaYp, sigmaT=sigmaT, sigmaE=sigmaE, energy=energy)
     componentdict = dict(wireDiameter=wireDiameter, wireLength=wireLength, material=material, wireOffsetX=float(wireOffsetX))
     optiondict = dict(printPhysicsProcesses=printPhysicsProcesses, checkOverlaps=checkOverlaps)
-    GenerateOneGmadFile(extendedtag+".gmad", "T20_for_wire_template.gmad", paramdict=dict(tag=extendedtag))
-    GenerateOneGmadFile(extendedtag+"_beam.gmad", "T20_for_wire_beam_template.gmad", paramdict=beamdict)
-    GenerateOneGmadFile(extendedtag+"_components.gmad", "T20_for_wire_components_template.gmad", paramdict=componentdict)
-    GenerateOneGmadFile(extendedtag+"_material.gmad", "T20_for_wire_material_template.gmad", paramdict=dict(T=T, density=density))
-    GenerateOneGmadFile(extendedtag+"_objects.gmad", "T20_for_wire_objects_template.gmad", paramdict=dict(xsecfact=float(xsecfact)))
-    GenerateOneGmadFile(extendedtag+"_options.gmad", "T20_for_wire_options_template.gmad", paramdict=optiondict)
-    GenerateOneGmadFile(extendedtag+"_sequence.gmad", "T20_for_wire_sequence_template.gmad", paramdict=dict(line=line))
+    GenerateOneGmadFile(extendedtag+".gmad", "T20_wire_template.gmad", paramdict=dict(tag=extendedtag))
+    GenerateOneGmadFile(extendedtag+"_beam.gmad", "T20_wire_template_beam.gmad", paramdict=beamdict)
+    GenerateOneGmadFile(extendedtag+"_components.gmad", "T20_wire_template_components.gmad", paramdict=componentdict)
+    GenerateOneGmadFile(extendedtag+"_material.gmad", "T20_wire_template_material.gmad", paramdict=dict(T=T, density=density))
+    GenerateOneGmadFile(extendedtag+"_objects.gmad", "T20_wire_template_objects.gmad", paramdict=dict(xsecfact=float(xsecfact)))
+    GenerateOneGmadFile(extendedtag+"_options.gmad", "T20_wire_template_options.gmad", paramdict=optiondict)
+    GenerateOneGmadFile(extendedtag+"_sequence.gmad", "T20_wire_template_sequence.gmad", paramdict=dict(line=line))
 
     return extendedtag
 
 
-def GenerateAllGmadFilesAndList(tag="T20_for_wire", valuetoscan='wireOffsetX',
-                                valuelist=['-0.50', '-0.40', '-0.30', '-0.20', '-0.10', '+0.00', '+0.10', '+0.20', '+0.30', '+0.40', '+0.50']):
+def GenerateAllGmadFilesAndList(tag="T20_wire", valuetoscan='wireOffsetX',
+                                valuelist=['-0.50', '-0.40', '-0.30', '-0.20', '-0.10', '+0.00', '+0.10', '+0.20', '+0.30', '+0.40', '+0.50'],
+                                **otherargs):
     tagfilelistwire = open("tagfilelistwire", "w")
     for val in valuelist:
         paramdict = {valuetoscan: val}
+        for arg in otherargs:
+            paramdict[arg] = otherargs[arg]
         tagfilelistwire.write(GenerateSetGmadFiles(tag=tag, **paramdict)+'\n')
 
 
