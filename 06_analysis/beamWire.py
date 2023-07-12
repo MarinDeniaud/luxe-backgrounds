@@ -138,10 +138,11 @@ def runScanOffset(tagfilelist="tagfilelistwire", npart=100, seed=None, silent=Fa
     taglist = open(tagfilelist)
     for i, tag in enumerate(taglist):
         file = "../03_bdsimModel/" + tag.replace('\n', '.gmad')
-        _printProgressBar(i, nbpts, prefix='Loading file {}. Run {} particles:'.format(file, npart), suffix='Complete', length=50)
+        _printProgressBar(i, nbpts, prefix='Run BDSIM on file {} with {} particles:'.format(file, npart), suffix='Complete', length=50)
         runOneOffset(file, npart=npart, seed=seed, silent=silent)
     taglist.close()
-    _printProgressBar(nbpts, nbpts, prefix='Loading of {} files done. Run {} particles:'.format(nbpts, npart), suffix='Complete', length=50)
+    _printProgressBar(nbpts, nbpts, prefix='Run BDSIM on file {} with {} particles:'.format(file, npart), suffix='Complete', length=50)
+    print("Succesfully run {} files with {} particles".format(nbpts, npart))
 
 
 def analysisFilelist(tagfilelistwire):
