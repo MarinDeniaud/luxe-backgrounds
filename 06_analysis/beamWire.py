@@ -91,13 +91,13 @@ def GenerateOneGmadFile(gmadfilename, templatefilename, templatefolder="../03_bd
     f.close()
 
 
-def GenerateSetGmadFiles(tag="T20_wire", X0=0, Xp0=0, Y0=0, Yp0=0,
+def GenerateSetGmadFiles(tag="T20_wire", X0=0, Xp0=0, Y0=0, Yp0=0, distrType='gausstwiss',
                          alfx=0, alfy=0, betx=0.2, bety=3, dispx=0, dispxp=0, dispy=0, dispyp=0, emitx=3.58e-11, emity=3.58e-11,
                          sigmaX=10e-6, sigmaXp=10e-6, sigmaY=10e-6, sigmaYp=10e-6, sigmaT=100e-15, sigmaE=1e-6, energy=14,
                          wireDiameter=0.1, wireLength=0.03, material='tungsten', wireOffsetX='+0.00',
                          T=300, density=1e-12, xsecfact='1e0', printPhysicsProcesses=0, checkOverlaps=0, line='l0, l1, l2, l3, l4, l5, l6, l7'):
     extendedtag = tag+"_offset_"+wireOffsetX+"_bias_"+xsecfact
-    beamdict = dict(X0=X0, Xp0=Xp0, Y0=Y0, Yp0=Yp0,
+    beamdict = dict(X0=X0, Xp0=Xp0, Y0=Y0, Yp0=Yp0, distrType=distrType,
                     alfx=alfx, alfy=alfy, betx=betx, bety=bety, dispx=dispx, dispxp=dispxp, dispy=dispy, dispyp=dispyp, emitx=emitx, emity=emity,
                     sigmaX=sigmaX, sigmaXp=sigmaXp, sigmaY=sigmaY, sigmaYp=sigmaYp, sigmaT=sigmaT, sigmaE=sigmaE, energy=energy)
     componentdict = dict(wireDiameter=wireDiameter, wireLength=wireLength, material=material, wireOffsetX=float(wireOffsetX))
@@ -357,24 +357,24 @@ def CalcAllVariance(tag, histname):
     return BIAS_sorted, VAR_sorted, ERR_sorted
 
 
-def PlotConvolutionExample():
-    _plt.rcParams['font.size'] = 17
-    fig, ax = _plt.subplots(1, 1, figsize=(9, 4))
-    fig.tight_layout()
-
-    X = _np.linspace(-0.5e-3, 0.5e-3, 500)
-    _plt.plot(X, gaus(X, a=1, sigma=87e-6, mu=0), label='beam')
-    _plt.plot(X, semicircle(X, b=1, R=250e-6), label='wire')
-    _plt.plot(X, func_conv(X, A=1, sigma=87e-6, mu=0, R=250e-6), ls='-', label='convolution')
-    _plt.legend()
-
-
-def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=50e-3, mu=0, wireRadius=250e-3, manualFit=False):
+def PlotConvolutionExample(a=1, sigma=10e-6, mu=0, b=1, R=50e-6, A=1, xlim=100e-6):
     _plt.rcParams['font.size'] = 17
     fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
     fig.tight_layout()
 
-    X = _np.linspace(-0.5, 0.5, 500)
+    X = _np.linspace(-xlim, xlim, 100)
+    _plt.plot(X, gaus(X, a=a, sigma=sigma, mu=mu), label='beam')
+    _plt.plot(X, semicircle(X, b=b, R=R), label='wire')
+    _plt.plot(X, func_conv(X, A=A, sigma=sigma, mu=mu, R=R), ls='-', label='convolution')
+    _plt.legend()
+
+
+def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=10e-6, mu=0, wireRadius=50e-6, manualFit=False):
+    _plt.rcParams['font.size'] = 17
+    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
+    fig.tight_layout()
+
+    X = _np.linspace(min(OFFSETS), max(OFFSETS), 200)
 
     if A is None:
         A = max(NPHOTONS)/3
@@ -392,8 +392,8 @@ def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=50e-3, mu=0, wireRa
 
     _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=2, capsize=4, label='data')
 
-    _plt.xlabel('Offset from center of pipe [mm]')
-    _plt.ylabel('Number of photons')
+    _plt.xlabel('Offset from center of pipe [m]')
+    _plt.ylabel(r"$N_{photons}$")
     _plt.legend(fontsize="15", loc=9)
 
 
@@ -445,7 +445,7 @@ def plot_hist(inputfilename, histname, errorbars=False, steps=True, fitFunction=
     _plt.ylabel(histname.split('_')[0])
 
 
-def plot_hist_2d(inputfilename, histname, xLogScale=False, yLogScale=False, zLogScale=False):
+def plot_hist_2d(inputfilename, histname, xLogScale=False, yLogScale=False, zLogScale=False, xlabel=None, ylabel=None, zlabel=None):
     f = _rt.TFile(inputfilename)
     test_bd_load = _bd.Data.Load(inputfilename)
     npart = test_bd_load.header.nOriginalEvents
@@ -453,8 +453,8 @@ def plot_hist_2d(inputfilename, histname, xLogScale=False, yLogScale=False, zLog
     python_hist = _bd.Data.TH2(root_hist)
 
     _plt.rcParams['font.size'] = 17
-    fig =_bd.Plot.Histogram2D(python_hist, xLogScale=xLogScale, yLogScale=yLogScale, logNorm=zLogScale,
-                              xlabel="E [Gev]", ylabel=r"$\theta$ [rad]", zlabel=r"$N_{photons}$", title=str(npart), figsize=(9, 6))
+    fig = _bd.Plot.Histogram2D(python_hist, xLogScale=xLogScale, yLogScale=yLogScale, logNorm=zLogScale,
+                               xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=str(npart), figsize=(9, 6))
     fig.tight_layout()
 
 
@@ -469,25 +469,31 @@ def plot_Theta_E(inputfilename, histname="PHOTONS_E_Theta", xLogScale=False, yLo
     xcentres = python_hist.xcentres
     ycentres = python_hist.ycentres
     contents = python_hist.contents
+    errors = python_hist.errors
 
     E = xcentres
     Theta = []
+    Errors = []
     for i in range(len(xcentres)):
         Theta_temp = 0
+        Errors_temp = 0
         nb = 0
         for j in range(len(ycentres)):
             if contents[i][j] != 0:
-                Theta_temp += (ycentres[j]*contents[i][j])
+                Theta_temp += (ycentres[j] * contents[i][j])
                 nb += contents[i][j]
+                Errors_temp += (ycentres[j] * errors[i][j])**2
         if nb == 0:
             nb = 1
         Theta.append(Theta_temp/nb)
+        Errors.append(_np.sqrt(Errors_temp)/nb)
 
     _plt.rcParams['font.size'] = 17
     fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
     fig.tight_layout()
 
-    _plt.step(E, Theta, where='mid', label=title)
+    _plt.step(E, Theta, where='mid', color="C0")
+    _plt.errorbar(E, Theta, yerr=Errors, ls='', marker='+', color="C0", elinewidth=2, capsize=4, label=title)
 
     if xLogScale:
         _plt.xscale("log")
