@@ -1,3 +1,5 @@
+import sys
+import os
 import pybdsim as _bd
 import ROOT as _rt
 import numpy as _np
@@ -142,7 +144,7 @@ def runScanOffset(tagfilelist="tagfilelistwire", npart=100, seed=None, silent=Fa
         runOneOffset(file, npart=npart, seed=seed, silent=silent)
     taglist.close()
     _printProgressBar(nbpts, nbpts, prefix='Run BDSIM on file {} with {} particles:'.format(file, npart), suffix='Complete', length=50)
-    print("Succesfully run {} files with {} particles".format(nbpts, npart))
+    print("Succesfull BDSIM run for {} files with {} particles".format(nbpts, npart))
 
 
 def analysisFilelist(tagfilelistwire):
@@ -157,8 +159,15 @@ def analysisFilelist(tagfilelistwire):
 
 def analysis(inputfilename, nbins=50):
     if type(inputfilename) == list:
-        for file in inputfilename:
+        nb_files = len(inputfilename)
+        for i, file in enumerate(inputfilename):
+            _printProgressBar(i, nb_files, prefix='Run REBDSIM analysis on file {}:'.format(file), suffix='Complete', length=50)
+            save_stdout = sys.stdout
+            sys.stdout = open(os.devnull, 'w')
             analysis(file)
+            sys.stdout = save_stdout
+        _printProgressBar(nb_files, nb_files, prefix='Run REBDSIM analysis on file {}:'.format(file), suffix='Complete', length=50)
+        print("Succesfull REBDSIM analysis for {} files".format(nb_files))
         return 0
 
     tag = inputfilename.split('/')[-1].split('.root')[0].split('part_')[-1]
@@ -286,11 +295,15 @@ def countPhotonsInHistAllFiles(tag, histname):
     OFFSETS = []
     NPHOTONS = []
     ERRORS = []
-    for file in filelist:
-        OFFSETS.append(float(file.split('_offset_')[-1].split('_')[0]))
+    nb_files = len(filelist)
+    for i, file in enumerate(filelist):
+        save_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+        OFFSETS.append(1e-3*float(file.split('_offset_')[-1].split('_')[0]))
         nphotons, error = countPhotonsInHist(file, histname)
         NPHOTONS.append(nphotons)
         ERRORS.append(error)
+        sys.stdout = save_stdout
 
     OFFSETS_sorted =    [x for x, _, _ in sorted(zip(OFFSETS, NPHOTONS, ERRORS))]
     NPHOTONS_sorted =   [y for _, y, _ in sorted(zip(OFFSETS, NPHOTONS, ERRORS))]
