@@ -13,6 +13,12 @@ from scipy.integrate import simps
 from scipy.interpolate import interp1d
 
 
+def plotOptions(figsize=[9, 6], rows_colums=[1, 1], font_size=17):
+    _plt.rcParams['font.size'] = font_size
+    fig, ax = _plt.subplots(rows_colums[0], rows_colums[1], figsize=(figsize[0], figsize[1]))
+    fig.tight_layout()
+
+
 def _printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
     """
     Call in a loop to create terminal progress bar
@@ -396,10 +402,8 @@ def CalcAllVariance(tag, histname):
     return BIAS_sorted, VAR_sorted, ERR_sorted
 
 
-def PlotConvolutionExample(a=1, sigma=10e-6, mu=0, b=1, R=50e-6, A=1, xlim=100e-6):
-    _plt.rcParams['font.size'] = 17
-    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
-    fig.tight_layout()
+def PlotConvolutionExampleWire(a=1, sigma=10e-6, mu=0, b=1, R=50e-6, A=1, xlim=100e-6):
+    plotOptions()
 
     X = _np.linspace(-xlim, xlim, 100)
     _plt.plot(X, gauss(X, a=a, sigma=sigma, mu=mu), label='beam')
@@ -409,9 +413,7 @@ def PlotConvolutionExample(a=1, sigma=10e-6, mu=0, b=1, R=50e-6, A=1, xlim=100e-
 
 
 def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=10e-6, mu=0, wireRadius=50e-6, manualFit=False):
-    _plt.rcParams['font.size'] = 17
-    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
-    fig.tight_layout()
+    plotOptions()
 
     X = _np.linspace(min(OFFSETS), max(OFFSETS), 200)
 
@@ -449,9 +451,7 @@ def plot_hist(inputfilename, histname, errorbars=False, steps=True, fitFunction=
     contents = python_hist.contents
     errors = python_hist.errors
 
-    _plt.rcParams['font.size'] = 17
-    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
-    fig.tight_layout()
+    plotOptions()
 
     if errorbars:
         _plt.errorbar(centres, contents, yerr=errors, ls='', marker='+', elinewidth=2, capsize=4, color=color, label=title)
@@ -527,9 +527,7 @@ def plot_Theta_E(inputfilename, histname="PHOTONS_E_Theta", xLogScale=False, yLo
         Theta.append(Theta_temp/nb)
         Errors.append(_np.sqrt(Errors_temp)/nb)
 
-    _plt.rcParams['font.size'] = 17
-    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
-    fig.tight_layout()
+    plotOptions()
 
     _plt.step(E, Theta, where='mid', color="C0")
     _plt.errorbar(E, Theta, yerr=Errors, ls='', marker='+', color="C0", elinewidth=2, capsize=4, label=title)
@@ -545,9 +543,7 @@ def plot_Theta_E(inputfilename, histname="PHOTONS_E_Theta", xLogScale=False, yLo
 def plot_var(tag, histname, errorbars=False, steps=True, xLogScale=False, yLogScale=False, color=None, printLegend=True):
     BIAS, VAR, ERR = CalcAllVariance(tag, histname)
 
-    _plt.rcParams['font.size'] = 17
-    fig, ax = _plt.subplots(1, 1, figsize=(9, 6))
-    fig.tight_layout()
+    plotOptions()
 
     if errorbars:
         _plt.errorbar(BIAS, VAR, yerr=ERR, ls='', marker='+', color=color, elinewidth=2, capsize=4, label=tag)
