@@ -78,7 +78,7 @@ def linear(x, a, b):
     return a * x + b
 
 
-def gaus(x, a, sigma, mu):
+def gauss(x, a, sigma, mu):
     return a / (_np.sqrt(2 * _np.pi) * sigma) * _np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
 
 
@@ -88,8 +88,8 @@ def semicircle(x, b, R):
     return circ
 
 
-def func_conv(X, A=1, sigma=3e-5, mu=0, R=1e-4):
-    y_gaus = gaus(X, 1, sigma, mu)
+def func_conv_wire(X, A=1, sigma=10e-6, mu=0, R=50e-6):
+    y_gaus = gauss(X, 1, sigma, mu)
     y_circ = semicircle(X, 1, R)
 
     conv = _np.convolve(y_gaus, y_circ, "same")
@@ -133,18 +133,19 @@ def GenerateSetGmadFiles(tag="T20_wire", X0=0, Xp0=0, Y0=0, Yp0=0, distrType='ga
                          wireDiameter=0.1, wireLength=0.03, material='tungsten', wireOffsetX='+0.00',
                          T=300, density=1e-12, xsecfact='1e0', printPhysicsProcesses=0, checkOverlaps=0, line='l0, l1, l2, l3, l4, l5, l6, l7'):
     extendedtag = tag+"_offset_"+wireOffsetX+"_bias_"+xsecfact
+    template_tag = "T20_wire_template"
     beamdict = dict(X0=X0, Xp0=Xp0, Y0=Y0, Yp0=Yp0, distrType=distrType,
                     alfx=alfx, alfy=alfy, betx=betx, bety=bety, dispx=dispx, dispxp=dispxp, dispy=dispy, dispyp=dispyp, emitx=emitx, emity=emity,
                     sigmaX=sigmaX, sigmaXp=sigmaXp, sigmaY=sigmaY, sigmaYp=sigmaYp, sigmaT=sigmaT, sigmaE=sigmaE, energy=energy)
     componentdict = dict(wireDiameter=wireDiameter, wireLength=wireLength, material=material, wireOffsetX=float(wireOffsetX))
     optiondict = dict(printPhysicsProcesses=printPhysicsProcesses, checkOverlaps=checkOverlaps)
-    GenerateOneGmadFile(extendedtag+".gmad", "T20_wire_template.gmad", paramdict=dict(tag=extendedtag))
-    GenerateOneGmadFile(extendedtag+"_beam.gmad", "T20_wire_template_beam.gmad", paramdict=beamdict)
-    GenerateOneGmadFile(extendedtag+"_components.gmad", "T20_wire_template_components.gmad", paramdict=componentdict)
-    GenerateOneGmadFile(extendedtag+"_material.gmad", "T20_wire_template_material.gmad", paramdict=dict(T=T, density=density))
-    GenerateOneGmadFile(extendedtag+"_objects.gmad", "T20_wire_template_objects.gmad", paramdict=dict(xsecfact=float(xsecfact)))
-    GenerateOneGmadFile(extendedtag+"_options.gmad", "T20_wire_template_options.gmad", paramdict=optiondict)
-    GenerateOneGmadFile(extendedtag+"_sequence.gmad", "T20_wire_template_sequence.gmad", paramdict=dict(line=line))
+    GenerateOneGmadFile(extendedtag+".gmad",            template_tag+".gmad",               paramdict=dict(tag=extendedtag))
+    GenerateOneGmadFile(extendedtag+"_beam.gmad",       template_tag+"_beam.gmad",          paramdict=beamdict)
+    GenerateOneGmadFile(extendedtag+"_components.gmad", template_tag+"_components.gmad",    paramdict=componentdict)
+    GenerateOneGmadFile(extendedtag+"_material.gmad",   template_tag+"_material.gmad",      paramdict=dict(T=T, density=density))
+    GenerateOneGmadFile(extendedtag+"_objects.gmad",    template_tag+"_objects.gmad",       paramdict=dict(xsecfact=float(xsecfact)))
+    GenerateOneGmadFile(extendedtag+"_options.gmad",    template_tag+"_options.gmad",       paramdict=optiondict)
+    GenerateOneGmadFile(extendedtag+"_sequence.gmad",   template_tag+"_sequence.gmad",      paramdict=dict(line=line))
 
     return extendedtag
 
@@ -152,12 +153,14 @@ def GenerateSetGmadFiles(tag="T20_wire", X0=0, Xp0=0, Y0=0, Yp0=0, distrType='ga
 def GenerateAllGmadFilesAndList(tag="T20_wire", valuetoscan='wireOffsetX',
                                 valuelist=['-0.50', '-0.40', '-0.30', '-0.20', '-0.10', '+0.00', '+0.10', '+0.20', '+0.30', '+0.40', '+0.50'],
                                 **otherargs):
-    tagfilelistwire = open("tagfilelistwire", "w")
+    tagfilelist = open("tagfilelistwire", "w")
+
     for val in valuelist:
         paramdict = {valuetoscan: val}
         for arg in otherargs:
             paramdict[arg] = otherargs[arg]
-        tagfilelistwire.write(GenerateSetGmadFiles(tag=tag, **paramdict)+'\n')
+        tagfilelist.write(GenerateSetGmadFiles(tag=tag, **paramdict)+'\n')
+    tagfilelist.close()
 
 
 def runOneOffset(inputfilename, outputfilename=None, npart=100, seed=None, silent=False):
@@ -183,8 +186,8 @@ def runScanOffset(tagfilelist="tagfilelistwire", npart=100, seed=None, silent=Fa
     print("Succesfull BDSIM run for {} files with {} particles".format(nbpts, npart))
 
 
-def analysisFilelist(tagfilelistwire):
-    taglist = open(tagfilelistwire)
+def analysisFilelist(tagfilelist):
+    taglist = open(tagfilelist)
     for tag in taglist:
         analysis(_gl.glob('../04_dataLocal/*'+tag.replace('\n', '')+'*.root')[0])
         farmfilelist = _gl.glob('../05_dataFarm/*'+tag.replace('\n', '')+'*.root')
@@ -193,7 +196,7 @@ def analysisFilelist(tagfilelistwire):
     taglist.close()
 
 
-def analysis(inputfilename, nbins=50):
+def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH = 2e9):
     if type(inputfilename) == list:
         nb_files = len(inputfilename)
         for i, file in enumerate(inputfilename):
@@ -280,7 +283,7 @@ def analysis(inputfilename, nbins=50):
 
 
 def combineHistFiles(tag):
-    globstring = "../06_analysis/*" + tag + "*T20_for_wire_hist.root"
+    globstring = "../06_analysis/*" + tag + "*_hist.root"
     filelist = _gl.glob(globstring)
     if not filelist:
         raise FileNotFoundError("Glob did not find any files")
@@ -297,7 +300,7 @@ def combineAllHistFiles(tagfilelist):
         combineHistFiles(tag)
 
 
-def countPhotons(inputfilename):
+def countPhotons(inputfilename, ELECTRONS_PER_BUNCH = 2e9):
     data = _bd.Data.Load(inputfilename)
     e = data.GetEvent()
     et = data.GetEventTree()
@@ -355,7 +358,7 @@ def countPhotonsInHistAllFiles(tag, histname):
     OFFSETS_sorted =    [x for x, _, _ in sorted(zip(OFFSETS, NPHOTONS, ERRORS))]
     NPHOTONS_sorted =   [y for _, y, _ in sorted(zip(OFFSETS, NPHOTONS, ERRORS))]
     ERRORS_sorted =     [z for _, _, z in sorted(zip(OFFSETS, NPHOTONS, ERRORS))]
-    return OFFSETS_sorted, NPHOTONS_sorted, ERRORS_sorted
+    return _np.array(OFFSETS_sorted), _np.array(NPHOTONS_sorted), _np.array(ERRORS_sorted)
 
 
 def CalcVariance(inputfilename, histname):
@@ -399,9 +402,9 @@ def PlotConvolutionExample(a=1, sigma=10e-6, mu=0, b=1, R=50e-6, A=1, xlim=100e-
     fig.tight_layout()
 
     X = _np.linspace(-xlim, xlim, 100)
-    _plt.plot(X, gaus(X, a=a, sigma=sigma, mu=mu), label='beam')
+    _plt.plot(X, gauss(X, a=a, sigma=sigma, mu=mu), label='beam')
     _plt.plot(X, semicircle(X, b=b, R=R), label='wire')
-    _plt.plot(X, func_conv(X, A=A, sigma=sigma, mu=mu, R=R), ls='-', label='convolution')
+    _plt.plot(X, func_conv_wire(X, A=A, sigma=sigma, mu=mu, R=R), ls='-', label='convolution')
     _plt.legend()
 
 
@@ -415,15 +418,15 @@ def PlotConvolution(OFFSETS, NPHOTONS, ERRORS, A=None, sigma=10e-6, mu=0, wireRa
     if A is None:
         A = max(NPHOTONS)/3
     if manualFit:
-        _plt.plot(X, func_conv(X, A=A, sigma=sigma, mu=mu, R=wireRadius), '-', color="C0",
+        _plt.plot(X, func_conv_wire(X, A=A, sigma=sigma, mu=mu, R=wireRadius), '-', color="C0",
                   label='conv manual: $\sigma$ = {:1.2e} / $R$ = {:1.2e}'.format(sigma, wireRadius))
 
-    popt, pcov = curve_fit(func_conv, OFFSETS, NPHOTONS, p0=[A, sigma, mu, wireRadius])
-    _plt.plot(X, func_conv(X, A=popt[0], sigma=popt[1], mu=popt[2], R=popt[3]), '-', color="C2",
+    popt, pcov = curve_fit(func_conv_wire, OFFSETS, NPHOTONS, p0=[A, sigma, mu, wireRadius])
+    _plt.plot(X, func_conv_wire(X, A=popt[0], sigma=popt[1], mu=popt[2], R=popt[3]), '-', color="C2",
               label='conv fit : $\sigma$ = {:1.2e} / $R$ = {:1.2e}'.format(popt[1], popt[3]))
 
-    popt, pcov = curve_fit(lambda x, _A, _sigma, _mu: func_conv(x, _A, _sigma, _mu, R=wireRadius), OFFSETS, NPHOTONS, p0=[A, sigma, mu])
-    _plt.plot(X, func_conv(X, A=popt[0], sigma=popt[1], mu=popt[2], R=wireRadius), '-', color="C3",
+    popt, pcov = curve_fit(lambda x, _A, _sigma, _mu: func_conv_wire(x, _A, _sigma, _mu, R=wireRadius), OFFSETS, NPHOTONS, p0=[A, sigma, mu])
+    _plt.plot(X, func_conv_wire(X, A=popt[0], sigma=popt[1], mu=popt[2], R=wireRadius), '-', color="C3",
               label='conv fit (fixed R): $\sigma$ = {:1.2e} / $R$ = {:1.2e}'.format(popt[1], wireRadius))
 
     _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=2, capsize=4, label='data')
