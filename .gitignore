@@ -50,3 +50,5 @@ Thumbs.db
 
 *.root
 *.eps
+/06_analysis/.ipynb_checkpoints/
+/06_analysis/plots/
