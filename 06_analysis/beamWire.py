@@ -35,7 +35,43 @@ def _printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length
         print()
 
 
-ELECTRONS_PER_BUNCH = 2e9
+def GenerateLinearListValuesStr(minValue=-0.1, maxValue=0.1, nbpts=11, nbDecimals=1, exponant=None):
+    floatlist = _np.linspace(minValue, maxValue, nbpts)
+    strlist = []
+    for elem in floatlist:
+        elem = round(elem, nbDecimals)
+        strlist.append(FormatStrExponant(FormatStrDecimals(FormatStrSign(str(elem)), nbDecimals), exponant))
+    return strlist
+
+
+def FormatStrSign(string):
+    if float(string) >= 0:
+        return '+' + string
+    return string
+
+
+def FormatStrDecimals(string, nbDecimals=2):
+    integer, decimals = string.split('.')
+    if len(decimals) < nbDecimals:
+        return string + '0' * (nbDecimals - len(decimals))
+    return integer + '.' + decimals[:nbDecimals]
+
+
+def FormatStrExponant(string, exponant=None):
+    if exponant is not None:
+        return string + 'e' + str(exponant)
+    return string
+
+
+def GenerateLogListValuesStr(minExponant=0, maxExponant=5, nbpts=6, nbDecimals=1, negative=False):
+    floatlist = _np.logspace(minExponant, maxExponant, nbpts)
+    strlist = []
+    if negative:
+        floatlist = _np.negative(floatlist)
+    for elem in floatlist:
+        strformat = '{:1.' + str(nbDecimals) + 'e}'
+        strlist.append(FormatStrSign(strformat.format(elem)))
+    return strlist
 
 
 def linear(x, a, b):
