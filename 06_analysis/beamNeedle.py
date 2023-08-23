@@ -200,17 +200,19 @@ def GenerateSetGmadFiles(tag="T20_needle", X0=0, Xp0=0, Y0=0, Yp0=0, distrType='
     return extendedtag
 
 
-def GenerateAllGmadFilesAndList(tag="T20_wire", valuetoscan='wireOffsetX',
+def GenerateAllGmadFilesAndList(tag="T20_wire", tagfilename='tagfilelistneedle', valuetoscan='wireOffsetX',
                                 valuelist=['-0.50', '-0.40', '-0.30', '-0.20', '-0.10', '+0.00', '+0.10', '+0.20', '+0.30', '+0.40', '+0.50'],
                                 **otherargs):
-    tagfilelist = open("tagfilelistneedle", "w")
+    taglist = open(tagfilename, "w")
 
     for val in valuelist:
         paramdict = {valuetoscan: val}
         for arg in otherargs:
             paramdict[arg] = otherargs[arg]
-        tagfilelist.write(GenerateSetGmadFiles(tag=tag, **paramdict)+'\n')
-    tagfilelist.close()
+        taglist.write(GenerateSetGmadFiles(tag=tag, **paramdict)+'\n')
+    taglist.close()
+
+    print("File names written in {}".format(tagfilename))
 
 
 def runOneOffset(inputfilename, outputfilename=None, npart=100, seed=None, silent=False):
@@ -222,11 +224,11 @@ def runOneOffset(inputfilename, outputfilename=None, npart=100, seed=None, silen
         _bd.Run.Bdsim(inputfilename, outputfilename, ngenerate=npart, silent=silent)
 
 
-def runScanOffset(tagfilelist="tagfilelistneedle", npart=100, seed=None, silent=False):
-    taglist = open(tagfilelist)
+def runScanOffset(tagfilename="tagfilelistneedle", npart=100, seed=None, silent=False):
+    taglist = open(tagfilename)
     nbpts = len(taglist.readlines())
     taglist.close()
-    taglist = open(tagfilelist)
+    taglist = open(tagfilename)
     for i, tag in enumerate(taglist):
         file = "../03_bdsimModel/" + tag.replace('\n', '.gmad')
         _printProgressBar(i, nbpts, prefix='Run BDSIM on file {} with {} particles:'.format(file, npart), suffix='Complete', length=50)
@@ -484,7 +486,9 @@ def PlotIntegralNeedle(filename, histname, coord, a=None, sigmax=10e-6, sigmay=1
 
     if linFit:
         popt, pcov = curve_fit(linear, OFFSETS_fit, NPHOTONS_fit, p0=[a, b])
-        _plt.plot(MU, linear(MU, a=popt[0], b=popt[1]), '-', color="C3", label=r'fit (linear): a={:1.2e}/b={:1.2e}'.format(popt[0], popt[1]))
+        chi2 = sum((NPHOTONS_fit - a * OFFSETS_fit - b) ** 2/(a * OFFSETS_fit + b))
+        _plt.plot(MU, linear(MU, a=popt[0], b=popt[1]), '-', color="C3",
+                  label=r'fit (linear): a={:1.2e}/b={:1.2e}/$\chi^2$={:1.2e}'.format(popt[0], popt[1], chi2))
 
     if manualFit:
         _plt.plot(MU, integral_function(MU, a=a, sigmax=sigmax, sigmay=sigmay, mux=MU, muy=muy, b=b, length=length, R1=R1, R2=R2), '-', color="C0",
