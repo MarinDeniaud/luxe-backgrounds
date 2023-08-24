@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+	<define>
+		<constant name="world_size" value="0.015"/>
+		<constant name="wx" value="world_size"/>
+		<constant name="wy" value="world_size"/>
+		<constant name="wz" value="world_size"/>
+	</define>
+	<materials/>
+	<solids>
+		<box name="world_solid" x="(wx) * (2.000000000000000)" y="(wy) * (2.000000000000000)" z="(wz) * (2.000000000000000)" lunit="m"/>
+		<cone name="needle_solid" rmin1="0" rmax1="0.000125" rmin2="0" rmax2="7e-06" z="0.0025" startphi="0" deltaphi="6.283185307179586" lunit="m" aunit="rad"/>
+	</solids>
+	<structure>
+		<volume name="needle_logical">
+			<materialref ref="G4_W"/>
+			<solidref ref="needle_solid"/>
+		</volume>
+		<volume name="world_logical">
+			<materialref ref="G4_Galactic"/>
+			<solidref ref="world_solid"/>
+			<physvol name="needle_physical_1">
+				<volumeref ref="needle_logical"/>
+				<rotation name="needle_physical_1_rot" x="-1.570796326794897" y="0.000000000000000" z="0.000000000000000" unit="rad"/>
+			</physvol>
+		</volume>
+	</structure>
+	<setup name="Default" version="1.0">
+		<world ref="world_logical"/>
+	</setup>
+</gdml>
