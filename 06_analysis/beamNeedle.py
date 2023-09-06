@@ -288,11 +288,11 @@ def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
 
     HIST_DICT['PHOTONS_R_ring']      = _rt.TH1D('PHOTONS_R_ring',      "{} Photons wrt R at ring".format(tag), nbins, 0.1, 0.5)
     HIST_DICT['PHOTONS_Theta_ring']  = _rt.TH1D('PHOTONS_Theta_ring',  "{} Photons wrt theta at ring".format(tag), nbins, 0.1, 0.5)
-    HIST_DICT['PHOTONS_E_ring']      = _rt.TH1D('PHOTONS_E_ring',      "{} Photons wrt energy at ring".format(tag), nbins, 0, 14)
+    HIST_DICT['PHOTONS_E_ring']      = _rt.TH1D('PHOTONS_E_ring',      "{} Photons wrt energy at ring".format(tag), nbins, 0, 2)
 
     HIST_DICT['PHOTONS_X_det'] = _rt.TH1D('PHOTONS_X_det', "{} Photons wrt R at detector".format(tag), nbins, 0.1, 0.11)
     HIST_DICT['PHOTONS_Y_det'] = _rt.TH1D('PHOTONS_Y_det', "{} Photons wrt theta at detector".format(tag), nbins, -0.01, 0.01)
-    HIST_DICT['PHOTONS_E_det'] = _rt.TH1D('PHOTONS_E_det', "{} Photons wrt energy at detector".format(tag), nbins, 0, 14)
+    HIST_DICT['PHOTONS_E_det'] = _rt.TH1D('PHOTONS_E_det', "{} Photons wrt energy at detector".format(tag), nbins, 0, 2)
 
     for evt in et:
         if len(sampler_data.weight) != 0:
