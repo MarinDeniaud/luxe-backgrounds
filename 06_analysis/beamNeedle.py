@@ -200,7 +200,7 @@ def GenerateSetGmadFiles(tag="T20_needle", X0=0, Xp0=0, Y0=0, Yp0=0, distrType='
     return extendedtag
 
 
-def GenerateAllGmadFilesAndList(tag="T20_wire", tagfilename='tagfilelistneedle', valuetoscan='wireOffsetX',
+def GenerateAllGmadFilesAndList(tag="T20_needle", tagfilename='tagfilelistneedle', valuetoscan='needleOffsetX',
                                 valuelist=['-0.50', '-0.40', '-0.30', '-0.20', '-0.10', '+0.00', '+0.10', '+0.20', '+0.30', '+0.40', '+0.50'],
                                 **otherargs):
     taglist = open(tagfilename, "w")
@@ -248,7 +248,7 @@ def analysisFilelist(tagfilelist):
     taglist.close()
 
 
-def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH = 2e9):
+def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
     if type(inputfilename) == list:
         nb_files = len(inputfilename)
         for i, file in enumerate(inputfilename):
@@ -506,7 +506,7 @@ def PlotIntegralNeedle(filename, histname, coord, a=None, sigmax=10e-6, sigmay=1
         _plt.plot(MU, integral_function(MU, a=popt[0], sigmax=popt[1], sigmay=popt[2], muy=popt[3],b=popt[4], length=length, R1=R1, R2=R2),
                   '-', color="C3", label=r'fit (fixed needle): $\sigma_x$={:1.2e}/$\sigma_y$={:1.2e}'.format(popt[1], popt[2]))
 
-    _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=2, capsize=4, label='data')
+    _plt.errorbar(OFFSETS, NPHOTONS, yerr=ERRORS, fmt="k", elinewidth=2, capsize=4, ls='', label='data')
 
     _plt.xlabel('Offset from center of pipe [m]')
     _plt.ylabel(r"$N_{photons}$")
