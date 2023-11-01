@@ -248,7 +248,7 @@ def analysisFilelist(tagfilelist):
     taglist.close()
 
 
-def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
+def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9, sampler="DRIFT."):
     if type(inputfilename) == list:
         nb_files = len(inputfilename)
         for i, file in enumerate(inputfilename):
@@ -267,7 +267,7 @@ def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
     e = data.GetEvent()
     et = data.GetEventTree()
     npart = et.GetEntries()
-    sampler_data = e.GetSampler("DRIFT.")
+    sampler_data = e.GetSampler(sampler)
 
     print("File :", inputfilename, " / Nb of entries = ", et.GetEntries())
 
