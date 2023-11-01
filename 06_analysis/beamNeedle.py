@@ -365,32 +365,32 @@ def combineAllHistFiles(tagfilelist):
         combineHistFiles(tag)
 
 
-def countPhotons(inputfilename, ELECTRONS_PER_BUNCH = 2e9):
-    data = _bd.Data.Load(inputfilename)
-    e = data.GetEvent()
-    et = data.GetEventTree()
-    npart = et.GetEntries()
-    sampler_data = e.GetSampler("DRIFT.")
+#def countPhotons(inputfilename, ELECTRONS_PER_BUNCH = 2e9):
+#    data = _bd.Data.Load(inputfilename)
+#    e = data.GetEvent()
+#    et = data.GetEventTree()
+#    npart = et.GetEntries()
+#    sampler_data = e.GetSampler("DRIFT.")
+#
+#    nbphotons = 0
+#    for evt in et:
+#        for i, partID in enumerate(sampler_data.partID):
+#            if partID == 22:
+#                nbphotons += sampler_data.weight[i]
+#    return nbphotons * (ELECTRONS_PER_BUNCH/npart)
 
-    nbphotons = 0
-    for evt in et:
-        for i, partID in enumerate(sampler_data.partID):
-            if partID == 22:
-                nbphotons += sampler_data.weight[i]
-    return nbphotons * (ELECTRONS_PER_BUNCH/npart)
 
-
-def countPhotonsAllFiles(tag):
-    filelist = _gl.glob('../04_dataLocal/*' + tag + '*.root')
-    OFFSETS = []
-    NPHOTONS = []
-    for file in filelist:
-        OFFSETS.append(float(file.replace('.root', '').replace('../04_dataLocal/{}_'.format(tag), '')))
-        NPHOTONS.append(countPhotons(file))
-
-    OFFSETS_sorted = [x for x, _ in sorted(zip(OFFSETS, NPHOTONS))]
-    NPHOTONS_sorted = [y for _, y in sorted(zip(OFFSETS, NPHOTONS))]
-    return OFFSETS_sorted, NPHOTONS_sorted
+#def countPhotonsAllFiles(tag):
+#    filelist = _gl.glob('../04_dataLocal/*' + tag + '*.root')
+#    OFFSETS = []
+#    NPHOTONS = []
+#    for file in filelist:
+#        OFFSETS.append(float(file.replace('.root', '').replace('../04_dataLocal/{}_'.format(tag), '')))
+#        NPHOTONS.append(countPhotons(file))
+#
+#    OFFSETS_sorted = [x for x, _ in sorted(zip(OFFSETS, NPHOTONS))]
+#    NPHOTONS_sorted = [y for _, y in sorted(zip(OFFSETS, NPHOTONS))]
+#    return OFFSETS_sorted, NPHOTONS_sorted
 
 
 def countPhotonsInHist(inputfilename, histname):
