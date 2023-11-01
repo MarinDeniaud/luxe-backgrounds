@@ -290,9 +290,14 @@ def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9, sampler="DRIFT.")
     HIST_DICT['PHOTONS_Theta_ring']  = _rt.TH1D('PHOTONS_Theta_ring',  "{} Photons wrt theta at ring".format(tag), nbins, 0.1, 0.5)
     HIST_DICT['PHOTONS_E_ring']      = _rt.TH1D('PHOTONS_E_ring',      "{} Photons wrt energy at ring".format(tag), nbins, 0, 2)
 
-    HIST_DICT['PHOTONS_X_det'] = _rt.TH1D('PHOTONS_X_det', "{} Photons wrt R at detector".format(tag), nbins, 0.1, 0.11)
-    HIST_DICT['PHOTONS_Y_det'] = _rt.TH1D('PHOTONS_Y_det', "{} Photons wrt theta at detector".format(tag), nbins, -0.01, 0.01)
+    HIST_DICT['PHOTONS_X_det'] = _rt.TH1D('PHOTONS_X_det', "{} Photons wrt R at detector".format(tag), nbins, 0.1, 0.6)
+    HIST_DICT['PHOTONS_Y_det'] = _rt.TH1D('PHOTONS_Y_det', "{} Photons wrt theta at detector".format(tag), nbins, -0.25, 0.25)
     HIST_DICT['PHOTONS_E_det'] = _rt.TH1D('PHOTONS_E_det', "{} Photons wrt energy at detector".format(tag), nbins, 0, 2)
+
+    HIST_DICT['ELECTRONS_X_det'] = _rt.TH1D('ELECTRONS_X_det', "{} Electrons wrt R at detector".format(tag), nbins, 0.1, 0.6)
+    HIST_DICT['ELECTRONS_Y_det'] = _rt.TH1D('ELECTRONS_Y_det', "{} Electrons wrt theta at detector".format(tag), nbins, -0.25, 0.25)
+    HIST_DICT['ELECTRONS_E_det'] = _rt.TH1D('ELECTRONS_E_det', "{} Electrons wrt energy at detector".format(tag), nbins, 0, 14)
+    HIST_DICT['ELECTRONS_X_Y_det'] = _rt.TH2D('ELECTRONS_X_Y_det', "{} Electrons X-Y at detector".format(tag), nbins, 0.1, 0.6, nbins, -0.25, 0.25)
 
     for evt in et:
         if len(sampler_data.weight) != 0:
@@ -321,10 +326,17 @@ def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9, sampler="DRIFT.")
                         HIST_DICT['PHOTONS_R_ring'].Fill(R, W)
                         HIST_DICT['PHOTONS_Theta_ring'].Fill(theta, W)
                         HIST_DICT['PHOTONS_E_ring'].Fill(E, W)
-                    if 0.1 <= X <= 0.11 and -0.01 <= Y <= 0.01:
+                    if 0.1 <= X <= 0.6 and -0.25 <= Y <= 0.25:
                         HIST_DICT['PHOTONS_X_det'].Fill(X, W)
                         HIST_DICT['PHOTONS_Y_det'].Fill(Y, W)
                         HIST_DICT['PHOTONS_E_det'].Fill(E, W)
+
+                if partID == 11:
+                    if 0.1 <= X <= 0.6 and -0.25 <= Y <= 0.25:
+                        HIST_DICT['ELECTRONS_X_det'].Fill(X, W)
+                        HIST_DICT['ELECTRONS_Y_det'].Fill(Y, W)
+                        HIST_DICT['ELECTRONS_E_det'].Fill(E, W)
+                        HIST_DICT['ELECTRONS_X_Y_det'].Fill(X, Y, W)
 
     for hist in HIST_DICT:
         HIST_DICT[hist].Scale(ELECTRONS_PER_BUNCH/npart)
