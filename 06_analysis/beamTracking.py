@@ -143,16 +143,18 @@ def PlotSVDCoeff(Track, ref_S, ref_coord='X', BPM_list=None, BPM_list_type='pos'
         _plt.legend()
 
 
-def PlotResolution(Track, ref_coord, ref_S, S_dict, noise=10e-6, bins=50, bdsimCompare=False):
+def PlotResolution(Track, ref_coord, ref_S, S_dict, noise=10e-6, bins=50, bdsimCompare=False, color=None):
     unit = _m8.Sim.CheckUnits(ref_coord)
+    if color is None:
+        color = getColor(ref_coord)
 
     Res = Track.pymad8.CalcResolution(ref_coord, ref_S, S_dict[ref_coord], noise=noise)
-    _plt.hist(Res, bins=bins, histtype='step', color=getColor(ref_coord),
+    _plt.hist(Res, bins=bins, histtype='step', color=color,
               label='$R_{{{c}}}$ = {:1.3f} $\\mu${} from Mad8'.format(_np.std(Res)*1e6, unit, c=getLabelCoord(ref_coord)))
 
     if bdsimCompare:
         Res_bdsim = Track.bdsim.CalcResolution(ref_coord, ref_S, S_dict[ref_coord], noise=noise)
-        _plt.hist(Res_bdsim, bins=bins, histtype='step', ls='--', color=getColor(ref_coord),
+        _plt.hist(Res_bdsim, bins=bins, histtype='step', ls='--', color=color,
                   label='$R_{{{c}}}$ = {:1.3f} $\\mu${} from BDSIM'.format(_np.std(Res_bdsim)*1e6, unit, c=getLabelCoord(ref_coord)))
 
     _plt.xlabel('${}_{{{m}}}-{}_{{{t}}}$ [{}]'.format(getLabelCoord(ref_coord), getLabelCoord(ref_coord), unit, m='IP,meas', t='IP,track'))
