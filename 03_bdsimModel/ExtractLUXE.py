@@ -2,88 +2,103 @@ import pyg4ometry as _pyg4
 import numpy as _np
 
 
-def ViewAllLUXE(filename):
+def ViewGDML(filename, axis=True):
     reader = _pyg4.gdml.Reader(filename)
 
     reg = reader.getRegistry()
-    wl = reg.getWorldVolume()
+    world_logical = reg.getWorldVolume()
 
     v = _pyg4.visualisation.VtkViewerNew()
-    v.addLogicalVolume(wl)
+    v.addLogicalVolume(world_logical)
     v.buildPipelinesAppend()
+    if axis:
+        v.addAxes(1000)
     v.view()
 
+    return world_logical
 
-def GetDump(filename):
+
+def PrintDump(filename):
     reader = _pyg4.gdml.Reader(filename)
     reg = reader.getRegistry()
     wl = reg.getWorldVolume()
     wl.dumpStructure()
 
 
-ICSChamberList = ['GammaTargetChamber0x34893c0', 'GammaTargetContainer0x34897d0']
-FirstMagnetList = ['Imprint_1_0x34a4f00']
+ICSChamberList = ['BremsTargetChamber0x349eee0', 'BeamPipeTM0x349ff60']
+FirstMagnetList = ['Imprint_1_0x34a4f00', 'DMBPipe0x34a1570']
 FirstDumpList = ['BeamDumpAssembly0x3498760', 'Shielding0x3499570', 'BeamPipeNextToDump0x3498940', 'BeamSplitContainer0x349bc40',
                  'ShieldingPipe0x349a370', 'BeamPipeMB0x349bf20', 'BeamPipeMD0x349c4a0', 'ShieldAbsorberTop0x349a230']
 IPChamberList = ['BeamPipeSIP0x34ade90', 'BeamPipeSIPVac0x34ae330', 'BeamPipeIPM0x34ae670', 'BeamPipeIPMVac0x34ae930',
                  'logicTAUICContainer_pv0x3495c90', 'logicTAUIChamberBPipe_pv0x3495da8', 'logicTAUIChamberBPipeOut_pv0x3495d38',
-                 'logicTAUICTop_pv0x3495cc8', 'logicTAUICBottom_pv0x3495d00']
-IPChamberList2 = ['BeamPipeSIP0x34ade90', 'BeamPipeIPM0x34ae670', 'Imprint_1_0x348f4a0']
-SecondMagnetList = ['Imprint_1_0x34b3ba0']
+                 'logicTAUICBottom_pv0x3495d00']# , 'logicTAUICTop_pv0x3495cc8']
+IPChamberWithLegsList = ['BeamPipeSIP0x34ade90', 'BeamPipeIPM0x34ae670', 'Imprint_1_0x348f4a0']
+SecondMagnetList = ['Imprint_1_0x34b3ba0', 'IPMBPipeContainer0x34afef0']
 ExtractionList = ['logicVCContainer_pv0x34a3af0', 'logicVCContainer_pv0x34a3b28',
                   'logicVCMagFieldJoin_pv0x34a3bd0', 'logicVCMagFieldJoin1_pv0x34a3c08']
 ExtractionList2 = ['Imprint_1_0x34ad3c0']
 ScintillatorList = ['scintArmPhysical0x3520d90']
 ScintillatorList2 = ['HICSElectronScintillator0x3523710']
+DetectorsList = ['BeamPipeOPPPDGT0x348a380', 'scintArmPhysical0x3520d90']
+GammaChamberList = ['GammaTargetChamber0x34893c0', 'GammaTargetContainer0x34897d0']
 SecondDumpList = ['HICSDumpAssembly0x34b1010', 'HICSDump2T0x34f3790', 'HICSShieldingSide0x34f4c80', 'HICSShieldingMiddle0x34f53d0',
                   'HICSNeutronAbsorberSide0x34f6810', 'HICSNeutronAbsorberTop0x34f6e20', 'HICSNeutronAbsorberBottom0x34f6eb0',
                   'Imprint_1_0x34f7d30', 'BeamPipeGammaT1stC0x34c7740', 'BeamPipeGamma1stC2ndC0x34cd8b0', 'Collimator0x34a6d30']
 
 
 def All(inputfilename):
-    ICSChamber(inputfilename,   'ICSChamber.gmad',      view=False)
-    FirstMagnet(inputfilename,  'FirstMagnet.gdml',     view=False)
-    FirstDump(inputfilename,    'FirstDump.gdml',       view=False)
-    IPChamber(inputfilename,    'IPChamber.gdml',       view=False)
-    SecondMagnet(inputfilename, 'SecondMagnet.gdml',    view=False)
-    Extraction(inputfilename,   'Extraction.gdml',      view=False)
-    Scintillator(inputfilename, 'Scintillator.gdml',    view=False)
-    SecondDump(inputfilename,   'SecondDump.gdml',      view=False)
+    ICSChamber(inputfilename,   view=False)
+    FirstMagnet(inputfilename,  view=False)
+    FirstDump(inputfilename,    view=False)
+    IPChamber(inputfilename,    view=False)
+    SecondMagnet(inputfilename, view=False)
+    Extraction(inputfilename,   view=False)
+    Detectors(inputfilename,    view=False)
+    GammaChamber(inputfilename, view=False)
+    SecondDump(inputfilename,   view=False)
 
 
-def ICSChamber(inputfilename, outputfilename, view=True, write=True):
-    keep(inputfilename, outputfilename, toKeep=ICSChamberList, view=view, write=write)
+def ICSChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='ICSChamber.gdml', centerPhysical='BeamPipeTM0x349ff60', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=ICSChamberList, centerPhysical=centerPhysical, view=view, write=write)
 
 
-def FirstMagnet(inputfilename, outputfilename, view=True, write=True):
-    keep(inputfilename, outputfilename, toKeep=FirstMagnetList, view=view, write=write)
+def FirstMagnet(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='FirstMagnet.gdml', centerPhysical='DMBPipe0x34a1570', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=FirstMagnetList, centerPhysical=centerPhysical, view=view, write=write)
 
 
-def FirstDump(inputfilename, outputfilename, view=True, write=True):
-    keep(inputfilename, outputfilename, toKeep=FirstDumpList, view=view, write=write)
+def FirstDump(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='FirstDump.gdml', centerPhysical='ShieldingPipe0x349a370', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=FirstDumpList, centerPhysical=centerPhysical, view=view, write=write)
 
 
-def IPChamber(inputfilename, outputfilename, view=True, write=True):
-    keep(inputfilename, outputfilename, toKeep=IPChamberList, view=view, write=write)
+def IPChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='IPChamber.gdml', centerPhysical='BeamPipeSIP0x34ade90', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=IPChamberList, centerPhysical=centerPhysical, view=view, write=write)
 
 
-def SecondMagnet(inputfilename, outputfilename, view=True, write=True):
-    keep(inputfilename, outputfilename, toKeep=SecondMagnetList, view=view, write=write)
+def SecondMagnet(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='SecondMagnet.gdml', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=SecondMagnetList, view=view, write=write)
 
 
-def Extraction(inputfilename, outputfilename, view=True, write=True):
-    keep(inputfilename, outputfilename, toKeep=ExtractionList, view=view, write=write)
+def Extraction(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Extraction.gdml', centerPhysical='logicBeamPipeVCG_pv0x34a3b60', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=ExtractionList2, centerPhysical=centerPhysical, view=view, write=write)
 
 
-def Scintillator(inputfilename, outputfilename, view=True, write=True):
-    keep(inputfilename, outputfilename, toKeep=ScintillatorList, view=view, write=write)
+def Scintillator(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Scintillator.gdml', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=ScintillatorList, view=view, write=write)
 
 
-def SecondDump(inputfilename, outputfilename, view=True, write=True):
-    keep(inputfilename, outputfilename, toKeep=SecondDumpList, view=view, write=write)
+def Detectors(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Detectors.gdml', centerPhysical='BeamPipeOPPPDGT0x348a380', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=DetectorsList, centerPhysical=centerPhysical, view=view, write=write)
 
 
-def keep(inputfilename, outputfilename, toKeep=[], view=True, write=True):
+def GammaChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='GammaChamber.gdml', centerPhysical='GAbsorber0x3489440', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=GammaChamberList, centerPhysical=centerPhysical, view=view, write=write)
+
+
+def SecondDump(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='SecondDump.gdml', centerPhysical='BeamPipeGammaT1stC0x34c7740', view=True, write=True):
+    return keep(inputfilename, outputfilename, toKeep=SecondDumpList, centerPhysical=centerPhysical, view=view, write=write)
+
+
+def keep(inputfilename, outputfilename, toKeep=[], centerPhysical=None, view=True, write=True):
     if not toKeep:
         raise ValueError('No volume given to be kept')
     reader = _pyg4.gdml.Reader(inputfilename)
@@ -113,6 +128,9 @@ def keep(inputfilename, outputfilename, toKeep=[], view=True, write=True):
     world_logical.daughterVolumes = newDv
     world_logical.clipSolid()
 
+    if centerPhysical is not None:
+        center(world_logical, world_logical.registry.findPhysicalVolumeByName(centerPhysical)[0])
+
     if write:
         w = _pyg4.gdml.Writer()
         w.addDetector(reg)
@@ -122,7 +140,7 @@ def keep(inputfilename, outputfilename, toKeep=[], view=True, write=True):
         v = _pyg4.visualisation.VtkViewerNew()
         v.addLogicalVolume(world_logical)
         v.buildPipelinesAppend()
-        # v.addAxes()
+        v.addAxes(1000)
         v.view()
 
     return world_logical
