@@ -126,3 +126,61 @@ def keep(inputfilename, outputfilename, toKeep=[], view=True, write=True):
         v.view()
 
     return world_logical
+
+
+def center(worldLogical, centerPhysical, centerX=True, centerY=True, centerZ=False):
+    centerPosition = findGlobalPosition(worldLogical, centerPhysical)
+    centerBool = _np.array([centerX, centerY, centerZ])
+    centerOffset = centerPosition*centerBool
+
+    wl = worldLogical
+    wl.solid.pX = _pyg4.gdml.Constant(wl.solid.name + "_centered_x", wl.solid.pX + 2 * _np.abs(centerOffset[0]), wl.registry, True)
+    wl.solid.pY = _pyg4.gdml.Constant(wl.solid.name + "_centered_y", wl.solid.pY + 2 * _np.abs(centerOffset[1]), wl.registry, True)
+    wl.solid.pZ = _pyg4.gdml.Constant(wl.solid.name + "_centered_z", wl.solid.pZ + 2 * _np.abs(centerOffset[2]), wl.registry, True)
+    wl.mesh.remesh()
+
+    for dv in wl.daughterVolumes:
+        dv.position = dv.position - centerOffset
+
+
+def addGeometryOnReference(mainfilename, addedfilename, outputfilename, referencename, view=True, write=True):
+    reader1 = _pyg4.gdml.Reader(mainfilename)
+    reader2 = _pyg4.gdml.Reader(addedfilename)
+
+    reg1 = reader1.getRegistry()
+    reg2 = reader2.getRegistry()
+
+    world_logical_1 = reg1.getWorldVolume()
+    world_logical_2 = reg2.getWorldVolume()
+
+    reference_physical = world_logical_1.registry.findPhysicalVolumeByName(referencename)[0]
+    position = findGlobalPosition(world_logical_1, reference_physical)
+
+    physical_volume = _pyg4.geant4.PhysicalVolume([0, 0, 0], position, world_logical_2, addedfilename, reg1.getWorldVolume(), reg1)
+    reg1.addVolumeRecursive(physical_volume)
+    world_logical_1.mesh.remesh()
+
+    if write:
+        w = _pyg4.gdml.Writer()
+        w.addDetector(reg1)
+        w.write(outputfilename)
+
+    if view:
+        v = _pyg4.visualisation.VtkViewerNew()
+        v.addLogicalVolume(world_logical_1)
+        v.buildPipelinesAppend()
+        v.addAxes(1000)
+        v.view()
+
+    return world_logical_1
+
+
+def findGlobalPosition(world_logical, physical_volume):
+    mother_logical = physical_volume.motherVolume
+    if world_logical == mother_logical:
+        return physical_volume.position.eval()
+    else:
+        for mother_physical in world_logical.daughterVolumes:
+            if mother_physical.logicalVolume == mother_logical:
+                return _np.array(mother_physical.position.eval()) + _np.array(physical_volume.position.eval())
+        raise Exception("Physical volume {} is too deep, can't find the global position".format(physical_volume.name))
