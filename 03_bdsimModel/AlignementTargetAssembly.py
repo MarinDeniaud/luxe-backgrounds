@@ -18,7 +18,11 @@ def MakeAssembly(outputfilename='Assembly.gdml', view=True, axis=True, write=Tru
     reg.addVolumeRecursive(new_bar_physical)
 
     world_logical.clipSolid()
-    center(world_logical, world_logical.registry.findPhysicalVolumeByName('new_needle_physical_1')[0])
+    world_logical.mesh.remesh()
+    centerPosition, centerRotation = ExtractLUXE.findGlobalPositionRotation(world_logical, new_needle_physical)
+    ExtractLUXE.center(world_logical, centerPosition, centerRotation)
+    assembly = world_logical.assemblyVolume()
+    assembly.registry.setWorld(assembly.name)
 
     if write:
         w = _pyg4.gdml.Writer()
