@@ -154,20 +154,29 @@ def isNBTrainsConsistant(rawdata):
 
 def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
     rawdata = _h5.File(inputfilename, 'r')
+    bpmdata = rawdata['XFEL.DIAG']['BPM']
+    energydata = rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']['CL']['ENERGY.ALL']
+    timedata = rawdata['XFEL.SDIAG']['BAM.DAQ']
     if not isNBTrainsConsistant(rawdata):
         raise ValueError("Inconsistant number of train. Please Marin build a filter script")
-    bpmlist = list(rawdata['XFEL.DIAG']['BPM'].keys())
-    TrainID = rawdata['XFEL.DIAG']['BPM'][bpmlist[0]]['TrainId']
-    nbtrain, nbbunch = rawdata['XFEL.DIAG']['BPM'][bpmlist[0]]['X.TD'].shape
-    data = {'X': [], 'Y': [], 'Charge': [], 'Valid': [], 'S': [], 'E': [], 'Time': []}
+    bpmlist = list(bpmdata.keys())
+    TrainID = bpmdata[bpmlist[0]]['TrainId']
+    nbtrain, nbbunch = bpmdata[bpmlist[0]]['X.TD'].shape
+    data = {'X': [], 'DX': [], 'Y': [], 'DY': [], 'Charge': [], 'Valid': [], 'S': [], 'E': [], 'DE': [], 'Time': [], 'DTime': []}
     for bpm in bpmlist:
-        data['X'].append(_np.array(rawdata['XFEL.DIAG']['BPM'][bpm]['X.TD'])*1e-3)  # mm converted in m
-        data['Y'].append(_np.array(rawdata['XFEL.DIAG']['BPM'][bpm]['Y.TD'])*1e-3)  # mm converted in m
-        data['Charge'].append(_np.array(rawdata['XFEL.DIAG']['BPM'][bpm]['CHARGE.TD'])*1e-9)  # nC converted to C
-        data['Valid'].append(_np.array(rawdata['XFEL.DIAG']['BPM'][bpm]['BUNCH_VALID.TD']))
-        data['S'].append(_np.full((nbtrain, nbbunch), bpmdict[bpm]['S']))
-        data['E'].append(_np.tile(rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']['CL']['ENERGY.ALL']['Value'], (nbbunch, 1)).transpose())
-        data['Time'].append(rawdata['XFEL.SDIAG']['BAM.DAQ']['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'][:, :nbbunch])
+        data['X'].append(_np.array(bpmdata[bpm]['X.TD'])*1e-3)  # mm converted in m
+        data['DX'].append(_np.full((nbtrain, nbbunch), 2e-6))
+        data['Y'].append(_np.array(bpmdata[bpm]['Y.TD'])*1e-3)  # mm converted in m
+        data['DY'].append(_np.full((nbtrain, nbbunch), 2e-6))
+        data['Charge'].append(_np.array(bpmdata[bpm]['CHARGE.TD'])*1e-9)  # nC converted to C
+        data['Valid'].append(_np.array(bpmdata[bpm]['BUNCH_VALID.TD']))
+        data['S'].append(_np.full((nbtrain, nbbunch), bpmdict[bpm]['S']))  # m
+        E = _np.tile(energydata['Value'], (nbbunch, 1)).transpose()*1e-3  # MeV converted to GeV
+        data['E'].append(E)
+        data['DE'].append(E/100)
+        T = timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'][:, :nbbunch]  # us ??
+        data['Time'].append(T)
+        data['DTime'].append(T/100)
     names = ['BPM', 'TrainID', 'BunchID']
     for key in data:
         data[key] = _np.asarray(data[key])
@@ -177,8 +186,8 @@ def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
     df_bpm = _pd.DataFrame(data, index=index)
     df_bpm.index.set_levels([bpmlist, TrainID], level=[0, 1], inplace=True)
 
-    df_e = _pd.DataFrame(rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']['CL']['ENERGY.ALL']['Value'])
-    df_at = _pd.DataFrame(rawdata['XFEL.SDIAG']['BAM.DAQ']['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'])
+    df_e = _pd.DataFrame(energydata['Value'])
+    df_at = _pd.DataFrame(timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'])
 
     return df_bpm, df_e, df_at
 
@@ -214,6 +223,7 @@ def reduceDFbyBPMTrainBunchByIndex(df, bpms=None, trains=None, bunches=None, val
         df = reduceDFbyIndex(df, 'TrainID', trains)
     if bunches is not None:
         df = reduceDFbyIndex(df, 'BunchID', bunches)
+    df.index = df.index.remove_unused_levels()
     return df
 
 
@@ -227,13 +237,13 @@ def plotSurvey(inputfilename):
     _plt.show()
 
 
-def plotDifferentTraj(data):
-    data_valid = selectValidElectronInBPMS(data)
-    s = convertBPMNameToPosition(reduceDFbyBPMTrainBunchByIndex(data, bpms=None, trains=0, bunches=0).index.get_level_values(0).to_numpy())
-    for bunch in range(100):  # data_valid.index.get_level_values(2).to_numpy():
-        data_reduced = reduceDFbyBPMTrainBunchByIndex(data, bpms=None, trains=1, bunches=bunch)
-        Y = data_reduced.Y.to_numpy() * 1e-3
-        _plt.plot(s, Y, '+')
+def plotDifferentTraj(data, bpm=None, train=None, bunch=None, valid=True):
+    data_reduced = reduceDFbyBPMTrainBunchByIndex(data, bpms=bpm, trains=train, bunches=bunch, valid=valid)
+    for bunch in data_reduced.index.get_level_values(2).to_numpy():
+        data_bunch = reduceDFbyBPMTrainBunchByIndex(data_reduced, bunches=bunch)
+        S = data_bunch.S
+        Y = data_bunch.Y
+        _plt.plot(S, Y, '+')
     _plt.ylabel('$Y$ [m]')
     _plt.xlabel('$S$ [m]')
     _plt.show()
