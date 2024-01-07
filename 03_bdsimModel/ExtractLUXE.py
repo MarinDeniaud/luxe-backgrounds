@@ -206,6 +206,119 @@ def addGeometryOnReference(mainfilename, addedfilename, outputfilename, referenc
     return world_logical_1
 
 
+def applyRotation(centerPosition, centerRotation):
+    [x, y, z], [px, py, pz] = centerPosition, centerRotation
+
+    if px == _np.pi/2: y, z = z, -y
+    if px == -_np.pi/2: y, z = -z, y
+
+    if py == _np.pi/2: x, z = -z, x
+    if py == -_np.pi/2: x, z = z, -x
+
+    if pz == _np.pi/2: x, y = y, -x
+    if pz == -_np.pi/2: x, y = -y, x
+
+    return _np.array([x, y, z])
+
+
+def findGlobalPositionRotation(world_logical, physical_volume,
+                               offset_position=_np.array([0.0, 0.0, 0.0]), offset_rotation=_np.array([0.0, 0.0, 0.0])):
+    global_position = []
+    global_rotation = []
+    checkIfPhysicalVolumeInRegistry(world_logical, physical_volume.name)
+
+    def recrsive(world_logical, physical_volume, offset_position, offset_rotation):
+        for daughter in world_logical.daughterVolumes:
+            position = offset_position + daughter.position.eval()
+            rotation = offset_rotation + daughter.rotation.eval()
+            if daughter.name == physical_volume.name:
+                global_position.append(position)
+                global_rotation.append(rotation)
+                return 0
+            recrsive(daughter.logicalVolume, physical_volume, position, rotation)
+
+    recrsive(world_logical, physical_volume, offset_position, offset_rotation)
+    return global_position[0], global_rotation[0]
+
+
+def checkIfPhysicalVolumeInRegistry(world_logical, physical_volume_name):
+    if len(world_logical.registry.findPhysicalVolumeByName(physical_volume_name)) == 0:
+        raise Exception("Physical volume {} not in registery".format(physical_volume_name))
+
+
+def checkIfPhysicalVolumeInWorldVolume(world_logical, physical_volume):
+    ishere = []
+    checkIfPhysicalVolumeInRegistry(world_logical, physical_volume.name)
+
+    def recrsive(world_logical, physical_volume):
+        for daughter in world_logical.daughterVolumes:
+            if daughter.name == physical_volume.name:
+                ishere.append(1)
+                return 0
+            recrsive(daughter.logicalVolume, physical_volume)
+
+    recrsive(world_logical, physical_volume)
+    if len(ishere) == 0:
+        raise Exception("Physical volume {} not in world logical {}".format(physical_volume.name, world_logical.name))
+
+
+def writeOptions(reg, outputfilename):
+    w = _pyg4.gdml.Writer()
+    w.addDetector(reg)
+    w.write(outputfilename)
+
+
+def viewOptions(world_logical, axis=True, axisLength=1000):
+    v = _pyg4.visualisation.VtkViewerNew()
+    v.addLogicalVolume(world_logical)
+    v.buildPipelinesAppend()
+    if axis:
+        v.addAxes(axisLength)
+    v.view()
+
+
+# ====================OLD=======================
+
+
+def OLDkeep(inputfilename, outputfilename, toKeep=[], centerPhysical=None, view=True, axis=True, write=True):
+    if not toKeep:
+        raise ValueError('No volume given to be kept')
+    reader = _pyg4.gdml.Reader(inputfilename)
+    reg = reader.getRegistry()
+
+    world_logical = reg.getWorldVolume()
+
+    newDv = []
+    for elem in toKeep:
+        physical_volume_list = reg.findPhysicalVolumeByName(elem)
+        try:
+            physical_volume = physical_volume_list[0]
+            if world_logical == physical_volume.motherVolume:
+                newDv.append(physical_volume)
+            else:
+                mother_logical = physical_volume.motherVolume
+                for mother_physical in world_logical.daughterVolumes:
+                    if mother_physical.logicalVolume == mother_logical:
+                        position_list = mother_physical.position.eval()
+                        rotation_list = mother_physical.rotation.eval()
+                        addPositionStr(physical_volume, position_list)
+                        addRotationStr(physical_volume, rotation_list)
+                        newDv.append(physical_volume)
+        except IndexError:
+            print("Physical volumne {} not found".format(elem))
+
+    world_logical.daughterVolumes = newDv
+    world_logical.clipSolid()
+
+    if centerPhysical is not None:
+        center(world_logical, world_logical.registry.findPhysicalVolumeByName(centerPhysical)[0])
+
+    if write: writeOptions(reg, outputfilename)
+    if view: viewOptions(world_logical, axis, axisLength=1000)
+
+    return world_logical
+
+
 def findGlobalPosition(world_logical, physical_volume):
     mother_logical = physical_volume.motherVolume
     if world_logical == mother_logical:
@@ -215,3 +328,14 @@ def findGlobalPosition(world_logical, physical_volume):
             if mother_physical.logicalVolume == mother_logical:
                 return _np.array(mother_physical.position.eval()) + _np.array(physical_volume.position.eval())
         raise Exception("Physical volume {} is too deep, can't find the global position".format(physical_volume.name))
+
+
+def findGlobalRotation(world_logical, physical_volume):
+    mother_logical = physical_volume.motherVolume
+    if world_logical == mother_logical:
+        return physical_volume.rotation.eval()
+    else:
+        for mother_physical in world_logical.daughterVolumes:
+            if mother_physical.logicalVolume == mother_logical:
+                return _np.array(mother_physical.rotation.eval()) + _np.array(physical_volume.rotation.eval())
+        raise Exception("Physical volume {} is too deep, can't find the global rotation".format(physical_volume.name))
