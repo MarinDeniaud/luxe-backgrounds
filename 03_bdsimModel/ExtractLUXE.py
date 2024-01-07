@@ -2,18 +2,13 @@ import pyg4ometry as _pyg4
 import numpy as _np
 
 
-def ViewGDML(filename, axis=True):
+def ViewGDML(filename, axis=True, axisLength=1000):
     reader = _pyg4.gdml.Reader(filename)
 
     reg = reader.getRegistry()
     world_logical = reg.getWorldVolume()
 
-    v = _pyg4.visualisation.VtkViewerNew()
-    v.addLogicalVolume(world_logical)
-    v.buildPipelinesAppend()
-    if axis:
-        v.addAxes(1000)
-    v.view()
+    viewOptions(world_logical, axis=axis, axisLength=axisLength)
 
     return world_logical
 
@@ -71,100 +66,140 @@ def All(inputfilename):
     SecondDump(inputfilename,   view=False)
 
 
-def ICSChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='ICSChamber.gdml', centerPhysical='BeamPipeTM0x349ff60', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=ICSChamberList, centerPhysical=centerPhysical, view=view, write=write)
+def ICSChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='ICSChamber.gdml', centerPhysical='BremsTarget0x349f040',
+               view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=ICSChamberList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
 
 
-def FirstMagnet(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='FirstMagnet.gdml', centerPhysical='DMBPipe0x34a1570', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=FirstMagnetList, centerPhysical=centerPhysical, view=view, write=write)
+def FirstMagnet(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='FirstMagnet.gdml', centerPhysical='BeamPipeTM0x349ff60',
+                view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=FirstMagnetList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
 
 
-def FirstDump(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='FirstDump.gdml', centerPhysical='ShieldingPipe0x349a370', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=FirstDumpList, centerPhysical=centerPhysical, view=view, write=write)
+def FirstDump(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='FirstDump.gdml', centerPhysical='ShieldingPipe0x349a370',
+              view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=FirstDumpList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
 
 
-def IPChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='IPChamber.gdml', centerPhysical='BeamPipeSIP0x34ade90', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=IPChamberList, centerPhysical=centerPhysical, view=view, write=write)
+def IPChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='IPChamber.gdml', centerPhysical='BeamPipeSIP0x34ade90',
+              view=True, axis=True, write=True):
+    keepPhysicalVolume(inputfilename, outputfilename, toKeep=IPChamberList, centerPhysicalName=centerPhysical, view=False, write=write)
+    return addGeometryOnReference(outputfilename, 'Assembly.gdml', 'IPChamberWithAssembly.gdml', 'IPVolume0x347d9d0',
+                                  view=view, axis=axis, write=write)
 
 
-def SecondMagnet(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='SecondMagnet.gdml', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=SecondMagnetList, view=view, write=write)
+def SecondMagnet(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='SecondMagnet.gdml', centerPhysical='IPMagnetField0x34b5950',
+                 view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=SecondMagnetList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
 
 
-def Extraction(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Extraction.gdml', centerPhysical='logicBeamPipeVCG_pv0x34a3b60', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=ExtractionList2, centerPhysical=centerPhysical, view=view, write=write)
+def Extraction(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Extraction.gdml', centerPhysical='logicBeamPipeVCG_pv0x34a3b60',
+               view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=ExtractionList2, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
 
 
-def Scintillator(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Scintillator.gdml', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=ScintillatorList, view=view, write=write)
+def Scintillator(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Scintillator.gdml',
+                 view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=ScintillatorList,
+                              view=view, axis=axis, write=write)
 
 
-def Detectors(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Detectors.gdml', centerPhysical='BeamPipeOPPPDGT0x348a380', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=DetectorsList, centerPhysical=centerPhysical, view=view, write=write)
+def Detectors(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Detectors.gdml', centerPhysical='BeamPipeOPPPDGT0x348a380',
+              view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=DetectorsList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
 
 
-def GammaChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='GammaChamber.gdml', centerPhysical='GAbsorber0x3489440', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=GammaChamberList, centerPhysical=centerPhysical, view=view, write=write)
+def GammaChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='GammaChamber.gdml', centerPhysical='GAbsorber0x3489440',
+                 view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=GammaChamberList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
 
 
-def SecondDump(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='SecondDump.gdml', centerPhysical='BeamPipeGammaT1stC0x34c7740', view=True, write=True):
-    return keep(inputfilename, outputfilename, toKeep=SecondDumpList, centerPhysical=centerPhysical, view=view, write=write)
+def SecondDump(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='SecondDump.gdml', centerPhysical='BeamPipeGammaT1stC0x34c7740',
+               view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=SecondDumpList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
 
 
-def keep(inputfilename, outputfilename, toKeep=[], centerPhysical=None, view=True, write=True):
+def keepPhysicalVolume(inputfilename, outputfilename, toKeep=[], centerPhysicalName=None, view=True, axis=True, write=True):
     if not toKeep:
         raise ValueError('No volume given to be kept')
     reader = _pyg4.gdml.Reader(inputfilename)
     reg = reader.getRegistry()
 
     world_logical = reg.getWorldVolume()
+    if centerPhysicalName is not None:
+        checkIfPhysicalVolumeInRegistry(world_logical, centerPhysicalName)
+        centerPhysical = world_logical.registry.findPhysicalVolumeByName(centerPhysicalName)[0]
+        checkIfPhysicalVolumeInWorldVolume(world_logical, centerPhysical)
+        centerPosition, centerRotation = findGlobalPositionRotation(world_logical, centerPhysical)
 
-    newDv = []
-    for elem in toKeep:
-        physical_volume_list = reg.findPhysicalVolumeByName(elem)
-        try:
-            physical = physical_volume_list[0]
-            if world_logical == physical.motherVolume:
-                newDv.append(physical)
-            else:
-                mother_logical = physical.motherVolume
-                for mother_physical in world_logical.daughterVolumes:
-                    if mother_physical.logicalVolume == mother_logical:
-                        position_list = mother_physical.position.eval()
-                        physical.position.x.expressionString += ('+' + str(position_list[0]))
-                        physical.position.y.expressionString += ('+' + str(position_list[1]))
-                        physical.position.z.expressionString += ('+' + str(position_list[2]))
-                        newDv.append(physical)
-        except IndexError:
-            print("Physical volumne {} not found".format(elem))
-
-    world_logical.daughterVolumes = newDv
+    world_logical.daughterVolumes = keepDV(world_logical, toKeep)
+    beforePosition, beforeRotation = findGlobalPositionRotation(world_logical, world_logical.daughterVolumes[0])
     world_logical.clipSolid()
+    afterPosition, afterRotation = findGlobalPositionRotation(world_logical, world_logical.daughterVolumes[0])
 
-    if centerPhysical is not None:
-        center(world_logical, world_logical.registry.findPhysicalVolumeByName(centerPhysical)[0])
+    if centerPhysicalName is not None:
+        changePosition = afterPosition - beforePosition
+        changeRotation = afterRotation - beforeRotation
+        center(world_logical, centerPosition+changePosition, centerRotation+changeRotation)
 
-    if write:
-        w = _pyg4.gdml.Writer()
-        w.addDetector(reg)
-        w.write(outputfilename)
-
-    if view:
-        v = _pyg4.visualisation.VtkViewerNew()
-        v.addLogicalVolume(world_logical)
-        v.buildPipelinesAppend()
-        v.addAxes(1000)
-        v.view()
+    if write: writeOptions(reg, outputfilename)
+    if view: viewOptions(world_logical, axis, axisLength=1000)
 
     return world_logical
 
 
-def center(worldLogical, centerPhysical, centerX=True, centerY=True, centerZ=False):
-    centerPosition = findGlobalPosition(worldLogical, centerPhysical)
-    centerBool = _np.array([centerX, centerY, centerZ])
-    centerOffset = centerPosition*centerBool
+def keepDV(world_logical, physical_volume_names_list):
+    newDv = []
+    for elem in physical_volume_names_list:
+        physical_volume_list = world_logical.registry.findPhysicalVolumeByName(elem)
+        try:
+            physical_volume = physical_volume_list[0]
+            position_list, rotation_list = findGlobalPositionRotation(world_logical, physical_volume)
+            changePositionStr(physical_volume, position_list)
+            # changeRotationStr(physical_volume, rotation_list)
+            newDv.append(physical_volume)
+        except IndexError:
+            print("Physical volumne {} not found".format(elem))
+    return newDv
 
-    wl = worldLogical
+
+def changePositionStr(physical_volume, position_list):
+    physical_volume.position.x.expressionString = str(position_list[0])
+    physical_volume.position.y.expressionString = str(position_list[1])
+    physical_volume.position.z.expressionString = str(position_list[2])
+
+
+def changeRotationStr(physical_volume, rotation_list):
+    physical_volume.rotation.x.expressionString = str(rotation_list[0])
+    physical_volume.rotation.y.expressionString = str(rotation_list[1])
+    physical_volume.rotation.z.expressionString = str(rotation_list[2])
+
+
+def addPositionStr(physical_volume, position_list):
+    physical_volume.position.x.expressionString += ('+' + str(position_list[0]))
+    physical_volume.position.y.expressionString += ('+' + str(position_list[1]))
+    physical_volume.position.z.expressionString += ('+' + str(position_list[2]))
+
+
+def addRotationStr(physical_volume, rotation_list):
+    physical_volume.rotation.x.expressionString += ('+' + str(rotation_list[0]))
+    physical_volume.rotation.y.expressionString += ('+' + str(rotation_list[1]))
+    physical_volume.rotation.z.expressionString += ('+' + str(rotation_list[2]))
+
+
+def center(world_logical, centerPosition, centerRotation, centerX=True, centerY=True, centerZ=False):
+    centerPosition = applyRotation(centerPosition, centerRotation)
+    centerOffset = centerPosition*_np.array([centerX, centerY, centerZ])
+
+    wl = world_logical
     wl.solid.pX = _pyg4.gdml.Constant(wl.solid.name + "_centered_x", wl.solid.pX + 2 * _np.abs(centerOffset[0]), wl.registry, True)
     wl.solid.pY = _pyg4.gdml.Constant(wl.solid.name + "_centered_y", wl.solid.pY + 2 * _np.abs(centerOffset[1]), wl.registry, True)
     wl.solid.pZ = _pyg4.gdml.Constant(wl.solid.name + "_centered_z", wl.solid.pZ + 2 * _np.abs(centerOffset[2]), wl.registry, True)
@@ -174,7 +209,7 @@ def center(worldLogical, centerPhysical, centerX=True, centerY=True, centerZ=Fal
         dv.position = dv.position - centerOffset
 
 
-def addGeometryOnReference(mainfilename, addedfilename, outputfilename, referencename, view=True, write=True):
+def addGeometryOnReference(mainfilename, addedfilename, outputfilename, referencename, view=True, axis=True, write=True):
     reader1 = _pyg4.gdml.Reader(mainfilename)
     reader2 = _pyg4.gdml.Reader(addedfilename)
 
@@ -185,23 +220,14 @@ def addGeometryOnReference(mainfilename, addedfilename, outputfilename, referenc
     world_logical_2 = reg2.getWorldVolume()
 
     reference_physical = world_logical_1.registry.findPhysicalVolumeByName(referencename)[0]
-    position = findGlobalPosition(world_logical_1, reference_physical)
+    position, rotation = findGlobalPositionRotation(world_logical_1, reference_physical)
 
-    physical_volume = _pyg4.geant4.PhysicalVolume([0, 0, 0], position, world_logical_2, addedfilename, reg1.getWorldVolume(), reg1)
+    physical_volume = _pyg4.geant4.PhysicalVolume(rotation, position, world_logical_2, addedfilename, world_logical_1, reg1)
     reg1.addVolumeRecursive(physical_volume)
-    world_logical_1.mesh.remesh()
+    # world_logical_1.mesh.remesh()
 
-    if write:
-        w = _pyg4.gdml.Writer()
-        w.addDetector(reg1)
-        w.write(outputfilename)
-
-    if view:
-        v = _pyg4.visualisation.VtkViewerNew()
-        v.addLogicalVolume(world_logical_1)
-        v.buildPipelinesAppend()
-        v.addAxes(1000)
-        v.view()
+    if write: writeOptions(reg1, outputfilename)
+    if view: viewOptions(world_logical_1, axis, axisLength=1000)
 
     return world_logical_1
 
