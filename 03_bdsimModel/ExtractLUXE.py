@@ -25,25 +25,38 @@ def PrintDump(filename):
     wl.dumpStructure()
 
 
-ICSChamberList = ['BremsTargetChamber0x349eee0', 'BeamPipeTM0x349ff60']
-FirstMagnetList = ['Imprint_1_0x34a4f00', 'DMBPipe0x34a1570']
-FirstDumpList = ['BeamDumpAssembly0x3498760', 'Shielding0x3499570', 'BeamPipeNextToDump0x3498940', 'BeamSplitContainer0x349bc40',
-                 'ShieldingPipe0x349a370', 'BeamPipeMB0x349bf20', 'BeamPipeMD0x349c4a0', 'ShieldAbsorberTop0x349a230']
-IPChamberList = ['BeamPipeSIP0x34ade90', 'BeamPipeSIPVac0x34ae330', 'BeamPipeIPM0x34ae670', 'BeamPipeIPMVac0x34ae930',
-                 'logicTAUICContainer_pv0x3495c90', 'logicTAUIChamberBPipe_pv0x3495da8', 'logicTAUIChamberBPipeOut_pv0x3495d38',
+ICSChamberList = ['BremsTargetChamber0x349eee0', 'BremsTargetContainer0x349f330', 'BeamPipeTM0x349ff60', 'BeamPipeTMVac0x34a03d0']
+FirstMagnetList = ['Imprint_1_0x34a4f00', 'DumpMagnetField0x34a7510']
+FirstDumpList = ['BeamDumpAssembly0x3498760', 'Shielding0x3499570',
+                 'BeamPipeNextToDump0x3498940', 'BeamPipeNextToDumpVac0x3498ee0',
+                 'ShieldingPipe0x349a370', 'ShieldingPipeVac0x349a880',
+                 'BeamPipeMB0x349bf20', 'BeamPipeMBVac0x349c1e0',
+                 'BeamPipeMD0x349c4a0', 'BeamPipeMDVac0x349c800',
+                 'BeamSplitContainer0x349bc40', 'ShieldAbsorberTop0x349a230']
+IPChamberList = ['BeamPipeSIP0x34ade90', 'BeamPipeSIPVac0x34ae330',
+                 'BeamPipeIPM0x34ae670', 'BeamPipeIPMVac0x34ae930',
+                 'logicTAUICContainer_pv0x3495c90', 'logicTAUIChamberBPipeFlange_pv0x3495e18',
+                 'logicTAUIChamberBPipe_pv0x3495da8', 'logicTAUIChamberBPipeVac_pv0x3495de0',
+                 'logicTAUIChamberBPipeOut_pv0x3495d38', 'logicTAUIChamberBPipeOutVac_pv0x3495d70',
                  'logicTAUICBottom_pv0x3495d00']# , 'logicTAUICTop_pv0x3495cc8']
-IPChamberWithLegsList = ['BeamPipeSIP0x34ade90', 'BeamPipeIPM0x34ae670', 'Imprint_1_0x348f4a0']
-SecondMagnetList = ['Imprint_1_0x34b3ba0', 'IPMBPipeContainer0x34afef0']
+IPChamberWithLegsList = ['BeamPipeSIP0x34ade90', 'BeamPipeSIPVac0x34ae330',
+                         'BeamPipeIPM0x34ae670', 'BeamPipeIPMVac0x34ae930',
+                         'Imprint_1_0x348f4a0']
+SecondMagnetList = ['Imprint_1_0x34b3ba0', 'IPMagnetField0x34b5950']
 ExtractionList = ['logicVCContainer_pv0x34a3af0', 'logicVCContainer_pv0x34a3b28',
                   'logicVCMagFieldJoin_pv0x34a3bd0', 'logicVCMagFieldJoin1_pv0x34a3c08']
 ExtractionList2 = ['Imprint_1_0x34ad3c0']
 ScintillatorList = ['scintArmPhysical0x3520d90']
 ScintillatorList2 = ['HICSElectronScintillator0x3523710']
-DetectorsList = ['BeamPipeOPPPDGT0x348a380', 'scintArmPhysical0x3520d90']
+DetectorsList = ['BeamPipeOPPPDGT0x348a380', 'BeamPipeOPPPDGTVac0x353a7e0',
+                 'scintArmPhysical0x3520d90']
 GammaChamberList = ['GammaTargetChamber0x34893c0', 'GammaTargetContainer0x34897d0']
 SecondDumpList = ['HICSDumpAssembly0x34b1010', 'HICSDump2T0x34f3790', 'HICSShieldingSide0x34f4c80', 'HICSShieldingMiddle0x34f53d0',
                   'HICSNeutronAbsorberSide0x34f6810', 'HICSNeutronAbsorberTop0x34f6e20', 'HICSNeutronAbsorberBottom0x34f6eb0',
-                  'Imprint_1_0x34f7d30', 'BeamPipeGammaT1stC0x34c7740', 'BeamPipeGamma1stC2ndC0x34cd8b0', 'Collimator0x34a6d30']
+                  'Imprint_1_0x34f7d30',
+                  'BeamPipeGammaT1stC0x34c7740', 'BeamPipeGammaT1stCVac0x34c7a60',
+                  'BeamPipeGamma1stC2ndC0x34cd8b0', 'BeamPipeGamma1stC2ndCVac0x34c7dc0',
+                  'Collimator0x34a6d30']
 
 
 def All(inputfilename):
