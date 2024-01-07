@@ -24,20 +24,11 @@ def MakeAssembly(outputfilename='Assembly.gdml', view=True, axis=True, write=Tru
     assembly = world_logical.assemblyVolume()
     assembly.registry.setWorld(assembly.name)
 
-    if write:
-        w = _pyg4.gdml.Writer()
-        w.addDetector(reg)
-        w.write("Assembly.gdml")
-
-    if view:
-        vis = _pyg4.visualisation.VtkViewerNew()
-        vis.addLogicalVolume(world_logical)
-        vis.buildPipelinesAppend()
-        vis.addAxes(1000)
-        vis.view()
+    if write: writeOptions(assembly.registry, outputfilename)
+    if view: viewOptions(assembly, axis, axisLength=1000)
 
 
-def MakeMount(xsise=16e-3, ysize=55.2e-3, zsize=4e-3, radius=3.25e-3, view=True, write=True):
+def MakeMount(outputfilename='AssemblyBox.gdml', xsise=16e-3, ysize=55.2e-3, zsize=4e-3, radius=3.25e-3, view=True, axis=True, write=True):
     reg = _pyg4.geant4.Registry()
 
     world_solid = _pyg4.geant4.solid.Box("world_solid", 100, 100, 100, reg, lunit='mm')
@@ -53,22 +44,13 @@ def MakeMount(xsise=16e-3, ysize=55.2e-3, zsize=4e-3, radius=3.25e-3, view=True,
 
     # world_logical.clipSolid()
 
-    if write:
-        w = _pyg4.gdml.Writer()
-        w.addDetector(reg)
-        w.write("AssemblyBox.gdml")
-
-    if view:
-        vis = _pyg4.visualisation.VtkViewerNew()
-        vis.addLogicalVolume(world_logical)
-        vis.buildPipelinesAppend()
-        vis.addAxes(1000)
-        vis.view()
+    if write: writeOptions(reg, outputfilename)
+    if view: viewOptions(world_logical, axis, axisLength=1000)
 
     return mount_physical
 
 
-def MakeNeedle(radius1=125e-6, radius2=7e-6, length1=2.5e-3, length2=2e-3, view=True, write=True):
+def MakeNeedle(outputfilename='AssemblyNeedle.gdml', radius1=125e-6, radius2=7e-6, length1=2.5e-3, length2=2e-3, view=True, axis=True, write=True):
     reg = _pyg4.geant4.Registry()
 
     world_solid = _pyg4.geant4.solid.Box("world_solid", 100, 100, 100, reg, lunit='mm')
@@ -87,22 +69,13 @@ def MakeNeedle(radius1=125e-6, radius2=7e-6, length1=2.5e-3, length2=2e-3, view=
     needle_physical = _pyg4.geant4.PhysicalVolume([-_np.pi/2, 0, 0], [0, -2.25, 0], needle_logical, "needle_physical", world_logical, reg)
     bar_physical = _pyg4.geant4.PhysicalVolume([-_np.pi / 2, 0, 0], [0, 0, 0], bar_logical, "bar_physical", world_logical, reg)
 
-    if write:
-        w = _pyg4.gdml.Writer()
-        w.addDetector(reg)
-        w.write("AssemblyNeedle.gdml")
-
-    if view:
-        vis = _pyg4.visualisation.VtkViewerNew()
-        vis.addLogicalVolume(world_logical)
-        vis.buildPipelinesAppend()
-        vis.addAxes(1000)
-        vis.view()
+    if write: writeOptions(reg, outputfilename)
+    if view: viewOptions(world_logical, axis, axisLength=1000)
 
     return needle_physical, bar_physical
 
 
-def MakePinhole(Radius1=50e-6, Radius2=200e-6, length=1e-3, SideLength=0.005, view=True, write=True):
+def MakePinhole(outputfilename='Pinhole.gdml', Radius1=50e-6, Radius2=200e-6, length=1e-3, SideLength=0.005, view=True, axis=True, write=True):
     reg = _pyg4.geant4.Registry()
 
     world_size = _pyg4.gdml.Constant("world_size", str(SideLength), reg)
@@ -123,20 +96,11 @@ def MakePinhole(Radius1=50e-6, Radius2=200e-6, length=1e-3, SideLength=0.005, vi
 
     pinhole_physical = _pyg4.geant4.PhysicalVolume([0, 0, 0], [0, 0, 0], pinhole_logical, "pinhole_physical", world_logical, reg)
 
-    if write:
-        w = _pyg4.gdml.Writer()
-        w.addDetector(reg)
-        w.write("Pinhole.gdml")
-
-    if view:
-        vis = _pyg4.visualisation.VtkViewerNew()
-        vis.addLogicalVolume(world_logical)
-        vis.buildPipelinesAppend()
-        vis.addAxes(1000)
-        vis.view()
+    if write: writeOptions(reg, outputfilename)
+    if view: viewOptions(world_logical, axis, axisLength=1000)
 
 
-def MakeCube(write=True, view=True):
+def MakeCube(outputfilename='Cube.gdml', view=True, axis=True, write=True):
     # registry to store gdml data5
     reg = _pyg4.geant4.Registry()
 
@@ -153,14 +117,20 @@ def MakeCube(write=True, view=True):
 
     wl.clipSolid()
 
-    if write:
-        w = _pyg4.gdml.Writer()
-        w.addDetector(reg)
-        w.write("Cube.gdml")
+    if write: writeOptions(reg, outputfilename)
+    if view: viewOptions(wl, axis, axisLength=1000)
 
-    if view:
-        vis = _pyg4.visualisation.VtkViewerNew()
-        vis.addLogicalVolume(wl)
-        vis.buildPipelinesAppend()
-        vis.addAxes(1000)
-        vis.view()
+
+def writeOptions(reg, outputfilename):
+    w = _pyg4.gdml.Writer()
+    w.addDetector(reg)
+    w.write(outputfilename)
+
+
+def viewOptions(world_logical, axis=True, axisLength=1000):
+    v = _pyg4.visualisation.VtkViewerNew()
+    v.addLogicalVolume(world_logical)
+    v.buildPipelinesAppend()
+    if axis:
+        v.addAxes(axisLength)
+    v.view()
