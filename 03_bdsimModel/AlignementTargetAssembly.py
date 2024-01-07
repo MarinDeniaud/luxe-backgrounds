@@ -1,34 +1,10 @@
 import pyg4ometry as _pyg4
 import numpy as _np
 
-
-def center(worldLogical, centerPhysical, centerX=True, centerY=True, centerZ=False):
-    centerPosition = findGlobalPosition(worldLogical, centerPhysical)
-    centerBool = _np.array([centerX, centerY, centerZ])
-    centerOffset = centerPosition*centerBool
-
-    wl = worldLogical
-    wl.solid.pX = _pyg4.gdml.Constant(wl.solid.name + "_centered_x", wl.solid.pX + 2*_np.abs(centerOffset[0]), wl.registry, True)
-    wl.solid.pY = _pyg4.gdml.Constant(wl.solid.name + "_centered_y", wl.solid.pY + 2*_np.abs(centerOffset[1]), wl.registry, True)
-    wl.solid.pZ = _pyg4.gdml.Constant(wl.solid.name + "_centered_z", wl.solid.pZ + 2*_np.abs(centerOffset[2]), wl.registry, True)
-    wl.mesh.remesh()
-
-    for dv in wl.daughterVolumes:
-        dv.position = dv.position - centerOffset
+import ExtractLUXE
 
 
-def findGlobalPosition(world_logical, physical_volume):
-    mother_logical = physical_volume.motherVolume
-    if world_logical == mother_logical:
-        return physical_volume.position.eval()
-    else:
-        for mother_physical in world_logical.daughterVolumes:
-            if mother_physical.logicalVolume == mother_logical:
-                return _np.array(mother_physical.position.eval()) + _np.array(physical_volume.position.eval())
-        raise Exception("Physical volume {} is too deep, can't find the global position")
-
-
-def MakeAssembly(view=True, write=True):
+def MakeAssembly(outputfilename='Assembly.gdml', view=True, axis=True, write=True):
     mount_physical = MakeMount(view=False, write=False)
     needle_physical, bar_physical = MakeNeedle(view=False, write=False)
 
