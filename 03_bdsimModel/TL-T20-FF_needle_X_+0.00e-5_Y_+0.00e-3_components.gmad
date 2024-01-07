@@ -164,22 +164,21 @@ D01918: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas",
 QH14T20: quadrupole, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", k1=-0.2142524951, l=1.0291, vacuumMaterial="luxeVacuum";
 QH15T20: quadrupole, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", k1=0.3003175222, l=1.0291, vacuumMaterial="luxeVacuum";
 D01500: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=0.15, vacuumMaterial="luxeVacuum";
-D08500: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=0.85, vacuumMaterial="luxeVacuum";
-TARGET: marker;
-D001: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=0.3, vacuumMaterial="luxeVacuum";
-M001: rbend, angle=0, B=0, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=1.4, vacuumMaterial="luxeVacuum";
-DUM1: element, aper1=0.1, apertureType="circularvacuum", l=4.4241, geometryFile="gdml:FirstDump.gdml", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum", stripOuterVolume=1, offsetX=-0.885, offsetY=-0.478;
-IPCH: element, aper1=0.1, apertureType="circularvacuum", l=2.9259, geometryFile="gdml:IPChamber.gdml", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum", stripOuterVolume=1, offsetX=-0.200, offsetY=-2.158;
-M002: rbend, angle=0, B=-1.5, aper1=0.28235, aper2=0.02831, apertureType="rectangular", biasVacuum="biasElecBeamGas", l=1.2, vacuumMaterial="luxeVacuum", magnetGeometryType="gdml:SecondMagnet.gdml";
-EXTR: element, aper1=0.1, apertureType="circularvacuum", l=1.3000, geometryFile="gdml:Extraction.gdml", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum", stripOuterVolume=1, offsetX=0, offsetY=0;
-D008: drift, aper1=0.04826, apertureType="circular", biasVacuum="biasElecBeamGas", l=1.52, vacuumMaterial="luxeVacuum";
-SCI2: element, aper1=0.1, apertureType="circular", l=5e-4, geometryFile="gdml:Scintillator.gdml", biasMaterial="biasElecMat", vacuumMaterial="luxeVacuum", stripOuterVolume=1, offsetX=-0.576, offsetY=0;
-CHE2: marker;
-D009: drift, aper1=0.04826, apertureType="circular", biasVacuum="biasElecBeamGas", l=2.2, vacuumMaterial="luxeVacuum";
-GAM1: marker;
-DUM2: dump, apertureType="circular", l=0.5, horizontalWidth=1;
-D010: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=0.3, vacuumMaterial="luxeVacuum";
-SHI2: shield, aper1=0.1, apertureType="circular", l=0.5, xsize=0.12, ysize=0.12;
+D08500: drift, aper1=0.02413, apertureType="circular", biasVacuum="biasElecBeamGas", l=0.85, vacuumMaterial="luxeVacuum";
+
+ICSC: element, l=0.42, geometryFile="gdml:ICSChamber.gdml", stripOuterVolume=1;
+ICSCDRIFT: drift, aper1=0.02413, apertureType="circular", l=0.42, biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
+M001: rbend, angle=0, B=-1.2*0, l=1.2, biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum", magnetGeometryType="gdml:FirstMagnet.gdml", tilt=1.5707963267948966;
+DUM1: element, l=4.4241, geometryFile="gdml:FirstDump.gdml", stripOuterVolume=1;
+IPCH: element, l=2.9259, geometryFile="gdml:IPChamberWithAssembly.gdml", stripOuterVolume=1, offsetX=0;
+M002: rbend, angle=0, B=-1.5*0, l=1.2, biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum", magnetGeometryType="gdml:SecondMagnet.gdml";
+EXTR: element, l=1.2800, geometryFile="gdml:Extraction.gdml", stripOuterVolume=1;
+DET1: element, l=2.5, geometryFile="gdml:Detectors.gdml", stripOuterVolume=1;
+GAMC: element, l=0.1, geometryFile="gdml:GammaChamber.gdml", stripOuterVolume=1;
+GAMCDRIFT: drift, aper1=0.02413, apertureType="circular", l=0.1, biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
+DUM2: element, l=1.95, geometryFile="gdml:SecondDump.gdml", stripOuterVolume=1;
+ALTA: element, l=0.01, geometryFile="gdml:Assembly.gdml", stripOuterVolume=1;
+
 D011: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=1.8, vacuumMaterial="luxeVacuum";
 M003: rbend, angle=0, B=0, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=1.3, vacuumMaterial="luxeVacuum";
 D012: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=0.6, vacuumMaterial="luxeVacuum";
