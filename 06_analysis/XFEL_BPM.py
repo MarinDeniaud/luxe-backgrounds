@@ -258,8 +258,11 @@ def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
         raise ValueError("Inconsistant Train IDs in file : {}".format(inputfilename))
     bpmlist = list(bpmdata.keys())
     TrainID = bpmdata[bpmlist[0]]['TrainId']
-    nbtrain, nbbunch = bpmdata[bpmlist[0]]['X.TD'].shape
-    data = {'X': [], 'DX': [], 'Y': [], 'DY': [], 'Charge': [], 'Valid': [], 'S': [], 'E': [], 'DE': [], 'Time': [], 'DTime': []}
+    nbtrain, nbbunch = getNbTrainsBunches(rawdata)
+    keys = ['X', 'DX', 'Y', 'DY', 'Charge', 'Valid', 'S', 'E', 'DE', 'Time', 'DTime']
+    data = {}
+    for k in keys:
+        data[k] = []
     for bpm in bpmlist:
         data['X'].append(_np.array(bpmdata[bpm]['X.TD'])*1e-3)  # mm converted in m
         data['DX'].append(_np.full((nbtrain, nbbunch), 2e-6))
@@ -271,22 +274,24 @@ def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
         E = _np.tile(energydata['Value'], (nbbunch, 1)).transpose()*1e-3  # MeV converted to GeV
         data['E'].append(E)
         data['DE'].append(E/100)
-        T = timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'][:, :nbbunch]  # us ??
-        data['Time'].append(T)
-        data['DTime'].append(T/100)
+        T = timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value']  # [:, :nbbunch]  # us ??
+        data['Time'].append(_np.array(T))
+        data['DTime'].append(_np.array(T)/100)
     names = ['BPM', 'TrainID', 'BunchID']
+    print('All bpm done')
     for key in data:
         data[key] = _np.asarray(data[key])
+    print('Asarray done')
     index = _pd.MultiIndex.from_product([range(s) for s in data['X'].shape], names=names)
     for key in data:
         data[key] = data[key].flatten()
+    print('Flatten done')
     df_bpm = _pd.DataFrame(data, index=index)
     df_bpm.index.set_levels([bpmlist, TrainID], level=[0, 1], inplace=True)
+    print('MI done')
+    rawdata.close()
 
-    df_e = _pd.DataFrame(energydata['Value'])
-    df_at = _pd.DataFrame(timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'])
-
-    return df_bpm, df_e, df_at
+    return df_bpm
 
 
 def reduceDFbyIndex(df, index, value):
