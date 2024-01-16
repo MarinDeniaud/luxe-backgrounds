@@ -1,34 +1,33 @@
 import pyg4ometry as _pyg4
 import numpy as _np
 
-import ExtractLUXE
-
 
 def MakeAssembly(outputfilename='Assembly.gdml', view=True, axis=True, write=True):
+    reg = _pyg4.geant4.Registry()
+
+    ws = _pyg4.geant4.solid.Box("ws", 100, 100, 100, reg, "mm")
+    wl = _pyg4.geant4.LogicalVolume(ws, "G4_Galactic", "wl", reg)
+
     mount_physical = MakeMount(view=False, write=False)
-    needle_physical, bar_physical = MakeNeedle(view=False, write=False)
+    bar_physical = MakeBar(view=False, write=False)
+    needle_physical = MakeNeedle(view=False, write=False)
 
-    reg = mount_physical.registry
-    world_logical = reg.getWorldVolume()
+    mount_physical = _pyg4.geant4.PhysicalVolume([0, 0, 0], [0, 0, 0], mount_physical.logicalVolume, "ALTA_mount_physical", wl, reg)
+    bar_physical = _pyg4.geant4.PhysicalVolume([-_np.pi/2, 0, 0], [0, -28.6, 0], bar_physical.logicalVolume, "ALTA_bar_physical", wl, reg)
+    needle_physical = _pyg4.geant4.PhysicalVolume([-_np.pi/2, 0, 0], [0, -30.85, 0], needle_physical.logicalVolume, "ALTA_needle_physical", wl, reg)
 
-    new_needle_physical = _pyg4.geant4.PhysicalVolume([-_np.pi/2, 0, 0], [0, -30.85, 0], needle_physical.logicalVolume, "new_needle_physical", world_logical, reg)
-    new_bar_physical = _pyg4.geant4.PhysicalVolume([-_np.pi / 2, 0, 0], [0, -28.6, 0], bar_physical.logicalVolume, "new_bar_physical", world_logical, reg)
+    reg.addVolumeRecursive(mount_physical)
+    reg.addVolumeRecursive(bar_physical)
+    reg.addVolumeRecursive(needle_physical)
 
-    reg.addVolumeRecursive(new_needle_physical)
-    reg.addVolumeRecursive(new_bar_physical)
+    reg.setWorld(wl.name)
+    wl.clipSolid()
 
-    world_logical.clipSolid()
-    world_logical.mesh.remesh()
-    centerPosition, centerRotation = ExtractLUXE.findGlobalPositionRotation(world_logical, new_needle_physical)
-    ExtractLUXE.center(world_logical, centerPosition, centerRotation)
-    assembly = world_logical.assemblyVolume()
-    assembly.registry.setWorld(assembly.name)
-
-    if write: writeOptions(assembly.registry, outputfilename)
-    if view: viewOptions(assembly, axis, axisLength=1000)
+    if write: writeOptions(reg, outputfilename)
+    if view: viewOptions(wl, axis, axisLength=1000)
 
 
-def MakeMount(outputfilename='AssemblyBox.gdml', xsise=16e-3, ysize=55.2e-3, zsize=4e-3, radius=3.25e-3, view=True, axis=True, write=True):
+def MakeMount(outputfilename='AssemblyMount.gdml', xsise=16e-3, ysize=55.2e-3, zsize=4e-3, radius=3.25e-3, view=True, axis=True, write=True):
     reg = _pyg4.geant4.Registry()
 
     world_solid = _pyg4.geant4.solid.Box("world_solid", 100, 100, 100, reg, lunit='mm')
@@ -42,7 +41,7 @@ def MakeMount(outputfilename='AssemblyBox.gdml', xsise=16e-3, ysize=55.2e-3, zsi
     reg.setWorld("world_logical")
     mount_physical = _pyg4.geant4.PhysicalVolume([0, 0, 0], [0, 0, 0], mount_logical, "mount_physical", world_logical, reg)
 
-    # world_logical.clipSolid()
+    world_logical.clipSolid()
 
     if write: writeOptions(reg, outputfilename)
     if view: viewOptions(world_logical, axis, axisLength=1000)
@@ -50,29 +49,50 @@ def MakeMount(outputfilename='AssemblyBox.gdml', xsise=16e-3, ysize=55.2e-3, zsi
     return mount_physical
 
 
-def MakeNeedle(outputfilename='AssemblyNeedle.gdml', radius1=125e-6, radius2=7e-6, length1=2.5e-3, length2=2e-3, view=True, axis=True, write=True):
+def MakeNeedle(outputfilename='AssemblyNeedle.gdml', radius1=125e-6, radius2=7e-6, length=2.5e-3, view=True, axis=True, write=True):
     reg = _pyg4.geant4.Registry()
 
     world_solid = _pyg4.geant4.solid.Box("world_solid", 100, 100, 100, reg, lunit='mm')
-    needle_solid = _pyg4.geant4.solid.Cons("needle_solid", 0, radius1, 0, radius2, length1, 0, _np.pi*2, reg, lunit="m", aunit="rad")
-    bar_solid = _pyg4.geant4.solid.Cons("bar_solid", 0, radius1, 0, radius1, length2, 0, _np.pi * 2, reg, lunit="m", aunit="rad")
+    needle_solid = _pyg4.geant4.solid.Cons("needle_solid", 0, radius1, 0, radius2, length, 0, _np.pi*2, reg, lunit="m", aunit="rad")
 
     world_material = _pyg4.geant4.MaterialPredefined("G4_Galactic")
     needle_material = _pyg4.geant4.MaterialPredefined("G4_W")
-    bar_material = _pyg4.geant4.MaterialPredefined("G4_W")
 
     world_logical = _pyg4.geant4.LogicalVolume(world_solid, world_material, "world_logical", reg)
     needle_logical = _pyg4.geant4.LogicalVolume(needle_solid, needle_material, "needle_logical", reg)
-    bar_logical = _pyg4.geant4.LogicalVolume(bar_solid, bar_material, "bar_logical", reg)
 
-    reg.setWorld("world_logical")
-    needle_physical = _pyg4.geant4.PhysicalVolume([-_np.pi/2, 0, 0], [0, -2.25, 0], needle_logical, "needle_physical", world_logical, reg)
-    bar_physical = _pyg4.geant4.PhysicalVolume([-_np.pi / 2, 0, 0], [0, 0, 0], bar_logical, "bar_physical", world_logical, reg)
+    reg.setWorld(world_logical)
+    needle_physical = _pyg4.geant4.PhysicalVolume([0, 0, 0], [0, -2.25, 0], needle_logical, "needle_physical", world_logical, reg)
+
+    world_logical.clipSolid()
 
     if write: writeOptions(reg, outputfilename)
     if view: viewOptions(world_logical, axis, axisLength=1000)
 
-    return needle_physical, bar_physical
+    return needle_physical
+
+
+def MakeBar(outputfilename='AssemblyBar.gdml', radius=125e-6, length=2e-3, view=True, axis=True, write=True):
+    reg = _pyg4.geant4.Registry()
+
+    world_solid = _pyg4.geant4.solid.Box("world_solid", 100, 100, 100, reg, lunit='mm')
+    bar_solid = _pyg4.geant4.solid.Cons("bar_solid", 0, radius, 0, radius, length, 0, _np.pi * 2, reg, lunit="m", aunit="rad")
+
+    world_material = _pyg4.geant4.MaterialPredefined("G4_Galactic")
+    bar_material = _pyg4.geant4.MaterialPredefined("G4_W")
+
+    world_logical = _pyg4.geant4.LogicalVolume(world_solid, world_material, "world_logical", reg)
+    bar_logical = _pyg4.geant4.LogicalVolume(bar_solid, bar_material, "bar_logical", reg)
+
+    reg.setWorld(world_logical)
+    bar_physical = _pyg4.geant4.PhysicalVolume([0, 0, 0], [0, 0, 0], bar_logical, "bar_physical", world_logical, reg)
+
+    world_logical.clipSolid()
+
+    if write: writeOptions(reg, outputfilename)
+    if view: viewOptions(world_logical, axis, axisLength=1000)
+
+    return bar_physical
 
 
 def MakePinhole(outputfilename='Pinhole.gdml', Radius1=50e-6, Radius2=200e-6, length=1e-3, SideLength=0.005, view=True, axis=True, write=True):
@@ -100,19 +120,19 @@ def MakePinhole(outputfilename='Pinhole.gdml', Radius1=50e-6, Radius2=200e-6, le
     if view: viewOptions(world_logical, axis, axisLength=1000)
 
 
-def MakeCube(outputfilename='Cube.gdml', view=True, axis=True, write=True):
+def MakeCube(outputfilename='Cube.gdml', worldSize=50, cubeSize=10, cubeMat='G4_W', view=True, axis=True, write=True):
     # registry to store gdml data5
     reg = _pyg4.geant4.Registry()
 
     # world solid and logical
-    ws = _pyg4.geant4.solid.Box("ws", 50, 50, 50, reg)
+    ws = _pyg4.geant4.solid.Box("ws", worldSize, worldSize, worldSize, reg)
     wl = _pyg4.geant4.LogicalVolume(ws, "G4_Galactic", "wl", reg)
 
     reg.setWorld(wl.name)
 
     # box placed at origin
-    b1 = _pyg4.geant4.solid.Box("b1", 10, 10, 10, reg)
-    b1_l = _pyg4.geant4.LogicalVolume(b1, "G4_Fe", "b1_l", reg)
+    b1 = _pyg4.geant4.solid.Box("b1", cubeSize, cubeSize, cubeSize, reg)
+    b1_l = _pyg4.geant4.LogicalVolume(b1, cubeMat, "b1_l", reg)
     b1_p = _pyg4.geant4.PhysicalVolume([0, 0, 0], [0, 0, 0], b1_l, "b1_p", wl, reg)
 
     wl.clipSolid()
