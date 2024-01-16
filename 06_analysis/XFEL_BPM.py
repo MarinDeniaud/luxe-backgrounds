@@ -104,53 +104,149 @@ def crisp(outputfilename='crisp_bunch_{}_for_{}_trains.pk', bunch=1, nbtrain=100
     df.to_pickle(outputfilename.format(bunch, nbtrain))
 
 
-def checkTrainIDdifferences(inputfilename):
+def findUnmatchedTrainIDinBPMs(rawdata):
+    bpmdata = rawdata['XFEL.DIAG']['BPM']
+    firstbpmtrains = rawdata['XFEL.DIAG']['BPM'][list(bpmdata.keys())[0]]['TrainId'][:]
+    L = _np.array([])
+    for bpm in bpmdata.keys():
+        bpmtrains = bpmdata[bpm]['TrainId'][:]
+        L = _np.append(L, _np.setdiff1d(firstbpmtrains, bpmtrains))
+        L = _np.append(L, _np.setdiff1d(bpmtrains, firstbpmtrains))
+    return L
+
+
+def findUnmatchedTrainID(inputfilename):
     rawdata = _h5.File(inputfilename, 'r')
+
+    bpmdata = rawdata['XFEL.DIAG']['BPM']
+    energydata = rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']
+    timedata = rawdata['XFEL.SDIAG']['BAM.DAQ']
+
+    bpmtrains = bpmdata['BPMI.1860.TL']['TrainId'][:]
+    energytrains = energydata['CL']['ENERGY.ALL']['TrainId'][:]
+    timetrains = timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['TrainId'][:]
+
+    L = findUnmatchedTrainIDinBPMs(rawdata)
+    L = _np.append(L, _np.setdiff1d(bpmtrains, energytrains))
+    L = _np.append(L, _np.setdiff1d(energytrains, bpmtrains))
+    L = _np.append(L, _np.setdiff1d(bpmtrains, timetrains))
+    L = _np.append(L, _np.setdiff1d(timetrains, bpmtrains))
+    L = _np.append(L, _np.setdiff1d(timetrains, energytrains))
+    L = _np.append(L, _np.setdiff1d(energytrains, timetrains))
+    unmatched_train_ids = [int(l) for l in list(_np.unique(L))]
+
+    rawdata.close()
+
+    return unmatched_train_ids
+
+
+def removeUnmatchedTrainID(inputfilename, outputfilename=None):
+    if outputfilename is None:
+        outputfilename = 'matched_' + inputfilename
+
+    rawdata = _h5.File(inputfilename, 'r')
+    newdata = _h5.File(outputfilename, 'w')
+
+    bpmdata = rawdata['XFEL.DIAG']['BPM']
+    energydata = rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']
+    timedata = rawdata['XFEL.SDIAG']['BAM.DAQ']
+
+    bpmtrains = bpmdata['BPMI.1860.TL']['TrainId'][:]
+    energytrains = energydata['CL']['ENERGY.ALL']['TrainId'][:]
+    timetrains = timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['TrainId'][:]
+
+    nbtrainmax, nbbunchmax = getNbTrainsBunches(rawdata)
+    unmatched_train_ids = findUnmatchedTrainID(inputfilename)
+
+    copyGroupsAndDatasets(rawdata, newdata)
+    copyGroupsAndDatasets(rawdata['XFEL.DIAG'], newdata['XFEL.DIAG'])
+    copyGroupsAndDatasets(rawdata['XFEL.SDIAG'], newdata['XFEL.SDIAG'])
+
+    def copyOnlyMarchedTrainsByBranch(trainsids, rawdatabranch, newdatabranch):
+        unmatched_train_indices = _np.array([])
+        for train_id in unmatched_train_ids:
+            train_index = _np.where(trainsids == train_id)[0]
+            if len(train_index) == 1:
+                unmatched_train_indices = _np.append(unmatched_train_indices, int(_np.where(trainsids == train_id)[0]))
+        train_indices = _np.setdiff1d(_np.arange(len(trainsids)), unmatched_train_indices)
+        copyAndSelectRecursive(rawdatabranch, newdatabranch, train_indices, _np.arange(nbbunchmax))
+
+    copyOnlyMarchedTrainsByBranch(bpmtrains, bpmdata, newdata['XFEL.DIAG']['BPM'])
+    copyOnlyMarchedTrainsByBranch(energytrains, energydata, newdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT'])
+    copyOnlyMarchedTrainsByBranch(timetrains, timedata, newdata['XFEL.SDIAG']['BAM.DAQ'])
+
+    rawdata.close()
+    newdata.close()
+
+
+def reduceH5FileByTrainBunch(inputfilename, outputfilename=None, trains=None, bunches=None):
+    if outputfilename is None:
+        outputfilename = 'reduced_' + inputfilename
+
+    rawdata = _h5.File(inputfilename, 'r')
+    newdata = _h5.File(outputfilename, 'w')
+
+    nbtrainmax, nbbunchmax = getNbTrainsBunches(rawdata)
+    if trains is None:
+        print(Warning("Train selection not provided. Using all {} trains".format(nbtrainmax)))
+        trains = _np.arange(nbtrainmax)
+    if bunches is None:
+        print(Warning("Bunch selection not provided. Using all {} bunches".format(nbbunchmax)))
+        bunches = _np.arange(nbbunchmax)
+
+    copyAndSelectRecursive(rawdata, newdata, trains, bunches)
+    rawdata.close()
+    newdata.close()
+
+
+def copyGroupsAndDatasets(rawdata, newdata):
+    setAttributes(rawdata, newdata)
+    for key in rawdata.keys():
+        newdata.create_group(key)
+        setAttributes(rawdata[key], newdata[key])
+
+
+def copyAndSelectRecursive(rawdata, newdata, trains, bunches):
+    keys = rawdata.keys()
+    print(rawdata.name)
+    for key in keys:
+        if type(rawdata[key]) == _h5._hl.group.Group:
+            newdata.create_group(key)
+            copyAndSelectRecursive(rawdata[key], newdata[key], trains, bunches)
+        elif type(rawdata[key]) == _h5._hl.dataset.Dataset:
+            rawarray = rawdata[key][:]
+            if key in ['BUNCH_VALID.TD', 'CHARGE.TD', 'X.TD', 'Y.TD']:
+                newdata.create_dataset(key, data=rawarray[trains, :][:, bunches], compression="gzip", compression_opts=9)
+            elif key == 'TimeStamp':
+                newdata.create_dataset(key, data=rawarray[trains, :], compression="gzip", compression_opts=9)
+            elif key == 'TrainId':
+                newdata.create_dataset(key, data=rawarray[trains], compression="gzip", compression_opts=9)
+            elif key == 'Value':
+                if rawdata.name in ['/XFEL.SDIAG/BAM.DAQ/1932S.TL.ARRIVAL_TIME.RELATIVE', '/XFEL.SDIAG/BAM.DAQ/1932M.TL.ARRIVAL_TIME.RELATIVE']:
+                    newdata.create_dataset(key, data=rawarray[trains, :][:, bunches], compression="gzip", compression_opts=9)
+                elif rawdata.name == '/XFEL.DIAG/BEAM_ENERGY_MEASUREMENT/CL/ENERGY.ALL':
+                    newdata.create_dataset(key, data=rawarray[trains], compression="gzip", compression_opts=9)
+        setAttributes(rawdata[key], newdata[key])
+
+
+def setAttributes(rawdata, newdata):
+    names = list(rawdata.attrs.keys())
+    values = list(rawdata.attrs.values())
+    for name, value in zip(names, values):
+        newdata.attrs.create(name, value)
+
+
+def getNbTrainsBunches(rawdata):
     bpmlist = list(rawdata['XFEL.DIAG']['BPM'].keys())
-
-    data = {}
-    for bpm in bpmlist:
-        data[bpm] = rawdata['XFEL.DIAG']['BPM'][bpm]['TrainId']
-    df_bpm = _pd.DataFrame(data)
-    df_e = _pd.DataFrame(rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']['CL']['ENERGY.ALL']['TrainId'])
-    df_at = _pd.DataFrame(rawdata['XFEL.SDIAG']['BAM.DAQ']['1932S.TL.ARRIVAL_TIME.RELATIVE']['TrainId'])
-
-    print('Nb of train measured for BPM : {}, Energy : {}, Arrival Time : {}'.format(df_bpm.shape[0], df_e.shape[0], df_at.shape[0]))
-
-    t = 0
-    for i in range(df_bpm.shape[0]):
-        if len(df_bpm.loc[i].unique()) > 1:
-            t += 1
-            print(Warning("Train number {} with has inconsistant ID across bpms"))
-    if t == 0:
-        print('All train IDs matching in BPMs')
-
-    if df_bpm.shape[0] != df_at.shape[0]:
-        print(Warning("Difference of {} trains between BPM and Arrival Time data".format(_np.abs(df_bpm.shape[0] - df_at.shape[0]))))
-        print(Warning("Trains {} aren't registered in both data".format(_np.setdiff1d(df_bpm[df_bpm.columns[0]].to_numpy(), df_at.to_numpy()))))
-
-    if df_bpm.shape[0] != df_e.shape[0]:
-        print(Warning("Difference of {} trains between BPM and Energy data".format(_np.abs(df_bpm.shape[0] - df_e.shape[0]))))
-        print(Warning("Trains {} aren't registered in both data".format(_np.setdiff1d(df_bpm[df_bpm.columns[0]].to_numpy(), df_e.to_numpy()))))
-
-
-def isNBTrainsConsistant(rawdata):
-    bpmlist = list(rawdata['XFEL.DIAG']['BPM'].keys())
-
-    data = {}
-    for bpm in bpmlist:
-        data[bpm] = rawdata['XFEL.DIAG']['BPM'][bpm]['TrainId']
-    df_bpm = _pd.DataFrame(data)
-    df_e = _pd.DataFrame(rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']['CL']['ENERGY.ALL']['TrainId'])
-    df_at = _pd.DataFrame(rawdata['XFEL.SDIAG']['BAM.DAQ']['1932S.TL.ARRIVAL_TIME.RELATIVE']['TrainId'])
-
-    for i in range(df_bpm.shape[0]):
-        if len(df_bpm.loc[i].unique()) > 1:
-            return False
-
-    if df_bpm.shape[0] == df_at.shape[0] and df_bpm.shape[0] == df_e.shape[0]:
-        return True
-    return False
+    try:
+        nbtrain, nbbunch = rawdata['XFEL.DIAG']['BPM'][bpmlist[0]]['X.TD'].shape
+    except ValueError:
+        nbtrain = len(rawdata['XFEL.DIAG']['BPM'][bpmlist[0]]['TrainId'])
+        if nbtrain == 1:
+            nbbunch = len(rawdata['XFEL.DIAG']['BPM'][bpmlist[0]]['X.TD'])
+        else:
+            nbbunch = 1
+    return nbtrain, nbbunch
 
 
 def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
@@ -158,8 +254,8 @@ def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
     bpmdata = rawdata['XFEL.DIAG']['BPM']
     energydata = rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']['CL']['ENERGY.ALL']
     timedata = rawdata['XFEL.SDIAG']['BAM.DAQ']
-    if not isNBTrainsConsistant(rawdata):
-        raise ValueError("Inconsistant number of train. Please Marin build a filter script")
+    if len(findUnmatchedTrainID(inputfilename)) > 0:
+        raise ValueError("Inconsistant Train IDs in file : {}".format(inputfilename))
     bpmlist = list(bpmdata.keys())
     TrainID = bpmdata[bpmlist[0]]['TrainId']
     nbtrain, nbbunch = bpmdata[bpmlist[0]]['X.TD'].shape
