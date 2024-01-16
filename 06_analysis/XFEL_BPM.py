@@ -1,4 +1,4 @@
-#import pydoocs
+# import pydoocs
 import h5py as _h5
 import matplotlib.pyplot as _plt
 import numpy as _np
@@ -11,59 +11,60 @@ bl_time_adress = "XFEL.SDIAG/THZ_SPECTROMETER.RECONSTRUCTION/CRD.1934.TL.NTH/OUT
 bl_current_adress = "XFEL.SDIAG/THZ_SPECTROMETER.RECONSTRUCTION/CRD.1934.TL.NTH/CURRENT_PROFILE"
 bl_number_adress = "XFEL.SDIAG/THZ_SPECTROMETER.FORMFACTOR/CRD.1934.TL/NTH_BUNCH"
 
-BPM_DICT = {'BPMI.1860.TL': {'MAD8_name': 'BPMI.Y1.TL', 'Line': 'TL', 'S': 1838.149255},
-            'BPMI.1863.TL': {'MAD8_name': 'BPMI.X1.TL', 'Line': 'TL', 'S': 1840.737255},
-            'BPMA.1868.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1845.310755},
-            'BPMA.1873.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1850.160755},
-            'BPMI.1878.TL': {'MAD8_name': 'BPMI.Y2.TL', 'Line': 'TL', 'S': 1856.104255},
-            'BPMI.1889.TL': {'MAD8_name': 'BPMI.X2.TL', 'Line': 'TL', 'S': 1866.304255},
-            'BPMI.1910.TL': {'MAD8_name': 'BPMI.Y3.TL', 'Line': 'TL', 'S': 1887.259255},
-            'BPMI.1925.TL': {'MAD8_name': 'BPMI.X3.TL', 'Line': 'TL', 'S': 1902.259255},
-            'BPMI.1930.TL': {'MAD8_name': 'BPMI.Y4.TL', 'Line': 'TL', 'S': 1907.559255},
-            'BPMI.1939.TL': {'MAD8_name': 'BPMI.X4.TL', 'Line': 'TL', 'S': 1916.304255},
-            'BPMA.1966.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1943.710757}, #11
+
+BPM_DICT = {'BPMI.1860.TL': {'MAD8_name': 'BPMI.Y1.TL', 'Line': 'TL', 'S': 1838.149255, 'X': 0.000000, 'Y': -2.389866},
+            'BPMI.1863.TL': {'MAD8_name': 'BPMI.X1.TL', 'Line': 'TL', 'S': 1840.737255, 'X': 0.000000, 'Y': -2.390811},
+            'BPMA.1868.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1845.310755, 'X': 0.000000, 'Y': -2.392481},
+            'BPMA.1873.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1850.160755, 'X': 0.000000, 'Y': -2.394251},
+            'BPMI.1878.TL': {'MAD8_name': 'BPMI.Y2.TL', 'Line': 'TL', 'S': 1856.104255, 'X': 0.000000, 'Y': -2.396422},
+            'BPMI.1889.TL': {'MAD8_name': 'BPMI.X2.TL', 'Line': 'TL', 'S': 1866.304255, 'X': 0.000000, 'Y': -2.400146},
+            'BPMI.1910.TL': {'MAD8_name': 'BPMI.Y3.TL', 'Line': 'TL', 'S': 1887.259255, 'X': 0.000000, 'Y': -2.407797},
+            'BPMI.1925.TL': {'MAD8_name': 'BPMI.X3.TL', 'Line': 'TL', 'S': 1902.259255, 'X': 0.000000, 'Y': -2.413274},
+            'BPMI.1930.TL': {'MAD8_name': 'BPMI.Y4.TL', 'Line': 'TL', 'S': 1907.559255, 'X': 0.000000, 'Y': -2.415209},
+            'BPMI.1939.TL': {'MAD8_name': 'BPMI.X4.TL', 'Line': 'TL', 'S': 1916.304255, 'X': 0.000000, 'Y': -2.418402},
+            'BPMA.1966.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1943.710757, 'X': 0.000000, 'Y': -2.428409},  # 11
             # TLD
-            'BPMD.1977.TL': {'MAD8_name': 'BPMD.TL',    'Line': 'TL', 'S': 1955.124959},
-            'BPMA.1995.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1972.760701},
-            'BPMA.2011.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1988.710701},
-            'BPMD.2022.TL': {'MAD8_name': 'BPMD.TL',    'Line': 'TL', 'S': 2000.125103},
-            'BPMA.2041.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 2018.710845}, #5
+            'BPMD.1977.TL': {'MAD8_name': 'BPMD.TL',    'Line': 'TL', 'S': 1955.124959, 'X': 0.000000, 'Y': -2.432576},
+            'BPMA.1995.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1972.760701, 'X': 0.000000, 'Y': -2.439016},
+            'BPMA.2011.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1988.710701, 'X': 0.000000, 'Y': -2.444839},
+            'BPMD.2022.TL': {'MAD8_name': 'BPMD.TL',    'Line': 'TL', 'S': 2000.125103, 'X': 0.000000, 'Y': -2.449007},
+            'BPMA.2041.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 2018.710845, 'X': 0.000000, 'Y': -2.455793},  # 5
 
-            'BPMA.2054.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 2031.915847},  # Difference with mad8 lattice ...
+            'BPMA.2054.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 2031.915847, 'X': 0.000000, 'Y': -2.460614},  # Difference with mad8 lattice ...
 
-            'BPMA.2040.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2017.710851},
-            'BPMA.2044.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2021.851529},
-            'BPMA.2055.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2032.37595},
-            'BPMA.2062.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2040.110684},
-            'BPMA.2068.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2046.031866},
-            'BPMA.2082.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2060.020296},
-            'BPMA.2088.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2065.865296},
-            'BPMA.2092.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2069.655296},
-            'BPMA.2097.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2075.020296},
-            'BPMA.2109.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2087.020296},
-            'BPMA.2124.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2101.520296},
-            'BPMA.2138.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2116.020296},
-            'BPMA.2153.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2130.520296},
-            'BPMA.2167.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2145.020296},
-            'BPMA.2179.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2156.920296},
-            'BPMA.2184.T1': {'MAD8_name': 'BPMA.T1', 'Line': 'T1', 'S': 2161.935296},
-            'BPME.2191.T1': {'MAD8_name': 'BPME.T1', 'Line': 'T1', 'S': 2168.336421},
-            'BPME.2197.T1': {'MAD8_name': 'BPME.T1', 'Line': 'T1', 'S': 2174.467921}, #18
+            'BPMA.2040.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2017.710851, 'X': 0.240162, 'Y': -2.431523},
+            'BPMA.2044.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2021.851529, 'X': 0.333960, 'Y': -2.433035},
+            'BPMA.2055.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2032.375950, 'X': 0.558250, 'Y': -2.436877},
+            'BPMA.2062.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2040.110684, 'X': 0.707628, 'Y': -2.439700},
+            'BPMA.2068.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2046.031866, 'X': 0.805806, 'Y': -2.441862},
+            'BPMA.2082.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2060.020296, 'X': 1.108241, 'Y': -2.446968},
+            'BPMA.2088.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2065.865296, 'X': 1.341356, 'Y': -2.456983},
+            'BPMA.2092.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2069.655296, 'X': 1.492512, 'Y': -2.465618},
+            'BPMA.2097.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2075.020296, 'X': 1.706483, 'Y': -2.476357},
+            'BPMA.2109.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2087.020296, 'X': 2.185077, 'Y': -2.480735},
+            'BPMA.2124.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2101.520296, 'X': 2.763378, 'Y': -2.486025},
+            'BPMA.2138.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2116.020296, 'X': 3.341679, 'Y': -2.491315},
+            'BPMA.2153.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2130.520296, 'X': 3.919980, 'Y': -2.496605},
+            'BPMA.2167.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2145.020296, 'X': 4.498282, 'Y': -2.501895},
+            'BPMA.2179.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2156.920296, 'X': 4.972887, 'Y': -2.506237},
+            'BPMA.2184.T1': {'MAD8_name': 'BPMA.T1',    'Line': 'T1', 'S': 2161.935296, 'X': 5.172900, 'Y': -2.508066},
+            'BPME.2191.T1': {'MAD8_name': 'BPME.T1',    'Line': 'T1', 'S': 2168.336421, 'X': 5.428195, 'Y': -2.510402},
+            'BPME.2197.T1': {'MAD8_name': 'BPME.T1',    'Line': 'T1', 'S': 2174.467921, 'X': 5.672736, 'Y': -2.512639},  # 18
 
-            'BPMA.2071.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2048.710889},
-            'BPMA.2086.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2063.710889},
-            'BPMA.2101.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2078.710889},
-            'BPMA.2116.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2093.710989},
-            'BPMA.2132.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2109.410989},
-            'BPMA.2145.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2122.510989},
-            'BPMA.2161.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2138.710989},
-            'BPMA.2176.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2153.710989},
-            'BPMA.2191.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2168.711039},
-            'BPMA.2206.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2183.711039},
-            'BPMA.2218.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2195.511039},
-            'BPMA.2223.T2': {'MAD8_name': 'BPMA.T2', 'Line': 'T2', 'S': 2200.372856},
-            'BPME.2229.T2': {'MAD8_name': 'BPME.T2', 'Line': 'T2', 'S': 2206.345089},
-            'BPME.2235.T2': {'MAD8_name': 'BPME.T2', 'Line': 'T2', 'S': 2212.476589} #14
+            'BPMA.2071.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2048.710889, 'X': 0.000000, 'Y': -2.466747},
+            'BPMA.2086.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2063.710889, 'X': 0.000000, 'Y': -2.472224},
+            'BPMA.2101.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2078.710889, 'X': 0.000000, 'Y': -2.477700},
+            'BPMA.2116.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2093.710989, 'X': 0.000000, 'Y': -2.483177},
+            'BPMA.2132.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2109.410989, 'X': 0.000000, 'Y': -2.488910},
+            'BPMA.2145.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2122.510989, 'X': 0.000000, 'Y': -2.493693},
+            'BPMA.2161.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2138.710989, 'X': 0.000000, 'Y': -2.499608},
+            'BPMA.2176.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2153.710989, 'X': 0.000000, 'Y': -2.505085},
+            'BPMA.2191.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2168.711039, 'X': 0.000000, 'Y': -2.510562},
+            'BPMA.2206.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2183.711039, 'X': 0.000000, 'Y': -2.516038},
+            'BPMA.2218.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2195.511039, 'X': 0.000000, 'Y': -2.520347},
+            'BPMA.2223.T2': {'MAD8_name': 'BPMA.T2',    'Line': 'T2', 'S': 2200.372856, 'X': 0.000000, 'Y': -2.522122},
+            'BPME.2229.T2': {'MAD8_name': 'BPME.T2',    'Line': 'T2', 'S': 2206.345089, 'X': 0.000000, 'Y': -2.524303},
+            'BPME.2235.T2': {'MAD8_name': 'BPME.T2',    'Line': 'T2', 'S': 2212.476589, 'X': 0.000000, 'Y': -2.526541}  # 14
             }
 
 
