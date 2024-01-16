@@ -150,6 +150,8 @@ def keepPhysicalVolume(inputfilename, outputfilename, toKeep=[], centerPhysicalN
         changeRotation = afterRotation - beforeRotation
         center(world_logical, centerPosition+changePosition, centerRotation+changeRotation)
 
+    world_logical.material = world_logical.registry.materialDict['XFELVacuum0x26bd680']
+
     if write: writeOptions(reg, outputfilename)
     if view: viewOptions(world_logical, axis, axisLength=1000)
 
@@ -209,7 +211,8 @@ def center(world_logical, centerPosition, centerRotation, centerX=True, centerY=
         dv.position = dv.position - centerOffset
 
 
-def addGeometryOnReference(mainfilename, addedfilename, outputfilename, referencename, view=True, axis=True, write=True):
+def addGeometryOnReference(mainfilename, addedfilename, outputfilename, referencename, offset_pos=[0, 0, 0], offset_rot=[0, 0, 0],
+                           view=True, axis=True, write=True):
     reader1 = _pyg4.gdml.Reader(mainfilename)
     reader2 = _pyg4.gdml.Reader(addedfilename)
 
@@ -219,12 +222,11 @@ def addGeometryOnReference(mainfilename, addedfilename, outputfilename, referenc
     world_logical_1 = reg1.getWorldVolume()
     world_logical_2 = reg2.getWorldVolume()
 
-    reference_physical = world_logical_1.registry.findPhysicalVolumeByName(referencename)[0]
-    position, rotation = findGlobalPositionRotation(world_logical_1, reference_physical)
+    ref_physical = world_logical_1.registry.findPhysicalVolumeByName(referencename)[0]
+    physical_volume = _pyg4.geant4.PhysicalVolume(offset_rot, offset_pos, world_logical_2, "added geometry", ref_physical.logicalVolume, reg1)
 
-    physical_volume = _pyg4.geant4.PhysicalVolume(rotation, position, world_logical_2, addedfilename, world_logical_1, reg1)
     reg1.addVolumeRecursive(physical_volume)
-    # world_logical_1.mesh.remesh()
+    reg1.setWorld(world_logical_1.name)
 
     if write: writeOptions(reg1, outputfilename)
     if view: viewOptions(world_logical_1, axis, axisLength=1000)
