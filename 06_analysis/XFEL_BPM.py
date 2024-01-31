@@ -4,6 +4,7 @@ import matplotlib.pyplot as _plt
 import numpy as _np
 import pandas as _pd
 import time as t
+import pymad8 as _m8
 
 bunch_pattern_adress = "XFEL.DIAG/TIMER/DI1914TL/BUNCH_PATTERN"
 
@@ -327,6 +328,221 @@ def reduceDFbyBPMTrainBunchByIndex(df, bpms=None, trains=None, bunches=None, val
         df = reduceDFbyIndex(df, 'BunchID', bunches)
     df.index = df.index.remove_unused_levels()
     return df
+
+
+def getOpticsFromXls(inputfilename='../../../../Desktop/component_list_2023.07.02.xls', sheet_name='I1toT5D', Smin=1838, Smax=2175):
+    sheet_df = _pd.read_excel(inputfilename, sheet_name=sheet_name)[1:]
+    reduced_sheet_df = sheet_df[sheet_df.S.between(Smin, Smax)]
+    S = reduced_sheet_df.S
+    BETX = reduced_sheet_df.BETX
+    BETY = reduced_sheet_df.BETY
+    return S, BETX, BETY
+
+
+def getOpticsFromMad8(inputfilename='../01_mad8/folder_test_xfel/XFEL_Lattice_9/TWISS_T4D', Smin=1838, Smax=2175):
+    tw = _m8.Output(inputfilename)
+    reduced_df = tw.data[tw.data.S.between(Smin, Smax)]
+    S = reduced_df.S
+    BETX = reduced_df.BETX
+    BETY = reduced_df.BETY
+    DX = reduced_df.DX
+    DY = reduced_df.DY
+    return S, BETX, BETY, DX, DY
+
+
+def buildMatrixAndVectorForSVD(df, refbpmname, coord='X', trains=None, bunches=None):
+    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
+    df_ref = df_reduced.loc[df_reduced.index.get_level_values('BPM') == refbpmname][['X', 'Y']]
+    df_matrix = df_reduced.loc[df_reduced.index.get_level_values('BPM') != refbpmname][['X', 'Y']]
+
+    nb_trains = df_matrix.index.levshape[1]
+    nb_bunches = df_matrix.index.levshape[2]
+
+    M_X = df_matrix['X'].to_numpy().reshape((-1, nb_trains*nb_bunches)).transpose()
+    M_Y = df_matrix['Y'].to_numpy().reshape((-1, nb_trains*nb_bunches)).transpose()
+    Vect_ref = df_ref[coord].to_numpy()
+    M = _np.concatenate((M_X, M_Y), axis=1)
+
+    M = M - M.mean(0)
+
+    return Vect_ref, M
+
+
+def SVD(M):
+    U, d, V_t = _np.linalg.svd(M, full_matrices=False)
+    D = _np.diag(d)
+
+    D_i = _np.linalg.inv(D)
+    U_t = U.transpose()
+    V = V_t.transpose()
+
+    return U, D, V_t, U_t, D_i, V
+
+
+def calcCoeffsWithSVD(M, ref_Vect):
+    """Return the correlation coefficients from a given matrix M using a Singular Value Decomposition method"""
+    U, d, V_t = _np.linalg.svd(M, full_matrices=False)
+    D = _np.diag(d)
+
+    D_i = _np.linalg.inv(D)
+    U_t = U.transpose()
+    V = V_t.transpose()
+
+    C = _np.dot(_np.dot(V, _np.dot(D_i, U_t)), ref_Vect)
+    return C
+
+
+def calcResidual(M, ref_Vect):
+    C = calcCoeffsWithSVD(M, ref_Vect)
+    # R = ref_Vect - _np.dot(M, C)
+    R = _np.dot(M, C)
+    return R
+
+
+def calcBPMResolution(M, ref_Vect):
+    R = calcResidual(M, ref_Vect)
+    Res = _np.sqrt(sum(R**2)/len(R))
+    return Res
+
+
+def calcJitterAndNoise(M, ref_Vect):
+    C = calcCoeffsWithSVD(M, ref_Vect)
+    Jitter = _np.dot(M, C)
+    Noise = ref_Vect - _np.dot(M, C)
+
+    return Jitter, Noise
+
+
+def plotBPM2D(bpmdict=BPM_DICT):
+    plotOptions()
+
+    X = [BPM_DICT[key]['X'] for key in BPM_DICT]
+    S = [BPM_DICT[key]['S'] for key in BPM_DICT]
+    _plt.scatter(X, S, marker='o')
+
+    Sdiff = _np.abs(max(S)-min(S))/2
+    # _plt.xlim(_np.mean(Y) - Sdiff, _np.mean(Y) + Sdiff)
+
+    _plt.xlabel('X [m]')
+    _plt.ylabel('S [m]')
+
+    # _plt.legend()
+
+
+def plotBPM3D(bpmdict=BPM_DICT):
+    fig = _plt.figure()
+    ax = fig.add_subplot(projection='3d')
+
+    X = [BPM_DICT[key]['X'] for key in BPM_DICT]
+    Y = [BPM_DICT[key]['Y'] for key in BPM_DICT]
+    S = [BPM_DICT[key]['S'] for key in BPM_DICT]
+    ax.scatter(X, S, Y, marker='o')
+
+    Sdiff = _np.abs(max(S)-min(S))/2
+    # ax.set_xlim(_np.mean(X)-Sdiff, _np.mean(X)+Sdiff)
+    ax.set_zlim(_np.mean(Y) - Sdiff, _np.mean(Y) + Sdiff)
+
+    ax.set_xlabel('X [m]')
+    ax.set_ylabel('S [m]')
+    ax.set_zlabel('Y [m]')
+
+    # _plt.legend()
+
+
+def plotOptics():
+    S, BETX, BETY = getOpticsFromXls()
+    plotOptions()
+    _plt.plot(S, BETX, '+-', color='C0', markersize=15, markeredgewidth=2, label=r'$\beta_X$')
+    _plt.plot(S, BETY, '+-', color='C1', markersize=15, markeredgewidth=2, label=r'$\beta_Y$')
+    _plt.ylabel(r'$\beta_X$/$\beta_Y$ [m]')
+    _plt.xlabel('S [m]')
+    _plt.legend()
+
+
+def plotResidual(df, refbpmname, trains=None, bunches=None, bins=20):
+    V_X, M_X = buildMatrixAndVectorForSVD(df, refbpmname, coord='X', trains=trains, bunches=bunches)
+    V_Y, M_Y = buildMatrixAndVectorForSVD(df, refbpmname, coord='Y', trains=trains, bunches=bunches)
+    R_X = calcResidual(M_X, V_X)
+    R_Y = calcResidual(M_Y, V_Y)
+    Res_X = calcBPMResolution(M_X, V_X)
+    Res_Y = calcBPMResolution(M_Y, V_Y)
+
+    plotOptions()
+    _plt.hist(R_X, bins=bins, histtype='step', color='C0', label='${} : Res_X = {:1.2e} m$'.format(refbpmname, Res_X))
+    _plt.hist(R_Y, bins=bins, histtype='step', color='C1', label='${} : Res_Y = {:1.2e} m$'.format(refbpmname, Res_Y))
+    _plt.ylabel('Entries')
+    _plt.xlabel('Residuals [m]')
+    _plt.legend()
+
+
+def plotResolutions(df, trains=None, bunches=None):
+    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
+    df_reduced = df_reduced.sort_values(by='S')
+    S = df_reduced.S.unique()
+    Res_X = _np.array([])
+    Res_Y = _np.array([])
+    for bpm in df_reduced.index.get_level_values(0).unique():
+        V_X, M_X = buildMatrixAndVectorForSVD(df, bpm, coord='X', trains=trains, bunches=bunches)
+        V_Y, M_Y = buildMatrixAndVectorForSVD(df, bpm, coord='Y', trains=trains, bunches=bunches)
+        Res_X = _np.append(Res_X, calcBPMResolution(M_X, V_X))
+        Res_Y = _np.append(Res_Y, calcBPMResolution(M_Y, V_Y))
+
+    plotOptions()
+    _plt.plot(S, Res_X, '+-', color='C0', markersize=15, markeredgewidth=2, label='$Res_X$')
+    _plt.plot(S, Res_Y, '+-', color='C1', markersize=15, markeredgewidth=2, label='$Res_Y$')
+    _plt.ylabel('Resolution [m]')
+    _plt.xlabel('$S$ [m]')
+    _plt.legend()
+
+
+def plotJitterAndNoise(df, trains=None, bunches=None):
+    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
+    df_reduced = df_reduced.sort_values(by='S')
+    S = df_reduced.S.unique()
+    Jitter_X = _np.array([])
+    Jitter_Y = _np.array([])
+    Noise_X = _np.array([])
+    Noise_Y = _np.array([])
+    for bpm in df_reduced.index.get_level_values(0).unique():
+        V_X, M_X = buildMatrixAndVectorForSVD(df, bpm, coord='X', trains=trains, bunches=bunches)
+        V_Y, M_Y = buildMatrixAndVectorForSVD(df, bpm, coord='Y', trains=trains, bunches=bunches)
+        J_X, N_X = calcJitterAndNoise(M_X, V_X)
+        J_Y, N_Y = calcJitterAndNoise(M_Y, V_Y)
+        Jitter_X = _np.append(Jitter_X, J_X.std())
+        Jitter_Y = _np.append(Jitter_Y, J_Y.std())
+        Noise_X = _np.append(Noise_X, N_X.std())
+        Noise_Y = _np.append(Noise_Y, N_Y.std())
+
+    plotOptions(rows_colums=[3, 1])
+    _plt.subplot(3, 1, 1)
+    _plt.plot(S, Jitter_X, '+-', color='C0', markersize=15, markeredgewidth=2, label='$Jitter_X$')
+    _plt.plot(S, Jitter_Y, '+-', color='C1', markersize=15, markeredgewidth=2, label='$Jitter_Y$')
+    _plt.ylabel('$X/Y$ [m]')
+    _plt.xlabel('$S$ [m]')
+    _plt.legend()
+
+    S_optics, BETX, BETY, DX, DY = getOpticsFromMad8(Smin=min(S), Smax=max(S))
+
+    _plt.subplot(3, 1, 2)
+    _plt.plot(S_optics, BETX, '-', color='C0', markersize=15, markeredgewidth=2, label=r'$\beta_X$')
+    _plt.plot(S_optics, BETY, '-', color='C1', markersize=15, markeredgewidth=2, label=r'$\beta_Y$')
+    _plt.ylabel(r'$\beta_X$/$\beta_Y$ [m]')
+    _plt.xlabel('S [m]')
+    _plt.legend()
+
+    _plt.subplot(3, 1, 3)
+    _plt.plot(S_optics, DX, '--', color='C0', markersize=15, markeredgewidth=2, label=r'$D_X$')
+    _plt.plot(S_optics, DY, '--', color='C1', markersize=15, markeredgewidth=2, label=r'$D_Y$')
+    _plt.ylabel(r'$D_X$/$D_Y$ [m]')
+    _plt.xlabel('S [m]')
+    _plt.legend()
+
+    plotOptions()
+    _plt.plot(S, Noise_X, '+-', color='C0', markersize=15, markeredgewidth=2, label='$Noise_X$')
+    _plt.plot(S, Noise_Y, '+-', color='C1', markersize=15, markeredgewidth=2, label='$Noise_Y$')
+    _plt.ylabel('$X/Y$ [m]')
+    _plt.xlabel('$S$ [m]')
+    _plt.legend()
 
 
 def plotSurvey(inputfilename):
