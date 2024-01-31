@@ -1,0 +1,499 @@
+!===================================================================================
+!
+!  Section B2:     B2:     Line = (STSEC.B2.B2, B2U, B2M, B2DIA, B2TL3, ENSEC.B2.B2)
+!
+!  Section B2DUMP: B2DUMP: Line = (STSEC.B2.B2, B2U, B2M, B2DIA, B2SPEC)
+!
+!===================================================================================
+
+
+!----- Section and Subsection Markers
+
+STSEC.B2.B2:   MARKER
+ENSEC.B2.B2:   MARKER
+STSEC.B2D.B2D: MARKER
+ENSEC.B2D.B2D: MARKER
+
+STSUB.B2M.B2:  MARKER
+ENSUB.B2M.B2:  MARKER   
+STSUB.B2T.B2:  MARKER
+ENSUB.B2T.B2:  MARKER   
+
+
+!----- Lattice Markers
+
+STLAT.B2M.B2: MARKER
+ENLAT.B2M.B2: MARKER
+STLAT.DIA.B2: MARKER
+ENLAT.DIA.B2: MARKER
+
+
+!--- Matching Markers
+
+MATCH.B2M.B2: MARKER
+MATCH.TDS.B2: MARKER
+MATCH.DIA.B2: MARKER
+
+
+!----- Markers for Substitutable Block
+
+STBLOCK.DIA.B2:   MARKER
+ENBLOCK.DIA.B2:   MARKER
+
+
+!----- Girders Markers
+
+STGRD.G1.B2:  MARKER
+ENGRD.G1.B2:    MARKER
+STGRD.G2.B2:  MARKER
+ENGRD.G2.B2:    MARKER
+STGRD.G3.B2:  MARKER
+ENGRD.G3.B2:    MARKER
+STGRD.G4.B2:  MARKER
+ENGRD.G4.B2:    MARKER
+STGRD.G5.B2:  MARKER
+ENGRD.G5.B2:    MARKER
+STGRD.G6.B2:  MARKER
+ENGRD.G6.B2:    MARKER
+STGRD.G7.B2:  MARKER
+ENGRD.G7.B2:    MARKER
+STGRD.G8.B2:  MARKER
+ENGRD.G8.B2:    MARKER
+STGRD.G9.B2:  MARKER
+ENGRD.G9.B2:    MARKER
+STGRD.G10.B2: MARKER
+ENGRD.G10.B2:   MARKER
+STGRD.G11.B2: MARKER
+ENGRD.G11.B2:   MARKER
+STGRD.G12.B2: MARKER
+ENGRD.G12.B2:   MARKER
+
+
+!--- Diagnostics Marker
+
+BPMA.B2:   MONITOR
+BPMS.B2:   MONITOR
+MIDBPMF.B2:MARKER
+BPMF.B2:   MONITOR
+BPMA.B2D:  MONITOR
+BPMD.B2D:  MONITOR
+OTRA.B2:   MARKER
+OTRB.B2:   MARKER
+OTRS.B2:   MARKER
+OTRA.B2D:  MARKER
+OTRD.B2D:  MARKER
+DCM.B2:    MARKER
+BAM.B2:    MARKER
+TORA.B2:   MARKER
+TORC.B2D:  MARKER
+EOD.B2:    MARKER
+SRM.B2:    MARKER
+BCM.B2:    MARKER
+CRD.B2:    MARKER
+
+
+!----- Vacuum Markers and Vacuum Components
+
+VCST40T400Y.B2: MARKER
+VCST400Y.B2:    MARKER
+VCST400YT40.B2: MARKER
+VCST40Y.B2:     MARKER
+VCST40T98.B2D:  MARKER
+VCST98T60.B2D:  MARKER
+
+VCDST.B2:       VCDST     ! Defined in DEFS
+
+
+!------ Collimators
+
+COLO.B2:  ECOL, XSIZE=0.02, YSIZE = 0.02
+COLU.B2:  ECOL, XSIZE=0.02, YSIZE = 0.02
+!COL.B2: MARKER
+
+
+!----- LOLA CAVITY FOR DIAGNOSTICS (MAD definition)
+
+TDSB.B2: LCAVITY, L=1.50, PHI0=0,  &
+                  VOLT=0, FREQ=2800000000.0*1e-6
+
+
+!--- Correctors (L_yoke is used)
+
+CCX.B2:   HKICKER, L=0.1
+CCY.B2:   VKICKER, L=0.1
+
+CCX.B2D:  HKICKER, L=0.1
+CCY.B2D:  VKICKER, L=0.1
+CFX.B2D:  HKICKER, L=0.1
+CFY.B2D:  VKICKER, L=0.1
+
+
+!--- Correction coils
+
+CBB.2.B2: VKICKER, L=0.0
+CBB.3.B2: VKICKER, L=0.0
+CBB.4.B2: VKICKER, L=0.0
+
+
+!--- Vertical kickers in diagnostic section
+
+KDY.1.B2: VKICKER, L=0.35, KICK=0.0     !change
+KDY.2.B2: VKICKER, L=0.35, KICK=0.0     !change
+
+!===================================================================================
+
+!----------------------------------------------------------------------------------
+!----- Matching from Linac 2 to B2: B2U --------------------------------------------
+!----------------------------------------------------------------------------------
+
+!--- Quadrupoles at B2 upstream
+
+QD.1.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.2.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.3.B2: Quadrupole, L = L_QD_eff, K1 = 0  
+QD.4.B2: Quadrupole, L = L_QD_eff, K1 = 0
+
+B2U: LINE = (STSUB.B2M.B2, D012575, VCDST.B2, D007425,  &
+             STGRD.G1.B2, &
+             D013088, TORA.B2, D0248, BPMA.B2, D012112, &
+             D003165, QD.1.B2, D003165,                 &
+             D0100, CCY.B2, D030008, DCM.B2, D02959,    &
+             D003165, QD.2.B2, D003165, &
+             D010402, CCX.B2, D1050,                    &
+             ENGRD.G1.B2,   &
+             D0100,       &
+             STGRD.G2.B2, &
+             D028888, EOD.B2, D0340, BPMA.B2, D012112,  &
+             D003165, QD.3.B2, D003165,                 &
+             D0069, CCY.B2, D029188, BCM.B2, D023912,   &
+             D003165, QD.4.B2, D003165,                 &
+             D004998, CCX.B2, D03439, OTRA.B2, D0194,   &
+             BAM.B2, D0125,                             &
+             D00315,BPMF.B2,D0096,MIDBPMF.B2,D01275, D003212, &
+             ENGRD.G2.B2,   &
+             D0300)
+
+
+!----------------------------------------------------------------------------------
+!----- Bunch Compressor: B2M -------------------------------------------------------
+!----------------------------------------------------------------------------------
+
+!--- Dipoles
+
+l_b2   = 0.5
+ang_b2 = 0.041638798924697        !  2.385727442379008 degree
+arc_b2 = l_b2*ang_b2/sin(ang_b2)
+
+BB.1.1.B2: SBEND, L = arc_b2, ANGLE = ang_b2,  &
+           E1 = 0, E2 = ang_b2, TILT = 1.570796326795  
+BB.1.2.B2: SBEND, L = arc_b2, ANGLE = -ang_b2, &
+           E1 = -ang_b2, E2=0, TILT = 1.570796326795  
+BB.1.3.B2: SBEND, L = arc_b2, ANGLE = -ang_b2, &
+           E1 = 0, E2 = -ang_b2, TILT = 1.570796326795  
+BB.1.4.B2: SBEND, L = arc_b2, ANGLE = ang_b2,  &
+           E1=ang_b2, E2=0, TILT = 1.570796326795
+
+
+CD8900D = 8.5 / cos(ang_b2)
+CD8900E = 1.052276 / cos(ang_b2)
+CD8900F = (8.5-1.052276) / cos(ang_b2)
+
+D89B2A: DRIFT, L=CD8900D
+D89B2B: DRIFT, L=CD8900E
+D89B2C: DRIFT, L=CD8900F
+
+B2M: LINE = (STLAT.B2M.B2, D0100,                                 &
+             BB.1.1.B2, VCST40T400Y.B2, D89B2A, VCST400Y.B2,      &
+             BB.1.2.B2,CBB.2.B2, D03975, COLO.B2, D0085, COLU.B2, &
+             D03825, BPMS.B2, D0310, OTRS.B2, D0325,              &
+             BB.1.3.B2,CBB.3.B2, VCST400YT40.B2, D89B2B, SRM.B2,  &
+             D89B2C, VCST40Y.B2,                                  &
+             BB.1.4.B2,CBB.4.B2,                                  &
+             D0100, ENLAT.B2M.B2, MATCH.B2M.B2)
+
+
+!----------------------------------------------------------------------------------
+!----- Diagnostic Section B2DIA = (B2TTDS, B2FODO1, B2FODO2, B2FODO3, B2FODO4) -----
+!----------------------------------------------------------------------------------
+
+!----- Section between BC2 chicane and TDS: B2TTDS 
+
+!--- Quadrupoles
+
+QD.6.B2:  Quadrupole, L = L_QD_eff, K1 = 0
+QD.7.B2:  Quadrupole, L = L_QD_eff, K1 = 0  
+QD.8.B2:  Quadrupole, L = L_QD_eff, K1 = 0  
+QD.9.B2:  Quadrupole, L = L_QD_eff, K1 = 0
+QD.10.B2: Quadrupole, L = L_QD_eff, K1 = 0
+
+
+B2TTDS: LINE = (D0170,       &
+                STGRD.G3.B2, &
+                D015198, BAM.B2, D0125,                &
+                D00315,BPMF.B2,D0096,MIDBPMF.B2,D01275, &
+                D01793, TORA.B2, D01257,               &
+                D003165, QD.6.B2, D003165,             &
+                D0113, CCX.B2, D015002, CCY.B2,        &
+                D034888, BCM.B2, D055112,              &
+                D003165, QD.7.B2, D003165,             &
+                D0600, D0150, CCX.B2, D0150, CCY.B2,   &
+                D017888, BPMA.B2, D012112,             & 
+                D003165, QD.8.B2, D003165, D0100,      &
+                ENGRD.G3.B2,   &
+                D4000,       &
+                STGRD.G4.B2, &
+                D199688, D04031, CCX.B2, D0140,        &
+                D003165, QD.9.B2, D003165,             &
+                D0160, CCY.B2, D03899, OTRA.B2,        &
+                D0247, BPMA.B2, D040312,               & 
+                D003165, QD.10.B2, D003165, D0060,     &
+                ENGRD.G4.B2,   &
+                D0200,       &
+                STGRD.G5.B2, &
+                D009428,     &
+                MATCH.TDS.B2, TDSB.B2, D0400, TDSB.B2, &
+                D0100, D00467)
+
+
+!----- Section between TDS and FODO lattice: (B2FODO1, B2FODO2)
+
+
+!--- Quadrupoles
+
+QD.11.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.12.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.13.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.14.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.15.B2: Quadrupole, L = L_QD_eff, K1 = 0
+
+
+B2FODO1: LINE = (D003165, QD.11.B2, D003165,              &
+                 D0059, CCX.B2, D03223, BPMA.B2, D017772, &
+                 ENGRD.G5.B2,   &
+                 D0200,       &
+                 STGRD.G6.B2, &
+                 D014888, D135112,                        &
+                 D003165, QD.12.B2, D003165,              &
+                 D0100, CCY.B2, D2200,                    &
+                 D003165, QD.13.B2, D003165, D0100,       &
+                 ENGRD.G6.B2,   &
+                 D0200,       &
+                 STGRD.G7.B2, &
+                 D144988)
+
+B2FODO2: LINE = (OTRA.B2, D1629, BPMA.B2, D012112,  &
+                 D003165, QD.14.B2, D003165,        &
+                 D0100, CCX.B2, D0900,              & 
+                 ENGRD.G7.B2,   &
+                 D0200,       &
+                 STGRD.G8.B2, &
+                 D207888, BPMA.B2, D012112,         &
+                 D003165, QD.15.B2, D003165,        &
+                 D019388, KDY.1.B2, D0070, KDY.1.B2, D0786)    !change
+
+
+!----- Diagnostic FODO lattice (two FODO cells): B2FODO3
+
+!--- Quadrupoles in FODO lattice
+
+QD.16.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.17.B2: Quadrupole, L = L_QD_eff, K1 = 0 
+QD.18.B2: Quadrupole, L = L_QD_eff, K1 = 0   ! = QD.16.B2 
+QD.19.B2: Quadrupole, L = L_QD_eff, K1 = 0   ! = QD.17.B2
+
+
+!--- First FODO cell: QD.17.B2 is shifted from the standart FODO position 
+!                     for 0.0262m downstream 
+ 
+fodo_B2_DIA_1: LINE = (MATCH.DIA.B2, OTRA.B2, D035012,         &
+                     ENGRD.G8.B2,   &
+                     D0200,       &   
+                     STGRD.G9.B2, &
+                     D0350, CCX.B2, D062888, BPMA.B2, D012112, &
+                     D003165, QD.16.B2, D003165,               &
+                     D0100, CCY.B2, D144988, D0100,            &
+                     OTRB.B2, D1000, D035012,                  &
+                     ENGRD.G9.B2,    &
+                     D0200,        &
+                     STGRD.G10.B2, &
+                     D010488, BPMA.B2, D01212,                 &
+                     D003165, QD.17.B2, D003165,               &
+                     D01678, KDY.2.B2, D0070, KDY.2.B2, D0786, &   !change
+                     OTRB.B2)
+
+!--- Second FODO cell
+
+fodo_B2_DIA_2: LINE = (OTRB.B2,                             &
+                 D03501, CCX.B2, D11789, BPMA.B2, D012112,  &
+                 D003165, QD.18.B2, D003165,                &
+                 D0100, CCX.B2, D0100,                      &
+                 ENGRD.G10.B2,   &
+                 D0200,        &
+                 STGRD.G11.B2, &
+                 D124988, &
+                 OTRB.B2, D0829, D0800, BPMA.B2, D012112,   &
+                 D003165, QD.19.B2, D003165,                &
+                 D0100, CCY.B2, D1100,                      &
+                 ENGRD.G11.B2,   &
+                 D0200,        &
+                 STGRD.G12.B2, &
+                 D024988, OTRB.B2)
+
+
+!--- FODO lattice (2 FODO cells): B3FODO3
+
+B2FODO3: LINE = (MATCH.DIA.B2, OTRA.B2, D035012,    &
+                 ENGRD.G8.B2,   &
+                 D0200,       &   
+                 STGRD.G9.B2, &
+                 D0350, CCX.B2, D062888, BPMA.B2, D012112,  &
+                 D003165, QD.16.B2, D003165,                &
+                 D0100, CCY.B2, D144988, D0100,             &
+                 OTRB.B2, D1000, D035012,                   &
+                 ENGRD.G9.B2,    &
+                 D0200,        &
+                 STGRD.G10.B2, &
+                 D010488, BPMA.B2, D01212,                  &
+                 D003165, QD.17.B2, D003165,                &
+                 D01678, KDY.2.B2, D0070, KDY.2.B2, D0786,  &
+                 OTRB.B2,                                   &
+                 D03501, CCX.B2, D11789, BPMA.B2, D012112,  &
+                 D003165, QD.18.B2, D003165,                &
+                 D0100, CCX.B2, D0100,                      &
+                 ENGRD.G10.B2,   &
+                 D0200,        &
+                 STGRD.G11.B2, &
+                 D124988, &
+                 OTRB.B2, D0829, D0800, BPMA.B2, D012112,   &
+                 D003165, QD.19.B2, D003165,                &
+                 D0100, CCY.B2, D1100,                      &
+                 ENGRD.G11.B2,   &
+                 D0200,        &
+                 STGRD.G12.B2, &
+                 D024988, OTRB.B2)
+
+
+
+!----- Section behind FODO lattice: B2FODO4
+
+!--- Quadrupoles
+
+QD.21.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.22.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.23.B2: Quadrupole, L = L_QD_eff, K1 = 0
+
+B2FODO4: LINE = (D0839, D0240, BPMA.B2, D01211,          &
+                 D003165, QD.21.B2, D003165,             &
+                 D03389, CRD.B2, D046112, CCX.B2, D0300, &
+                 D003165, QD.22.B2, D003165,             &
+                 D0100, CCY.B2, D0350,                   &
+                 CCX.B2, D017888, BPMA.B2, D012112,      &
+                 D003165, QD.23.B2, D003165, D0100,      &
+                 ENGRD.G12.B2,                             &
+                 D0400)
+
+
+!----- Total diagnostic section: B2DIA
+
+B2DIA:  LINE = (STLAT.DIA.B2, B2TTDS, STBLOCK.DIA.B2, B2FODO1, B2FODO2,  &
+                B2FODO3, B2FODO4, ENLAT.DIA.B2, ENSUB.B2M.B2)
+
+
+!----------------------------------------------------------------------------------
+!----- Matching to Linac 3 or spectrometer: B2TL3
+!----------------------------------------------------------------------------------
+
+BG.0.B2: DRIFT, L = 1.6     ! Placeholder in straight line for BG.1
+
+
+!--- Quadrupoles
+
+QD.24.B2: Quadrupole, L = L_QD_eff, K1 = 0
+QD.25.B2: Quadrupole, L = L_QD_eff, K1 = 0
+
+
+B2TL3: LINE = (STSUB.B2T.B2,                      &
+               BG.0.B2, D0400, D1350, D0125,      &
+               D003165, QD.24.B2, D003165,        &               
+               D0100, CCY.B2, D106828,            &
+               DCM.B2, D01481, TORA.B2,           &
+               D01543, BPMA.B2, D013432,          &
+               D003165, QD.25.B2, D003165,        &                
+               D0100, D007425, VCDST.B2, D012575, &
+               ENBLOCK.DIA.B2, ENSUB.B2T.B2)
+
+
+!----------------------------------------------------------------------------------
+!----- Total BC2 section: B2
+!----------------------------------------------------------------------------------
+
+B2: Line = (STSEC.B2.B2, B2U, B2M, B2DIA, B2TL3, ENSEC.B2.B2)
+
+!===================================================================================
+
+!-----------------------------------------------------------------------------------
+!----- Diagnostic SPECTROMETER: B2SPEC ---------------------------------------------
+!-----------------------------------------------------------------------------------
+
+DUFLANGE.B2D: MARKER
+DUABSORB.B2D: MARKER
+
+ 
+!--- Dipole (SBEND type)
+
+ARCLEN_BG = 1.6
+ang_b2d = 0.20943951023932   ! 12 deg bend
+arc_b2d = ARCLEN_BG
+
+k2_BG = 0e-3/0.03^2*ang_b2d/ARCLEN_BG
+
+BG.1.1.B2D: SBEND, L = arc_b2d, ANGLE = ang_b2d, &
+            E1 = 0, E2 = 0, TILT = 1.570796326795, &
+            K2 = k2_bg  
+BG.1.2.B2D: SBEND, L = arc_b2d, ANGLE = -ang_b2d, &
+            E1 = 0, E2 = 0, TILT = 1.570796326795,  &
+            K2 = -k2_bg 
+
+
+!--- Quadrupoles 
+
+QF.31.B2D: Quadrupole, L = L_QF_eff, K1 = 0
+QE.32.B2D: Quadrupole, L = L_QE_eff, K1 = 0
+QF.33.B2D: Quadrupole, L = L_QF_eff, K1 = 0
+
+QF.34.B2D: Quadrupole, L = L_QF_eff, K1 = 0
+QF.35.B2D: Quadrupole, L = L_QF_eff, K1 = 0
+
+
+B2SPEC: LINE = (STSEC.B2D.B2D, BG.1.1.B2D, D0200, D0380,  &
+                CFY.B2D, D0065,                           &
+                D010895, QF.31.B2D, D010895,              &
+                D0075, BPMA.B2D, D0750,                   &
+                D029372, CFX.B2D, D003128,                &
+                D01050, QE.32.B2D, D01050,                &
+                D0075, BPMA.B2D,                          &
+                D0200, CFY.B2D, D0875,                    &
+                D010895, QF.33.B2D, D010895, D0025,       &
+                D0300, D000233, OTRA.B2D, D031767, D0100, &
+                BG.1.2.B2D,                               &
+                D0400, D0114927, CFY.B2D, D006007,        &
+                D010895, QF.34.B2D, D010895,              &
+                D0075, D0050, D002503, BPMA.B2D, D00249,  &
+                D0200, CFX.B2D, D000007, D0200,           & 
+                D003395, QF.35.B2D, D003395,              &
+                D047973, VCST40T98.B2D, D0115, D0035,     &
+                OTRD.B2D, D0225, TORC.B2D, D0125,         &
+                BPMD.B2D, D0050, VCST98T60.B2D, D023527,  &
+                DUFLANGE.B2D,                             &
+                D0728, DUABSORB.B2D,                      &
+                ENSEC.B2D.B2D)
+
+
+!-----------------------------------------------------------------------------------
+!----- Total BC2 section leading to the dump: B2DUMP
+!-----------------------------------------------------------------------------------
+
+B2DUMP: Line = (STSEC.B2.B2, B2U, B2M, B2DIA, B2SPEC)
+
+!===================================================================================
+!===================================================================================

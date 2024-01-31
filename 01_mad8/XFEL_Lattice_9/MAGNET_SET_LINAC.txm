@@ -1,0 +1,221 @@
+!============================================================================================
+!
+!----- Magnet setting for the linacs: L0, L1, L2, L3
+!
+!============================================================================================
+
+!--------------------------------------------------------------------------------------------
+!
+!----- Linac L0
+!
+!--------------------------------------------------------------------------------------------
+
+!--- Energy after ACC1: 150 MeV
+!--- Energy after ACH1: 130 MeV
+
+! May 2016: without Leff for LH dipoles (BL)
+set, Q.A1.1.I1[k1],   -1.114451708975
+set, Q.AH1.1.I1[k1],  +1.253402108716
+
+
+!--------------------------------------------------------------------------------------------
+!
+!----- Linac L1 (4 modules)
+!
+!--------------------------------------------------------------------------------------------
+
+!--- Energy at entrance: 130 MeV
+!--- Energy at exit:     700 MeV
+
+set, Q.A2.1.L1[k1], +0.307940154760
+set, Q.A2.2.L1[k1], -0.296160233387
+set, Q.A2.3.L1[k1], +0.198441048106
+set, Q.A2.4.L1[k1], -0.203133591328
+
+
+!--------------------------------------------------------------------------------------------
+!
+!----- Linac L2 (12 modules)
+!
+!--------------------------------------------------------------------------------------------
+
+!--- Energy at entrance: 700 MeV
+!--- Energy at exit:     2.4 GeV
+
+set, Q.A3.1.L2[k1], +0.339307732248
+set, Q.A3.2.L2[k1], -0.306619647147
+set, Q.A3.3.L2[k1], +0.210674157303
+set, Q.A3.4.L2[k1], -0.210674157303
+
+set, Q.A4.1.L2[k1], +0.210674157303
+set, Q.A4.2.L2[k1], -0.210674157303
+set, Q.A4.3.L2[k1], +0.210674157303
+set, Q.A4.4.L2[k1], -0.210674157303
+
+set, Q.A5.1.L2[k1], +0.114361122255
+set, Q.A5.2.L2[k1], -0.043478710928
+set, Q.A5.3.L2[k1], +0.091843778396
+set, Q.A5.4.L2[k1], -0.299097304587
+
+
+!--------------------------------------------------------------------------------------------
+!
+!----- Linac L3 (80 Modules as built in August 2016)
+!
+!--------------------------------------------------------------------------------------------
+
+!----- FODO cell: 45 phase advance in both planes (setting without RF focusing)
+set, Q.F.L3[k1], +0.300595266075
+set, Q.D.L3[k1], -0.300595266075
+
+
+!--- Energy at entrance:  2.4 GeV
+!--- Energy at exit:     17.5 GeV
+
+set, Q.A6.1.L3[k1], -0.333914716359
+set, Q.A6.2.L3[k1], +0.426925675652
+set, Q.A6.3.L3[k1], -0.270100732254
+set, Q.A6.4.L3[k1], -0.080361950346
+
+set, Q.A7.1.L3[k1], Q.F.L3[K1]
+set, Q.A7.2.L3[k1], Q.D.L3[K1]
+set, Q.A7.3.L3[k1], Q.F.L3[K1]
+set, Q.A7.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A8.1.L3[k1], Q.F.L3[K1]
+set, Q.A8.2.L3[k1], Q.D.L3[K1]
+set, Q.A8.3.L3[k1], +2.258091E-01*0.3/0.2136
+set, Q.A8.4.L3[k1], -2.094214E-01*0.3/0.2136
+
+set, Q.A9.1.L3[k1], +2.067368E-01*0.3/0.2136
+set, Q.A9.2.L3[k1], -2.181746E-01*0.3/0.2136
+set, Q.A9.3.L3[k1], Q.F.L3[K1]
+set, Q.A9.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A10.1.L3[k1], Q.F.L3[K1]
+set, Q.A10.2.L3[k1], Q.D.L3[K1]
+set, Q.A10.3.L3[k1], Q.F.L3[K1]
+set, Q.A10.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A11.1.L3[k1], Q.F.L3[K1]
+set, Q.A11.2.L3[k1], Q.D.L3[K1]
+set, Q.A11.3.L3[k1], Q.A8.3.L3[K1]
+set, Q.A11.4.L3[k1], Q.A8.4.L3[K1]
+
+set, Q.A12.1.L3[k1], Q.A9.1.L3[K1]
+set, Q.A12.2.L3[k1], Q.A9.2.L3[K1]
+set, Q.A12.3.L3[k1], Q.F.L3[K1]
+set, Q.A12.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A13.1.L3[k1], Q.F.L3[K1]
+set, Q.A13.2.L3[k1], Q.D.L3[K1]
+set, Q.A13.3.L3[k1], Q.F.L3[K1]
+set, Q.A13.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A14.1.L3[k1], Q.F.L3[K1]
+set, Q.A14.2.L3[k1], Q.D.L3[K1]
+set, Q.A14.3.L3[k1], Q.A8.3.L3[K1]
+set, Q.A14.4.L3[k1], Q.A8.4.L3[K1]
+
+set, Q.A15.1.L3[k1], Q.A9.1.L3[K1]
+set, Q.A15.2.L3[k1], Q.A9.2.L3[K1]
+set, Q.A15.3.L3[k1], Q.F.L3[K1]
+set, Q.A15.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A16.1.L3[k1], Q.F.L3[K1]
+set, Q.A16.2.L3[k1], Q.D.L3[K1]
+set, Q.A16.3.L3[k1], Q.F.L3[K1]
+set, Q.A16.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A17.1.L3[k1], Q.F.L3[K1]
+set, Q.A17.2.L3[k1], Q.D.L3[K1]
+set, Q.A17.3.L3[k1], Q.A8.3.L3[K1]
+set, Q.A17.4.L3[k1], Q.A8.4.L3[K1]
+
+set, Q.A18.1.L3[k1], Q.A9.1.L3[K1]
+set, Q.A18.2.L3[k1], Q.A9.2.L3[K1]
+set, Q.A18.3.L3[k1], Q.F.L3[K1]
+set, Q.A18.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A19.1.L3[k1], Q.F.L3[K1]
+set, Q.A19.2.L3[k1], Q.D.L3[K1]
+set, Q.A19.3.L3[k1], Q.F.L3[K1]
+set, Q.A19.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A20.1.L3[k1], Q.F.L3[K1]
+set, Q.A20.2.L3[k1], Q.D.L3[K1]
+set, Q.A20.3.L3[k1], Q.A8.3.L3[K1]
+set, Q.A20.4.L3[k1], Q.A8.4.L3[K1]
+
+set, Q.A21.1.L3[k1], Q.A9.1.L3[K1]
+set, Q.A21.2.L3[k1], Q.A9.2.L3[K1]
+set, Q.A21.3.L3[k1], Q.F.L3[K1]
+set, Q.A21.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A22.1.L3[k1], Q.F.L3[K1]
+set, Q.A22.2.L3[k1], Q.D.L3[K1]
+set, Q.A22.3.L3[k1], Q.F.L3[K1]
+set, Q.A22.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A23.1.L3[k1], Q.F.L3[K1]
+set, Q.A23.2.L3[k1], Q.D.L3[K1]
+set, Q.A23.3.L3[k1], Q.A8.3.L3[K1]
+set, Q.A23.4.L3[k1], Q.A8.4.L3[K1]
+
+set, Q.A24.1.L3[k1], Q.A9.1.L3[K1]
+set, Q.A24.2.L3[k1], Q.A9.2.L3[K1]
+set, Q.A24.3.L3[k1], Q.F.L3[K1]
+set, Q.A24.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A25.1.L3[k1], Q.F.L3[K1]
+set, Q.A25.2.L3[k1], Q.D.L3[K1]
+set, Q.A25.3.L3[k1], Q.F.L3[K1]
+set, Q.A25.4.L3[k1], Q.D.L3[K1]
+
+
+!--- Quadrupoles in last 16 modules in L3 
+!--- August 2016: not in the beamline, defined as FODO quads
+
+set, Q.A26.1.L3[k1], Q.F.L3[K1]
+set, Q.A26.2.L3[k1], Q.D.L3[K1]
+set, Q.A26.3.L3[k1], Q.F.L3[K1]
+set, Q.A26.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A27.1.L3[k1], Q.F.L3[K1]
+set, Q.A27.2.L3[k1], Q.D.L3[K1]
+set, Q.A27.3.L3[k1], Q.F.L3[K1]
+set, Q.A27.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A28.1.L3[k1], Q.F.L3[K1]
+set, Q.A28.2.L3[k1], Q.D.L3[K1]
+set, Q.A28.3.L3[k1], Q.F.L3[K1]
+set, Q.A28.4.L3[k1], Q.D.L3[K1]
+
+set, Q.A29.1.L3[k1], Q.F.L3[K1]
+set, Q.A29.2.L3[k1], Q.D.L3[K1]
+set, Q.A29.3.L3[k1], Q.F.L3[K1]
+set, Q.A29.4.L3[k1], Q.D.L3[K1]
+
+
+!----- Substitute cell for missing 4 modules (ACC26.1 - ACC26.4)
+!----- uses 300 mm TQB quadrupole (2 quadrupoles)
+
+set, QB.1.L3[k1], +0.156165449408
+set, QB.2.L3[k1], -0.132316311554
+
+
+!----- Substitute cells for last 12 modules (ACC27.1 - ACC29.4)
+!----- uses XQE quadrupole (3 quadrupoles)
+
+set, QE.1.1.L3[k1], +0.1280915
+set, QE.1.2.L3[k1], -0.1280915
+
+!--- Setting for periodic transport in CL arcs: betx=5.309, bety=30.512
+set, QE.2.L3[k1],  0.0
+set, QF.1.L3[k1], -0.144689065796
+set, QF.2.L3[k1], +0.165402574818
+
+!================================================================================
+!================================================================================
+
+

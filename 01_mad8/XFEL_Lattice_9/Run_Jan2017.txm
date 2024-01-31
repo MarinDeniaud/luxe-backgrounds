@@ -1,0 +1,300 @@
+!---------------------------------------------------------------------------------------
+!
+!  Last work: 03.01.2017
+!
+!---------------------------------------------------------------------------------------
+!
+!  November 2016: Optics Upgrade4 (Version 8.6.1 - 21.09.2016 and later changes)
+!
+!---------------------------------------------------------------------------------------
+
+!assign,print="print"
+option, -echo,-info,warn
+
+call,"XFEL_DEFS_Upgrade4.txm"
+
+call,"XFEL_LINAC_Upgrade4.txm"
+
+call,"XFEL_I1_Upgrade4.txm"
+call,"XFEL_BC1_Upgrade4.txm"
+call,"XFEL_BC2_Upgrade4.txm"
+
+call,"XFEL_COLL_Upgrade4.txm"
+
+call,"XFEL_TLD_Upgrade4.txm"
+call,"XFEL_TD1_Upgrade4.txm"
+call,"XFEL_TD2_Upgrade4.txm"
+
+call,"XFEL_UND_Upgrade4.txm"
+
+!call,"XFEL_B0.txm"             ! One may create later
+!call,"XFEL_PLOTTAB.mad"
+
+! Setup of optics: Corresponding file must be called for each line
+
+!call,"XFEL_QUAD_SET_G1toI1D.txm"
+!call,"XFEL_QUAD_SET_G1toB1D.txm"
+!call,"XFEL_QUAD_SET_G1toB2D.txm"
+!call,"XFEL_QUAD_SET_G1toTLD.txm"
+!call,"XFEL_QUAD_SET_G1toT5D.txm"
+!call,"XFEL_QUAD_SET_G1toT4D.txm"
+
+!---------------------------------------------------------------------------
+
+!SETPLOT, FONT=1, LWIDTH=4, POST=1, LSCALE=2.0, SSCALE=2.0, &
+!         RSCALE=1.6, ASCALE=1.9
+
+!beam, energy=0.150
+!beam, particle=electron, energy=0.7, ex=0.01e-6, ey=0.01e-6, sige=1.0e-03
+
+!---------------------------------------------------------------------------
+
+
+B0_I1.G1: BETA0, energy= 0.005, &
+                   betx = 46.63420974, alfx = 16.04185406,   &
+                   bety = 46.63420974, alfy = 16.04185406
+B0_I1.ACC1:    BETA0, energy= 0.150, &
+                      betx = 25.543,  alfx = -0.3771,  &
+                      bety = 25.543,  alfy = -0.3771
+B0_I1.ACC1R:   BETA0, energy= 0.150, &
+                      betx = 25.543,  alfx = 0.3771,  &
+                      bety = 25.543,  alfy = 0.3771
+
+B0_I1.DLG:     BETA0, energy= 0.130, &
+                      betx = 3.8652305900,  alfx = -2.1462751280,  &
+                      bety = 0.8395438295,  alfy = +0.6039215629
+
+B0_L1.START.nina: BETA0, energy=0.13, &
+                         betx=   4.387526121, alfx= -0.4422614476, &
+                         bety=  13.638750660, alfy= +0.3298213957
+
+B0_B1.START.nina: BETA0, energy=0.7, &
+                         betx= 61.35729497, alfx=-1.403764800, &
+                         bety= 55.92201159, alfy=+1.702797573
+
+B0_B1.TDS.nina:   BETA0, energy=0.7, &
+                         betx= 30.04197889,  alfx=+0.05593293856, &
+                         bety=  3.516471273, alfy=-0.02981516373
+
+B0_L2.START.nina: BETA0, energy=0.7, &
+                         betx=  10.87813330, alfx= -0.8815027966, &
+                         bety=  34.77113408, alfy= +0.7128932099
+
+B0_B2.START.nina: BETA0, energy=2.4, &
+                         betx=  79.33946490, alfx= -3.902518023 , &
+                         bety=  87.49753331, alfy= +4.141079481
+
+B0_L3.START.nina: BETA0, energy=2.4, &
+                         betx=  20.87579956, alfx= +0.6832649843, &
+                         bety=  12.34773436, alfy= -0.2933163100
+
+B0_L3.MATCH.nina: BETA0, energy=3.155, &
+                         betx=  21.85467404, alfx= -0.7203240397, &
+                         bety=  44.95158850, alfy= +1.4574180150
+
+B0_CL.START.nina: BETA0, energy=17.5, &
+                         betx=  90.72219664, alfx= +5.119293400, &
+                         bety=  13.67363524, alfy= +0.4924997811
+
+B0_CLARC.START.FODO: BETA0, energy=17.5, &
+                            betx=  5.436080984, alfx= +0.4824441004, &
+                            bety= 29.867817500, alfy= -2.4027535990
+
+B0_CL.ARCEND.F:   BETA0, energy=17.5, &
+                            betx=  5.436080984, alfx= -0.4824441004, &
+                            bety= 29.867817500, alfy= +2.4027535990
+
+!---------------------------------------------------------------------------
+
+! Please call at the beginning (contains setting of all magnets before distribution)
+
+call, "MAGNET_SET_G1toT4D.txm"
+
+!---------------------------------------------------------------------------
+
+set,z0_start,23.2
+
+!comment
+! Backtracking to Gun 
+title, "XFEL GUN Back Tracking"
+beam, energy=0.150
+use, BACKTR_ACC1_GUN
+print, #s/#e
+savebeta,label=B0_I1.G1,STSEC.I1.I1
+twiss, beta0=B0_I1.ACC1R,save
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=150, vaxis2=dx,dy
+set,B0_I1.G1[energy],0.005
+set,B0_I1.G1[alfx],-B0_I1.G1[alfx]
+set,B0_I1.G1[alfy],-B0_I1.G1[alfy]
+
+title, "XFEL GUN Forward Tracking"
+beam, energy=0.005
+use, (I1G1, I1M1, L0)
+print, #s/#e
+twiss, beta0=B0_I1.G1, save
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=50, vaxis2=dx,dy
+!endcomment
+
+title, "XFEL G1 to G1D"
+beam, energy=0.005
+use, I1TG1D
+call,"MAGNET_SET_G1toI1D.txm"
+print, #s/#e
+twiss, beta0=B0_I1.G1, save, tape=twiss_G1D
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=150, vaxis2=dx,dy
+!static, map
+survey, y0=-2.75, z0 = z0_start, tape=survey_G1D
+
+
+title, "XFEL G1 to I1D"
+beam, energy=0.005
+use, I1TI1D
+call,"MAGNET_SET_G1toI1D.txm"
+print, #s/#e
+twiss, beta0=B0_I1.G1, save, tape=twiss_I1D
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=150, vaxis2=dx,dy
+!static, map
+survey, y0=-2.75, z0 = z0_start, tape=survey_I1D
+
+
+title, "XFEL G1 to B1D"
+beam, energy=0.005
+use, I1TB1D
+call, "MAGNET_SET_G1toB1D.txm"
+!print, #s/#e
+twiss, beta0=B0_I1.G1, save, tape=twiss_B1D
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=150, vaxis2=dx,dy
+!static, map
+survey, y0=-2.75, z0 = z0_start, tape=survey_B1D
+
+title, "XFEL G1 to B2D"
+beam, energy=0.005
+use, I1TB2D
+call, "MAGNET_SET_G1toB2D.txm"
+print, #s/#e
+twiss, beta0=B0_I1.G1, save, tape=twiss_B2D
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=150, vaxis2=dx,dy
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_B2D
+
+title, "XFEL G1 to T4D"
+beam, energy=0.005
+use, I1TT4D
+call, "MAGNET_SET_G1toT4D.txm"
+print, #s/#e
+twiss, beta0=B0_I1.G1, save, tape=twiss_T4D
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=150, vaxis2=dx,dy
+plot,table=twiss,haxis=s, vaxis=x, vmin =-0.1, vmax = 0.1,hmin=2700,hmax=2950
+!plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+!     vmin=0,vmax=150, vaxis2=dx,dy, hmin=1500,hmax=2000
+!plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+!     vmin=0,vmax=150, vaxis2=dx,dy, hmin=2000,hmax=2500
+!static, map
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_T4D
+
+title, "XFEL G1 to T9"
+beam, energy=0.005
+use, I1TT9
+call, "MAGNET_SET_G1toT4D.txm"
+twiss, beta0=B0_I1.G1, save, tape=twiss_T9
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_T9
+
+title, "XFEL G1 to T10"
+beam, energy=0.005
+use, I1TT10
+call, "MAGNET_SET_G1toT4D.txm"
+twiss, beta0=B0_I1.G1, save, tape=twiss_T10
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_T10
+
+
+
+title, "XFEL G1 to TLD"
+beam, energy=0.005
+use, I1TTLD
+call, "MAGNET_SET_G1toTLD.txm"
+print, #s/#e
+twiss, beta0=B0_I1.G1, save, tape=twiss_TLD
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=150, vaxis2=dx,dy
+!plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+!     vmin=0,vmax=150, vaxis2=dx,dy, hmin=1900,hmax=2100
+!static, map
+!
+setTLDlay
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_TLD
+
+
+title, "XFEL G1 to T5D"
+beam, energy=0.005
+use, I1TT5D
+call, "MAGNET_SET_G1toT5D.txm"
+!print, #s/#e
+twiss, beta0=B0_I1.G1, save, tape=twiss_T5D
+plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+     vmin=0,vmax=150, vaxis2=dx,dy
+!plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+!     vmin=0,vmax=150, vaxis2=dx,dy, hmin=250,hmax=500
+!plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+!     vmin=0,vmax=150, vaxis2=dx,dy, hmin=340,hmax=430
+!plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+!     vmin=0,vmax=50, vaxis2=dx,dy, hmin=405,hmax=425
+!plot,table=twiss,haxis=s, vaxis1=betx,bety, spline,colour=100, &
+!     vmin=0,vmax=150, vaxis2=dx,dy, hmin=1900,hmax=2100
+!static, map
+setTD1lay
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_T5D
+
+title, "XFEL G1 to T6"
+beam, energy=0.005
+use, I1TT6
+call, "MAGNET_SET_G1toT5D.txm"
+twiss, beta0=B0_I1.G1, save, tape=twiss_T6
+setTD1lay
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_t6
+
+title, "XFEL G1 to T7"
+beam, energy=0.005
+use, I1TT7
+call, "MAGNET_SET_G1toT5D.txm"
+twiss, beta0=B0_I1.G1, save, tape=twiss_T7
+setTD1lay
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_t7
+
+title, "XFEL G1 to T8"
+beam, energy=0.005
+use, I1TT8
+call, "MAGNET_SET_G1toT5D.txm"
+twiss, beta0=B0_I1.G1, save, tape=twiss_T8
+setTD1lay
+survey, y0=-2.75, z0 = z0_start, &
+        tape=survey_t8
+
+stop
+
+!---------------------------------------------------------------------------
+!---------------------------------------------------------------------------
+
+!call, "Matching_I1.txm"
+!call, "Matching_B1.txm"
+!call, "Matching_B2.txm"
+!call, "Matching_COLL.txm"
+!call, "Matching_UND.txm"
+!call, "Matching_TLD.txm"
+!call, "Matching_TD1.txm"
+!call, "Matching_TD2.txm"
+
+!============================================================================================

@@ -1,0 +1,136 @@
+!================================================================================
+!
+!----- Magnet setting for the beamline B1 = (B1U, B1M, B1DIA, B1TL2)
+!
+!----- Diffferent FODO in diagnostic section B1DIA:  
+!----- different setting in section: (Part of B1TTDS, B1DIA, B1TSPEC, B1TL2)
+!
+!================================================================================
+
+
+!----- B1U: Matching from Linac 1 to BC1 chicane
+set, QI.1.B1[k1],  0
+set, QD.3.B1[k1], +0.796012710743
+set, QD.4.B1[k1], -0.728595425924
+
+!----- B1TTDS: Section between BC1 chicane and TDS
+set, QI.5.B1[k1],  -0.913738103035
+set, QI.6.B1[k1],  +0.041534754039
+set, QI.7.B1[k1],  +0.675538941824
+
+!----------------------------------------------------------
+!----- BC1: different FODO in diagnostic section
+!----------------------------------------------------------
+
+!----- Setting for FODO lattice: mux=76deg, muy=76deg
+
+!----- B1TTDS: Section between TDS and FODO lattice
+set, QI.8.B1[k1],  +1.044386249198
+set, QD.9.B1[k1],  -2.183150525084
+set, QI.10.B1[k1], +0.638611884833
+set, QI.11.B1[k1], +1.186969649431
+set, QI.12.B1[k1], -1.123733875319
+set, QI.13.B1[k1], -1.435075819585
+
+!--- B1DIA: Diagnostic FODO lattice: mux=76deg, muy=76deg
+set, QD.14.B1[k1], +2.859590703573
+set, QD.15.B1[k1], -2.859590928913
+set, QD.16.B1[k1], +2.859590703573
+
+!----- B1TSPEC: Spectrometer section (straight line)
+set, QI.17.B1[k1], -0.856583340794
+set, QI.18.B1[k1], -1.561856764081
+set, QI.19.B1[k1], +1.523532902577
+
+!----- B1TL2: Matching to Linac 2
+set, QD.20.B1[k1], +1.561799623097
+set, QD.21.B1[k1], -1.341929990723
+set, QD.22.B1[k1], -0.281709111998
+
+
+comment
+!----- Setting for FODO lattice: mux=90deg, muy=76deg
+
+!----- B1TTDS: Section between TDS and FODO lattice
+set, QI.8.B1[k1],  +1.030390251654
+set, QD.9.B1[k1],  -2.110963157807
+set, QI.10.B1[k1], +0.374190930772
+set, QI.11.B1[k1], +1.443710907062
+set, QI.12.B1[k1], -1.106311787738
+set, QI.13.B1[k1], -1.565187922042
+
+!--- B1DIA: Diagnostic FODO lattice: mux=90deg, muy=76deg
+set, QD.14.B1[k1], +3.219870584965
+set, QD.15.B1[k1], -2.945991774327
+set, QD.16.B1[k1], +3.219870584965
+
+!----- B1TSPEC: Spectrometer section (straight line)
+set, QI.17.B1[k1], -0.685083784134
+set, QI.18.B1[k1], -1.93204864708
+set, QI.19.B1[k1], +1.840977773634
+
+!----- B1TL2: Matching to Linac 2
+set, QD.20.B1[k1], +1.299717245822
+set, QD.21.B1[k1], -0.565096635024
+set, QD.22.B1[k1], -0.798479715147
+endcomment
+
+
+comment
+!----- Setting for FODO lattice: mux=30deg, muy=76deg
+
+!----- B1TTDS: Section between TDS and FODO lattice
+set, QI.8.B1[k1],  +1.351395E+00*0.2/0.2377  !+1.231
+set, QD.9.B1[k1],  -2.360288E+00*0.2/0.2367  !-2.2995
+set, QI.10.B1[k1], +5.552337E-01*0.2/0.2377  !+0.62179
+set, QI.11.B1[k1], +8.221390E-01*0.2/0.2377  !+0.77528
+set, QI.12.B1[k1], -1.041643E+00*0.2/0.2377  !-0.90544
+set, QI.13.B1[k1], -1.425494E+00*0.2/0.2377  !-1.5225
+ 
+!--- B1DIA: Diagnostic FODO lattice: mux=30deg, muy=76deg
+set, QD.14.B1[k1], +1.875797E+00
+set, QD.15.B1[k1], -2.576057E+00
+set, QD.16.B1[k1], +1.875797E+00
+
+!----- B1TSPEC: Spectrometer section (straight line)
+set, QI.17.B1[k1], -8.980398E-01*0.2/0.2377
+set, QI.18.B1[k1], -6.394101E-01*0.2/0.2377
+set, QI.19.B1[k1], +6.977971E-01*0.2/0.2377
+
+!----- B1TL2: Matching to Linac 2 
+set, QD.20.B1[k1], +1.244290368653
+set, QD.21.B1[k1], -2.131833093729
+set, QD.22.B1[k1], +0.778030925327
+endcomment
+
+
+comment
+!----- Setting for FODO lattice: mux=45deg, muy=76deg
+
+!----- B1TTDS: Section between TDS and FODO lattice
+set, QI.8.B1[k1],  +1.126543134870
+set, QD.9.B1[k1],  -2.050305754261
+set, QI.10.B1[k1], +0.598107901464
+set, QI.11.B1[k1], +0.815943550240
+set, QI.12.B1[k1], -1.027829475051
+set, QI.13.B1[k1], -1.130963614479
+
+!--- B1DIA: Diagnostic FODO lattice: mux=45deg, muy=76deg
+set, QD.14.B1[k1], +2.136134363513
+set, QD.15.B1[k1], -2.658932374607
+set, QD.16.B1[k1], +2.136134363513
+
+!----- B1TSPEC: Spectrometer section (straight line)
+set, QI.17.B1[k1], -2.173388037696
+set, QI.18.B1[k1], -0.695506333967
+set, QI.19.B1[k1], +1.249227048884
+
+!----- B1TL2: Matching to Linac 2
+set, QD.20.B1[k1], +0.950170719870
+set, QD.21.B1[k1], -0.763646765038
+set, QD.22.B1[k1], -0.587603518108
+endcomment
+
+!================================================================================
+!================================================================================
+

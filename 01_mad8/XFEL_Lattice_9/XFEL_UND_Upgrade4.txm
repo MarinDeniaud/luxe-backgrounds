@@ -1,0 +1,904 @@
+!=======================================================================
+!
+!   Definition of XFEL Undulators
+!
+!   I1TT4D: SASE1, XS3, SASE3
+!
+!   I1TT5D: SASE2, XS2, UND1, XS4, UND2
+!
+!========================================================================
+
+!------------------------------------------------------------------------
+!
+! SASE 1 - XTD2 35
+! SASE 2 - XTD1 35
+! SASE 3 - XTD4 22
+! UND 1  - XTD3 10 (evtl. SASE 4 mit 22 Modulen)
+! UND 2  - XTD5 10
+!
+!------------------------------------------------------------------------
+
+D0058:   DRIFT, L = 0.058
+D000472: DRIFT, L = 0.00472
+D004778: DRIFT, L = 0.04778
+D01723:  DRIFT, L = 0.17230
+D01935:  DRIFT, L = 0.19350
+D0230:   DRIFT, L = 0.230
+!D0047:   DRIFT, L = 0.047
+
+aD01935:  DRIFT, L = 0.19350 - 0.00685
+aD0047:   DRIFT, L = 0.047   - 0.00685
+
+UNDSEC(CAX,CAY,UNDU,CBX,CBY,CL,ABSP,BPM,Q,QMV,PHS): LINE =       &
+    (D0058, PHS, D000472, CAX,CAY, D004778, CL, UNDU, D00467, CBX,CBY, &
+     D0050, ABSP, D01723, BPM, aD01935, Q, QMV, aD0047)
+
+
+!  Natural undulator focusing is defined by
+!     - Beam energy
+!     - Undulator gap 
+
+Ener  = 17.5
+gamma = Ener / EMASS
+bbeta = 1 / sqrt(1 - 1/(gamma^2))
+
+
+!----- Undulator drift
+
+UNDULATOR: DRIFT, L = 5.0
+
+!----- Undulator chicane
+
+l_chic  = 0.3
+
+BS: SBEND, L = l_chic, ANGLE = 0, &
+           E1 = 0, E2 = 0, TILT = 0
+D01485: DRIFT, L=0.1485
+D12375: DRIFT, L=1.2375
+D0435:  DRIFT, L=0.435
+D0290:  DRIFT, L=0.290
+D01515: DRIFT, L=0.1515
+
+SEEDCHIC(BS.1,CBS.1,BS.2,CBS.2,BS.3,CBS.3,BS.4,CBS.4,D12375,BPM,MONO): &
+LINE = &
+  (D01485,BS.1,CBS.1,D12375,BS.2,CBS.2,&
+   D0290,BPM,D0300,MONO,D0435,BS.3,CBS.3,D12375,BS.4,CBS.4,D01515)
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+! SASE 1 Undulator (37 Sections, 2 first sections are empty)
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!--- Section and Subsection Markers
+
+STSEC.SA1.SA1: MARKER
+ENSEC.SA1.SA1: MARKER
+
+
+!----- Matching Markers
+
+MATCH.UND.SA1: Marker
+
+
+!--- Steerers
+CAX.SA1: HKICKER, L=0.025
+CAY.SA1: VKICKER, L=0.025
+CBX.SA1: HKICKER, L=0.025
+CBY.SA1: VKICKER, L=0.025
+CUX.SA1: HKICKER, L=0.000
+
+!--- Quadrupole movers
+CMVQA.SA1: KICKER, L=0
+
+!--- MONITOR
+BPME.SA1: MONITOR
+
+!--- PHASESHIFTER
+BPS.SA1: DRIFT, L=0.23
+
+!--- ABSORBER
+ABSP.SA1: DRIFT, L=0.05
+
+
+!------------------------------------------------------------------------
+
+!--- Quadrupoles (setting in MAGNET_SET_TD2.txm)
+
+QA.1.SA1: Quadrupole, L = L_QA_eff, K1 = 0
+QA.2.SA1: Quadrupole, L = L_QA_eff, K1 = 0
+
+
+!------------------------------------------------------------------------
+
+!----- Model for undulator natural focusing
+
+! 02.12.2010: Model using analytical matrix.
+! 03.07.2013: Update of Sase1 parameters:
+!    246 pairs of poles 
+!    Period  = 40 mm
+!    Gap = 10 mm  =>  B_0 = 1.13 T, K = 3.9
+!    Gap = 20 mm  =>  B_0 = ?     , K = 1.7
+! November 2013: 
+!     Usage of even number of periods (124) 
+!     to mark the center of 5 m undulator segment
+ 
+Lund1     = 0.040
+!Nund1    = 123            ! 246 pairs of poles: 5.0=123*0.040+0.080  
+Nund1     = 124            ! 5.0=124*0.040+0.040  
+Lund1_124 = Lund1 * 124
+Lund1_62  = Lund1 *  62
+
+!Kund1  = 1.7
+Kund1   = 3.9
+kQund1  = (2 * pi * Kund1) / (Lund1 * gamma * bbeta)
+Omega1  = kQund1 / sqrt(2)
+
+! Initial beta_y:
+r11_sa1 = cos(Omega1*Lund1)
+r12_sa1 = sin(Omega1*Lund1) / Omega1
+Beta0_sa1 = r12_sa1 / sqrt(1.0 - r11_sa1 * r11_sa1)
+!value, beta0_sa1
+
+M_sa1_1: MATRIX, L = Lund1,                &
+   RM(1,1) = 1.0,                          &
+   RM(1,2) = Lund1,                        &
+   RM(1,3) = 0.0,                          &
+   RM(2,2) = 1.0,                          &
+   RM(3,3) = cos(Omega1*Lund1),            &
+   RM(3,4) = sin(Omega1*Lund1)/Omega1,     &
+   RM(4,3) =-sin(Omega1*Lund1)*Omega1,     &
+   RM(4,4) = cos(Omega1*Lund1)
+
+M_sa1_62: MATRIX, L = Lund1_62,            &
+   RM(1,1) = 1.0,                          &
+   RM(1,2) = Lund1_62,                     &
+   RM(1,3) = 0.0,                          &
+   RM(2,2) = 1.0,                          &
+   RM(3,3) = cos(Omega1*Lund1_62),         &
+   RM(3,4) = sin(Omega1*Lund1_62)/Omega1,  &
+   RM(4,3) =-sin(Omega1*Lund1_62)*Omega1,  &
+   RM(4,4) = cos(Omega1*Lund1_62)
+   
+U40.SA1: MATRIX, L = Lund1_124,            &
+   RM(1,1) = 1.0,                          &
+   RM(1,2) = Lund1_124,                    &
+   RM(1,3) = 0.0,                          &
+   RM(2,2) = 1.0,                          &
+   RM(3,3) = cos(Omega1*Lund1_124),        &
+   RM(3,4) = sin(Omega1*Lund1_124)/Omega1, &
+   RM(4,3) =-sin(Omega1*Lund1_124)*Omega1, &
+   RM(4,4) = cos(Omega1*Lund1_124)   
+
+Lend1 = (5.0 - Nund1 * Lund1) / 2     !  0.020 m
+uD0020: Drift, L = Lend1
+
+!--- Description using the matrices for each period
+!UNDU.SA1: Line = (uD0020, 124 * M_sa1_1, uD0020)
+!UNDU.SA1: Line = (uD0020, 62 * M_sa1_1, 62 * M_sa1_1, uD0020)
+
+!------------------------------------------------------------------------
+
+
+!----- Undulator: closed (with natural focusing)
+
+!UNDU.SA1: Line = (uD0020, U40.SA1, uD0020)
+
+
+!----- Undulator: open (no natural focusing)
+
+U40.SA1: DRIFT, L=5.00 
+UNDU.SA1: Line = (U40.SA1)
+
+!------------------------------------------------------------------------
+
+
+!----- SA1 Lattice 
+
+!--- First two undulator sections are without segments: October 2016
+
+!U00.SA1: Undulator
+
+! for checking of SASE1_Ursprung (deltaZ=2.8905m) 
+U00.SA1: Marker
+U00Line.SA1: Line = (D2500, U00.SA1, D2500)                           !change 
+
+SA1DRIF1: LINE = &
+  (UNDSEC(D0025,D0025, U00Line.SA1, D0025,D0025, CUX.SA1, &
+          ABSP.SA1, BPME.SA1, &
+          QA.1.SA1, CMVQA.SA1, D0230))
+SA1DRIF2: LINE = &
+  (UNDSEC(D0025,D0025, U00Line.SA1, D0025,D0025, CUX.SA1, &
+          ABSP.SA1, BPME.SA1, &
+          QA.2.SA1, CMVQA.SA1, D0230))
+
+dofo_SA1_open:  Line = (SA1DRIF1, SA1DRIF2)
+fodo_SA1_open:  Line = (SA1DRIF2, SA1DRIF1)
+
+
+!--- Sections with undulator segments
+
+SA1SEC1E: LINE = &
+  (UNDSEC(CAX.SA1, CAY.SA1, UNDU.SA1, CBX.SA1, CBY.SA1, CUX.SA1, &
+          ABSP.SA1, BPME.SA1, &
+          QA.1.SA1, CMVQA.SA1, D0230))
+SA1SEC1: LINE = &
+  (UNDSEC(CAX.SA1, CAY.SA1, UNDU.SA1, CBX.SA1, CBY.SA1, CUX.SA1, &
+          ABSP.SA1, BPME.SA1, &
+          QA.1.SA1, CMVQA.SA1, BPS.SA1))
+SA1SEC2: LINE = &
+  (UNDSEC(CAX.SA1, CAY.SA1, UNDU.SA1, CBX.SA1, CBY.SA1, CUX.SA1, &
+          ABSP.SA1, BPME.SA1, &
+          QA.2.SA1, CMVQA.SA1, BPS.SA1))
+
+dofo_SA1_close: Line = (SA1SEC1, SA1SEC2)
+fodo_SA1_close: Line = (SA1SEC2, SA1SEC1)
+
+
+!--- SA1 
+ 
+SA1: LINE = (STSEC.SA1.SA1, (SA1DRIF1, SA1DRIF2), MATCH.UND.SA1,   &
+             SA1SEC1E, 17*(SA1SEC2, SA1SEC1), ENSEC.SA1.SA1)
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+! SASE 2 Undulator (37 Sections, 2 first sections are empty)
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!--- Section and Subsection Markers
+
+STSEC.SA2.SA2: MARKER
+ENSEC.SA2.SA2: MARKER
+
+
+!----- Matching Markers
+
+MATCH.UND.SA2: Marker
+
+
+!--- Steerer
+CAX.SA2: HKICKER, L=0.025
+CAY.SA2: VKICKER, L=0.025
+CBX.SA2: HKICKER, L=0.025
+CBY.SA2: VKICKER, L=0.025
+CUX.SA2: HKICKER, L=0.00
+
+!--- Quadrupole movers
+CMVQA.SA2: KICKER, L=0
+
+!--- MONITOR
+BPME.SA2: MONITOR
+
+!--- Phase Shifter
+BPS.SA2: DRIFT, L=0.23
+
+!--- ABSORBER
+ABSP.SA2: DRIFT, L=0.05
+
+!------------------------------------------------------------------------
+
+
+!--- Quadrupoles (setting in MAGNET_SET_TD1.txm)
+
+QA.1.SA2: Quadrupole, L = L_QA_eff, K1 = 0
+QA.2.SA2: Quadrupole, L = L_QA_eff, K1 = 0
+
+!------------------------------------------------------------------------
+
+
+!----- Model for undulator natural focusing
+
+! 02.12.2010: Model using analytical matrix.
+! 03.07.2013, Update of Sase2 parameters:
+!    246 pairs of poles 
+!    Period  = 40 mm
+!    Gap = 10 mm  =>  B_0 = 1.13 T, K = 3.9
+!    Gap = 20 mm  =>  B_0 = ?     , K = 1.7
+! November 2013: 
+!     Usage of even number of periods (124x2=248) 
+!     to mark the center of 5 m undulator segment
+
+Lund2     = 0.040
+!Nund2    = 123             ! 246 pairs of poles: 5.0=123*0.040+0.080  
+Nund2     = 124             ! 5.0 = 124*0.040 + 0.040  
+Lund2_124 = Lund2 * 124
+Lund2_62  = Lund2 * 62
+
+!Kund2   = 1.7
+Kund2    = 3.9
+kQund2   = (2 * pi * Kund2) / (Lund2 * gamma * bbeta)
+Omega2   = kQund2 / sqrt(2)
+
+M_sa2_1: MATRIX, L = Lund2,                 &
+   RM(1,1) = 1.0,                           &
+   RM(1,2) = Lund2,                         &
+   RM(1,3) = 0.0,                           &
+   RM(2,2) = 1.0,                           &
+   RM(3,3) = cos(Omega2*Lund2),             &
+   RM(3,4) = sin(Omega2*Lund2)/Omega2,      &
+   RM(4,3) =-sin(Omega2*Lund2)*Omega2,      &
+   RM(4,4) = cos(Omega2*Lund2)
+
+M_sa2_62: MATRIX, L = Lund2_62,             &
+   RM(1,1) = 1.0,                           &
+   RM(1,2) = Lund2_62,                      &
+   RM(1,3) = 0.0,                           &
+   RM(2,2) = 1.0,                           &
+   RM(3,3) = cos(Omega2*Lund2_62),          &
+   RM(3,4) = sin(Omega2*Lund2_62)/Omega2,   &
+   RM(4,3) =-sin(Omega2*Lund2_62)*Omega2,   &
+   RM(4,4) = cos(Omega2*Lund2_62)
+   
+U40.SA2: MATRIX, L = Lund2_124,             &
+   RM(1,1) = 1.0,                           &
+   RM(1,2) = Lund2_124,                     &
+   RM(1,3) = 0.0,                           &
+   RM(2,2) = 1.0,                           &
+   RM(3,3) = cos(Omega2*Lund2_124),         &
+   RM(3,4) = sin(Omega2*Lund2_124)/Omega2,  &
+   RM(4,3) =-sin(Omega2*Lund2_124)*Omega2,  &
+   RM(4,4) = cos(Omega2*Lund2_124)
+
+Lend2 = (5.0 - Nund2 * Lund2) / 2           !  0.020 m
+!uD0020: Drift, L = Lend2
+
+!----- Description using the matrices for each period
+!UNDU.SA2: Line = (uD0020, 124 * M_sa2_1,               uD0020)
+!UNDU.Sa2: Line = (uD0020,  62 * M_sa2_1, 62 * M_sa2_1, uD0020)
+
+!------------------------------------------------------------------------
+
+
+!----- Undulator: closed (with natural focusing)
+
+!UNDU.SA2: Line = (uD0020, U40.SA2, uD0020)
+
+
+!----- Undulator: open (no natural focusing)
+U40.SA2: DRIFT, L=5.00 
+UNDU.SA2: Line = (U40.SA2)
+
+!------------------------------------------------------------------------
+
+
+!----- SA2 Lattice 
+
+!--- First two sections are without undulator segments
+
+!U00.SA2: Undulator
+
+! for cheking of SASE2_Ursprung (deltaZ=2.8905m) 
+U00.SA2: Marker
+
+U00LINE.SA2.a: Line = (D2500, Rot.Y.Sa2, U00.SA2, D2500)           
+!U00.SA2.a: Line = (U00.SA2.1, U00.SA2.1)
+U00LINE.SA2.b: Line = (D2500, U00.SA2, D2500)                      
+
+
+SA2DRIF1: LINE = &
+  (UNDSEC(D0025,D0025, U00LINE.SA2.a, D0025,D0025, CUX.SA2, &
+          ABSP.SA2, BPME.SA2, &
+          QA.1.SA2, CMVQA.SA2, D0230))
+SA2DRIF2: LINE = &
+  (UNDSEC(D0025,D0025, U00LINE.SA2.b, D0025,D0025, CUX.SA2, &
+          ABSP.SA2, BPME.SA2, &
+          QA.2.SA2, CMVQA.SA2, D0230))
+
+dofo_SA2_open: Line =(SA2DRIF1, SA2DRIF2)
+fodo_SA2_open: Line =(SA2DRIF2, SA2DRIF1)
+
+!--- Sections with Self-Seeding chicanes
+BPMH.SA2: MONITOR
+MONO1.SA2: MARKER
+MONO2.SA2: MARKER
+
+MCBS.1.SA2: MARKER
+CBS.2.SA2: HKICKER, L=0.0
+CBS.3.SA2: HKICKER, L=0.0
+CBS.4.SA2: HKICKER, L=0.0
+
+ang_chic1 =  0.000
+arc_chic1 = l_chic ! /sin(ang_chic1)*ang_chic1
+
+BS.1.1.SA2: SBEND, L = arc_chic1, ANGLE = ang_chic1, &
+           E1 = 0, E2 = ang_chic1, TILT = 0
+BS.1.2.SA2: SBEND, L = arc_chic1, ANGLE =-ang_chic1, &
+           E1 = -ang_chic1, E2 = 0, TILT = 0
+BS.1.3.SA2: SBEND, L = arc_chic1, ANGLE =-ang_chic1, &
+           E1 = 0, E2 =-ang_chic1, TILT = 0
+BS.1.4.SA2: SBEND, L = arc_chic1, ANGLE = ang_chic1, &
+           E1 = ang_chic1, E2 = 0, TILT = 0
+deltachic  = 1.2375
+CD12375I1 = deltachic / cos(ang_chic1)
+D12375I1:  DRIFT, L = CD12375I1
+
+CHIC.1.SA2: LINE= &
+ (SEEDCHIC(BS.1.1.SA2,MCBS.1.SA2,BS.1.2.SA2,CBS.2.SA2,&
+  BS.1.3.SA2,CBS.3.SA2,BS.1.4.SA2,CBS.4.SA2,&
+  D12375I1,BPMH.SA2,MONO1.SA2))
+
+SA2SECSEED1: LINE = &
+  (UNDSEC(D0025,D0025,CHIC.1.SA2,D0025,D0025,D0000, &
+          ABSP.SA2, BPME.SA2, QA.1.SA2, CMVQA.SA2, D0230))
+
+MCBS.5.SA2: MARKER
+CBS.6.SA2: HKICKER, L=0.0
+CBS.7.SA2: HKICKER, L=0.0
+CBS.8.SA2: HKICKER, L=0.0
+
+ang_chic2 =  0.00
+arc_chic2 = l_chic  ! /sin(ang_chic2)*ang_chic2
+
+BS.2.1.SA2: SBEND, L = arc_chic2, ANGLE = ang_chic2, &
+           E1 = 0, E2 = ang_chic2, TILT = 0
+BS.2.2.SA2: SBEND, L = arc_chic2, ANGLE =-ang_chic2, &
+           E1 = -ang_chic2, E2 = 0, TILT = 0
+BS.2.3.SA2: SBEND, L = arc_chic2, ANGLE =-ang_chic2, &
+           E1 = 0, E2 =-ang_chic2, TILT = 0
+BS.2.4.SA2: SBEND, L = arc_chic2, ANGLE = ang_chic2, &
+           E1 = ang_chic2, E2 = 0, TILT = 0
+deltachic  = 1.2375
+CD12375I2 = deltachic / cos(ang_chic2)
+D12375I2:  DRIFT, L = CD12375I2
+
+CHIC.2.SA2: LINE=&
+  (SEEDCHIC(BS.2.1.SA2,MCBS.5.SA2,BS.2.2.SA2,CBS.6.SA2,&
+  BS.2.3.SA2,CBS.7.SA2,BS.2.4.SA2,CBS.8.SA2,&
+  D12375I2,BPMH.SA2,MONO2.SA2))
+
+SA2SECSEED2: LINE = &
+  (UNDSEC(D0025,D0025,CHIC.2.SA2,D0025,D0025,D0000, &
+          ABSP.SA2, BPME.SA2, QA.2.SA2, CMVQA.SA2, D0230))
+
+!--- Sections with undulator segments
+
+SA2SEC1: LINE = &
+  (UNDSEC(CAX.SA2, CAY.SA2, UNDU.SA2, CBX.SA2, CBY.SA2, CUX.SA2, &
+          ABSP.SA2, BPME.SA2, &
+          QA.1.SA2, CMVQA.SA2, BPS.SA2))
+SA2SEC1E: LINE = &
+  (UNDSEC(CAX.SA2, CAY.SA2, UNDU.SA2, CBX.SA2, CBY.SA2, CUX.SA2, &
+          ABSP.SA2, BPME.SA2, &
+          QA.1.SA2, CMVQA.SA2, D0230))
+SA2SEC2: LINE = &
+  (UNDSEC(CAX.SA2, CAY.SA2, UNDU.SA2, CBX.SA2, CBY.SA2, CUX.SA2, &
+          ABSP.SA2, BPME.SA2, &
+          QA.2.SA2, CMVQA.SA2, BPS.SA2))
+
+dofo_SA2_close: Line =(SA2SEC1, SA2SEC2)
+fodo_SA2_close: Line =(SA2SEC2, SA2SEC1)
+
+
+!----- SA2
+
+!SA2: LINE = (STSEC.SA2.SA2, (SA2DRIF1, SA2DRIF2), MATCH.UND.SA2, &
+!             SA2SEC1E, 17*(SA2SEC2, SA2SEC1), ENSEC.SA2.SA2)
+
+!----- SA2 SELF SEEDING
+
+SA2: LINE = (STSEC.SA2.SA2, ROT.Y.SA2, SA2SEC1E, SA2SEC2, MATCH.UND.SA2, &
+             3*(SA2SEC1, SA2SEC2), SA2SECSEED1, &
+             4*(SA2SEC2, SA2SEC1), SA2SECSEED2, & 
+             9*(SA2SEC1, SA2SEC2), SA2SEC1, ENSEC.SA2.SA2)
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+! SASE 3 Undulator (23 Sections, 2 first sections are empty)
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!--- Section and Subsection Markers
+
+STSEC.SA3.SA3: MARKER
+ENSEC.SA3.SA3: MARKER
+
+
+!----- Matching Markers
+
+MATCH.UND.SA3: Marker
+
+
+!--- Steerer
+CAX.SA3: HKICKER, L=0.025
+CAY.SA3: VKICKER, L=0.025
+CBX.SA3: HKICKER, L=0.025
+CBY.SA3: VKICKER, L=0.025
+CUX.SA3: HKICKER, L=0.00
+
+!--- Quadrupole movers
+CMVQA.SA3: KICKER, L=0
+
+!--- Monitor
+BPME.SA3: MONITOR
+
+!--- Phase Shifter
+BPS.SA3: DRIFT, L=0.23
+
+!--- ABSORBER
+ABSP.SA3: DRIFT, L=0.05
+
+!------------------------------------------------------------------------
+
+
+!--- Quadrupoles (setting in MAGNET_SET_TD2.txm)
+
+QA.1.SA3:  Quadrupole, L = L_QA_eff, K1 = 0
+QA.2.SA3:  Quadrupole, L = L_QA_eff, K1 = 0
+
+!------------------------------------------------------------------------
+
+
+!----- Model for undulator natural focusing
+
+! 02.12.2010: Model using analytical matrix.
+! 18.06.2013: Update of Sase3 parameters:
+!    144 pairs of poles
+!    Period  = 68 mm
+!    Gap     = 10 mm  =>  B_0 = 1.66 T, K = 9.3 
+!    Gap     = 25 mm  =>  B_0 = ?     , K = 4.0
+
+Lund3    = 0.068
+Nund3    = 72             ! 144 pairs of poles: 5.0=72*0.068+0.104  
+Lund3_72 = Lund3 * 72
+Lund3_36 = Lund3 * 36
+
+Kund3 = 9.3
+!Kund3  = 4.0
+kQund3 = (2 * pi * Kund3) / (Lund3 * gamma * bbeta)
+Omega3 = kQund3 / sqrt(2)
+
+! Initial beta_y:
+r11 = cos(Omega3*Lund3)
+r12 = sin(Omega3*Lund3) / Omega3
+Beta0 = r12 / sqrt(1.0 - r11 * r11)
+!value, beta0
+
+M_sa3_1: MATRIX, L = Lund3,                &
+   RM(1,1) = 1.0,                          &
+   RM(1,2) = Lund3,                        &
+   RM(1,3) = 0.0,                          &
+   RM(2,2) = 1.0,                          &
+   RM(3,3) = cos(Omega3*Lund3),            &
+   RM(3,4) = sin(Omega3*Lund3)/Omega3,     &
+   RM(4,3) =-sin(Omega3*Lund3)*Omega3,     &
+   RM(4,4) = cos(Omega3*Lund3)
+
+M_sa3_36: MATRIX, L = Lund3_36,            &
+   RM(1,1) = 1.0,                          &
+   RM(1,2) = Lund3_36,                     &
+   RM(1,3) = 0.0,                          &
+   RM(2,2) = 1.0,                          &
+   RM(3,3) = cos(Omega3*Lund3_36),         &
+   RM(3,4) = sin(Omega3*Lund3_36)/Omega3,  &
+   RM(4,3) =-sin(Omega3*Lund3_36)*Omega3,  &
+   RM(4,4) = cos(Omega3*Lund3_36)
+   
+U68.SA3: MATRIX, L = Lund3_72,             &
+   RM(1,1) = 1.0,                          &
+   RM(1,2) = Lund3_72,                     &
+   RM(1,3) = 0.0,                          &
+   RM(2,2) = 1.0,                          &
+   RM(3,3) = cos(Omega3*Lund3_72),         &
+   RM(3,4) = sin(Omega3*Lund3_72)/Omega3,  &
+   RM(4,3) =-sin(Omega3*Lund3_72)*Omega3,  &
+   RM(4,4) = cos(Omega3*Lund3_72)
+
+Lend3 = (5.0 - Nund3 * Lund3) / 2           !  0.052 m
+D0052: Drift, L = Lend3
+
+!----- Description using the matrices for each period
+!UNDU.SA3: Line = (D0052, 72 * M_sa3_1, D0052)
+!UNDU.SA3: Line = (D0052, M_sa3_36,  M_sa3_36, D0052)
+
+!------------------------------------------------------------------------
+
+
+!----- Undulator: closed (with natural focusing)
+
+!UNDU.SA3: Line = (D0052, U68.SA3, D0052)
+
+
+!----- Undulator: open (no natural focusing)
+
+U68.SA3: DRIFT, L=5.00 
+UNDU.SA3: Line = (U68.SA3)
+
+!------------------------------------------------------------------------
+
+
+!----- SA3 Lattice 
+
+!--- First two sections are without undulator segments (November 2013)
+
+!U00.SA3: Undulator
+
+! for cheking of SASE1_Ursprung (deltaZ=2.8905m) 
+U00.SA3: Marker                                
+U00LINE.SA3: Line = (D2500, U00.SA3, D2500)                  
+
+
+SA3DRIF1: LINE = &
+  (UNDSEC(D0025,D0025, U00LINE.SA3, D0025,D0025, CUX.SA3, &
+          ABSP.SA3, BPME.SA3, &
+          QA.1.SA3, CMVQA.SA3, D0230))
+SA3DRIF2: LINE = &
+  (UNDSEC(D0025,D0025, U00LINE.SA3, D0025,D0025, CUX.SA3, &
+          ABSP.SA3, BPME.SA3, &
+          QA.2.SA3, CMVQA.SA3, D0230))
+
+dofo_SA3_open: Line = (SA3DRIF1, SA3DRIF2)
+fodo_SA3_open: Line = (SA3DRIF2, SA3DRIF1)
+
+
+!--- Sections with undulator segments
+
+SA3SEC1E: LINE = &
+  (UNDSEC(CAX.SA3, CAY.SA3, UNDU.SA3, CBX.SA3, CBY.SA3, CUX.SA3, &
+          ABSP.SA3, BPME.SA3, &
+          QA.1.SA3, CMVQA.SA3, D0230))
+SA3SEC1: LINE = &
+  (UNDSEC(CAX.SA3, CAY.SA3, UNDU.SA3, CBX.SA3, CBY.SA3, CUX.SA3, &
+          ABSP.SA3, BPME.SA3, &
+          QA.1.SA3, CMVQA.SA3, BPS.SA3))
+SA3SEC2: LINE = &
+  (UNDSEC(CAX.SA3, CAY.SA3, UNDU.SA3, CBX.SA3, CBY.SA3, CUX.SA3, &
+          ABSP.SA3, BPME.SA3, &
+          QA.2.SA3, CMVQA.SA3, BPS.SA3))
+
+dofo_SA3_close: Line =(SA3SEC1, SA3SEC2)
+fodo_SA3_close: Line =(SA3SEC2, SA3SEC1)
+
+
+!--- SA3 
+
+SA3: LINE =(STSEC.SA3.SA3, (SA3DRIF1, SA3DRIF2), MATCH.UND.SA3,  &
+            SA3SEC1E, 10*(SA3SEC2, SA3SEC1), ENSEC.SA3.SA3)
+
+
+!------------------------------------------------------------------------
+
+comment
+! Before November 2013: no first emply section, 1st quad = defocusing in X 
+SA3SEC1:   LINE =(UNDSEC(SA3.UNDU,SA3.CAX,SA3.CAY,SA3.BPME,SA3.QA.1,SA3.BPS))
+SA3SEC2:   LINE =(UNDSEC(SA3.UNDU,SA3.CAX,SA3.CAY,SA3.BPME,SA3.QA.2,SA3.BPS))
+SA3SEC1E:  LINE =(UNDSEC(SA3.UNDU,SA3.CAX,SA3.CAY,SA3.BPME,SA3.QA.1,D0230))
+SA3:      LINE =(SA3.START, 10*(SA3SEC1,SA3SEC2), SA3SEC1E,SA3.END)
+SA3_fodo: Line =(SA3SEC1,SA3SEC2)
+endcomment
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+! UND 1 Undulator (10 Sections, <beta> = 15 m)
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!--- Section and Subsection Markers
+
+STSEC.UN1.UN1: MARKER
+ENSEC.UN1.UN1: MARKER
+
+!----- Matching Markers
+
+MATCH.UN1.UN1: Marker
+
+!------------------------------------------------------------------------
+
+
+!----- UND1 substitutive section, 61 m long -----------------------------
+
+!--- Monitor
+BPMA.UN1: MONITOR
+
+!--- Correctors
+
+CEX.UN1: HKICKER, L=0.1
+CEY.UN1: VKICKER, L=0.1
+
+!--- Quadrupoles (setting in MAGNET_SET_TD1.txm)
+QE.1.UN1: Quadrupole, L = L_QE_eff, K1 = 0
+QE.2.UN1: Quadrupole, L = L_QE_eff, K1 = 0
+
+D7039: Drift, L = 7.039
+D9646: Drift, L = 9.646
+
+UN1: LINE=(STSEC.UN1.UN1, D7039,               &
+           QESEC(BPMA.UN1, QE.1.UN1, CEX.UN1), &
+           D10000, D0485, D10000, D0450,       &
+           QESEC(BPMA.UN1, QE.2.UN1, CEY.UN1), &
+           D10000, D0485, D10000, D0450,       &
+           QESEC(BPMA.UN1, QE.1.UN1, CEX.UN1), &
+           D9646, ENSEC.UN1.UN1)
+
+!------------------------------------------------------------------------
+
+
+comment
+!------------------------------------------------------------------------
+!----- UND1 Undulator: SA1 type (10 Sections, <beta> = 15 m)
+!
+!--- Steerers
+CAX.UN1: HKICKER, L=0.025
+CAY.UN1: VKICKER, L=0.025
+CBX.UN1: HKICKER, L=0.025
+CBY.UN1: VKICKER, L=0.025
+CUX.UN1: HKICKER, L=0.000
+!--- Quadrupole movers
+CMVQA.UN1: KICKER, L=0
+!--- MONITOR
+BPME.UN1: MONITOR
+!--- PHASESHIFTER
+BPS.UN1: DRIFT, L=0.23
+!--- ABSORBER
+ABSP.UN1: DRIFT, L=0.05
+!--- Quadrupoles
+QA.1.UN1:  Quadrupole, L = L_QA_eff, K1 = +1.197430122553
+QA.2.UN1:  Quadrupole, L = L_QA_eff, K1 = -1.197430122553
+!--- Undulator open (without natural focusing)
+UNDU.UN1: UNDULATOR
+!----- UN1 lattice
+UN1SEC1: LINE = &
+  (UNDSEC(CAX.UN1, CAY.UN1, UNDU.UN1, CBX.UN1, CBY.UN1, CUX.UN1, &
+          ABSP.UN1, BPME.UN1, &
+          QA.1.UN1, CMVQA.UN1, BPS.UN1))
+UN1SEC2: LINE = &
+  (UNDSEC(CAX.UN1, CAY.UN1, UNDU.UN1, CBX.UN1, CBY.UN1, CUX.UN1, &
+          ABSP.UN1, BPME.UN1, &
+          QA.2.UN1, CMVQA.UN1, BPS.UN1))
+fodo_UN1_open: Line = (UN1SEC1, UN1SEC2)
+UN1: LINE = (STSEC.UN1.UN1, MATCH.UN1.UN1, 5*(UN1SEC1,UN1SEC2), ENSEC.UN1.UN1)
+! nina: has been in the file (UN1 commented)
+!UN1SEC1: LINE =(UNDSEC0(CAX.UN1, CAY.UN1, BPME.UN1, QA.1.UN1))
+!UN1SEC2: LINE =(UNDSEC0(CAX.UN1, CAY.UN1, BPME.UN1, QA.2.UN1))
+! nina: old definition of UNDSEC0 
+!UNDSEC0(CX,CY,ABSP,BPM,Q): LINE =                               &
+!    (D000472, D0050, D04778, D5000, D00467, D0050, D0050, ABSP, &
+!     D01723, BPM, D01935, Q, D0105)
+!------------------------------------------------------------------------
+endcomment
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+! UND 2 Undulator (10 Sections, <beta> = 15 m)
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!--- Section and Subsection Markers
+
+STSEC.UN2.UN2: MARKER
+ENSEC.UN2.UN2: MARKER
+
+!----- Matching Markers
+
+MATCH.UN2.UN2: Marker
+
+!------------------------------------------------------------------------
+
+
+!----- UND2 substitutive section, 61 m long -----------------------------
+
+!--- Monitor
+BPMA.UN2: MONITOR
+
+!--- Correctors
+CEX.UN2: HKICKER, L=0.1
+CEY.UN2: VKICKER, L=0.1
+
+!--- Quadrupoles (setting in MAGNET_SET_TD1.txm)
+QE.1.UN2: Quadrupole, L = L_QE_eff, K1 = 0
+QE.2.UN2: Quadrupole, L = L_QE_eff, K1 = 0
+
+
+UN2: LINE=(STSEC.UN2.UN2, D7039,                                    &
+           QESEC(BPMA.UN2, QE.2.UN2, CEY.UN2), D10000,D10000,D0935, &
+           QESEC(BPMA.UN2, QE.1.UN2, CEX.UN2), D10000,D10000,D0935, &
+           QESEC(BPMA.UN2, QE.2.UN2, CEY.UN2), D9646, ENSEC.UN2.UN2)
+
+!------------------------------------------------------------------------
+
+
+comment
+!------------------------------------------------------------------------
+!----- UND2 Undulator: SA1 type (10 Sections, <beta> = 15 m)
+!
+!--- Steerers
+CAX.UN2: HKICKER, L=0.025
+CAY.UN2: VKICKER, L=0.025
+CBX.UN2: HKICKER, L=0.025
+CBY.UN2: VKICKER, L=0.025
+CUX.UN2: HKICKER, L=0.000
+!--- Quadrupole movers
+CMVQA.UN2: KICKER, L=0
+!--- MONITOR
+BPME.UN2: MONITOR
+!--- PHASESHIFTER
+BPS.UN2: DRIFT, L=0.23
+!--- ABSORBER
+ABSP.UN2: DRIFT, L=0.05
+!--- Undulator
+UNDU.UN2: UNDULATOR
+!--- Quadrupoles
+QA.1.UN2:  Quadrupole, L = L_QA_eff, K1 = +1.197430122553
+QA.2.UN2:  Quadrupole, L = L_QA_eff, K1 = -1.197430122553
+!--- Undulator open (without natural focusing)
+UNDU.UN2: UNDULATOR
+!----- UN2 lattice
+UN2SEC1: LINE = &
+  (UNDSEC(CAX.UN2, CAY.UN2, UNDU.UN2, CBX.UN2, CBY.UN2, CUX.UN2, &
+          ABSP.UN2, BPME.UN2, &
+          QA.1.UN2, CMVQA.UN2, BPS.UN2))
+UN2SEC2: LINE = &
+  (UNDSEC(CAX.UN2, CAY.UN2, UNDU.UN2, CBX.UN2, CBY.UN2, CUX.UN2, &
+          ABSP.UN2, BPME.UN2, &
+          QA.2.UN2, CMVQA.UN2, BPS.UN2))
+fodo_UN2_open: Line = (UN2SEC1, UN2SEC2)
+UN2: LINE = (STSEC.UN2.UN2, MATCH.UN2.UN2, 5*(UN2SEC1,UN2SEC2), ENSEC.UN2.UN2)
+! nina: has been in the file (UN2 commented)
+!UN2SEC1: LINE =(UNDSEC0(UN2.CAX, UN2.CAY, UN2.BPMA, UN2.QA.1))
+!UN2SEC2: LINE =(UNDSEC0(UN2.CAX, UN2.CAY, UN2.BPMA, UN2.QA.2))
+!UN2: LINE=(UN2.START,5*(UN2SEC1,UN2SEC2),UN2.END)
+!------------------------------------------------------------------------
+endcomment
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+! Diagnsotic undulator with natural focusing
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!    3 pairs of poles 
+!    Period  = 40 mm
+!    Gap = 12 mm  =>  B_0 = 0.96 T, K = 3.2784
+ 
+LundS     = 0.040
+NundS     = 3            ! 0.34 = 3*0.04+0.11+0.11  
+LundS_3 = LundS * NundS;
+
+KundS    = 3.2784
+kQundS   = (2 * pi * KundS) / (LundS * gamma * bbeta);
+OmegaS   = kQundS / sqrt(2)
+
+! Initial beta_y:
+r11_udia = cos(OmegaS*LundS)
+r12_udia = sin(OmegaS*LundS) / OmegaS
+Beta0_udia = r12_udia / sqrt(1.0 - r11_udia * r11_udia)
+!value, beta0_udia
+
+
+U40S.T1: MATRIX, L = LundS_3,            &
+   RM(1,1) = 1.0,                        &
+   RM(1,2) = LundS_3,                    &
+   RM(1,3) = 0.0,                        &
+   RM(2,2) = 1.0,                        &
+   RM(3,3) = cos(OmegaS*LundS_3),        &
+   RM(3,4) = sin(OmegaS*LundS_3)/OmegaS, &
+   RM(4,3) =-sin(OmegaS*LundS_3)*OmegaS, &
+   RM(4,4) = cos(OmegaS*LundS_3) 
+
+U40S.T2: MATRIX, L = LundS_3,            &
+   RM(1,1) = 1.0,                        &
+   RM(1,2) = LundS_3,                    &
+   RM(1,3) = 0.0,                        &
+   RM(2,2) = 1.0,                        &
+   RM(3,3) = cos(OmegaS*LundS_3),        &
+   RM(3,4) = sin(OmegaS*LundS_3)/OmegaS, &
+   RM(4,3) =-sin(OmegaS*LundS_3)*OmegaS, &
+   RM(4,4) = cos(OmegaS*LundS_3)
+
+U40S.T4: MATRIX, L = LundS_3,            &
+   RM(1,1) = 1.0,                        &
+   RM(1,2) = LundS_3,                    &
+   RM(1,3) = 0.0,                        &
+   RM(2,2) = 1.0,                        &
+   RM(3,3) = cos(OmegaS*LundS_3),        &
+   RM(3,4) = sin(OmegaS*LundS_3)/OmegaS, &
+   RM(4,3) =-sin(OmegaS*LundS_3)*OmegaS, &
+   RM(4,4) = cos(OmegaS*LundS_3)
+
+
+!========================================================================
+!========================================================================

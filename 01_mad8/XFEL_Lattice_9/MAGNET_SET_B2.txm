@@ -1,0 +1,142 @@
+!================================================================================
+!
+!----- Magnet setting for the beamline B2 = (B2U, B2M, B2DIA, B2TL3)
+!
+!----- Diffferent FODO in diagnostic section B2FODO3:
+!----- different setting in sections: (B2FODO1, B2FODO2, B2FODO3, B2FODO4, B2TL3)
+!
+!================================================================================
+
+
+!--- B2U: Matching from Linac 2 to BC2 chicane
+set, QD.1.B2[k1], +0.335173384821
+set, QD.2.B2[k1], +0.355996432214
+set, QD.3.B2[k1], -0.725524552636
+set, QD.4.B2[k1], +0.196996090583
+
+!--- B2TTDS: Section between bunch compressor BC2 and TDS
+set, QD.6.B2[k1],  +0.180686398165
+set, QD.7.B2[k1],  -0.750187049043
+set, QD.8.B2[k1],  +0.649153060425
+set, QD.9.B2[k1],  -1.300798854621
+set, QD.10.B2[k1], +0.941482845797
+
+
+!--------------------------------------------------------------------------------
+!----- BC2: different FODO in diagnostic section
+!--------------------------------------------------------------------------------
+
+!----- Setting for FODO lattice: mux=76deg, muy=76deg
+
+!--- (B2FODO1,B2FODO2): Section between TDS and FODO
+set, QD.11.B2[k1], +0.290511276770
+set, QD.12.B2[k1], -0.549851462140
+set, QD.13.B2[k1], +0.862017129017
+set, QD.14.B2[k1], -0.868640869689
+set, QD.15.B2[k1], -0.402652048547
+
+!--- B2FODO3: FODO lattice: mux=76deg, muy=76deg per cell
+set, QD.16.B2[k1], +1.398378706502
+set, QD.17.B2[k1], -1.398378706502
+set, QD.18.B2[k1], +1.398378706502
+set, QD.19.B2[k1], -1.398378706502
+
+!--- B2FODO4: Section behind FODO lattice
+set, QD.21.B2[k1], -0.527837126071
+set, QD.22.B2[k1], +1.33511439904
+set, QD.23.B2[k1], -0.197941902864
+
+!--- B2TL3: Matching to Linac3 (or spectrometer)
+set, QD.24.B2[k1], -1.289057388947
+set, QD.25.B2[k1], +0.883889914762
+
+
+comment
+!----- Setting for FODO lattice: mux=90deg, muy=76deg
+
+!--- (B2FODO1,B2FODO2): Section between TDS and FODO
+set, QD.11.B2[k1], +0.31700249416
+set, QD.12.B2[k1], -0.840135095669
+set, QD.13.B2[k1], +1.031784210154
+set, QD.14.B2[k1], -0.787070033948
+set, QD.15.B2[k1], -0.62976477628
+
+!--- B2FODO3: FODO lattice: mux=90deg, muy=76deg per cell
+set, QD.16.B2[k1], +1.575336820066
+set, QD.17.B2[k1], -1.439626809882
+set, QD.18.B2[k1], +1.575336820066
+set, QD.19.B2[k1], -1.439626809882
+
+!--- B2FODO4: Section behind FODO lattice
+set, QD.21.B2[k1], -0.433889186215
+set, QD.22.B2[k1], +1.359202022439
+set, QD.23.B2[k1], -0.229766288592
+ 
+!--- B2TL3: Matching to Linac3 (or spectrometer)
+set, QD.24.B2[k1], -1.289563725895
+set, QD.25.B2[k1], +0.896487243607
+endcomment
+
+
+comment
+!----- setting for FODO lattice: mux=27deg, muy=76.5deg
+
+!--- (B2FODO1,B2FODO2): Section between TDS and FODO
+set, QD.11.B2[k1], +0.435183027466
+set, QD.12.B2[k1], -0.527858191021
+set, QD.13.B2[k1], +0.405549283498
+set, QD.14.B2[k1], -0.668524672030
+set, QD.15.B2[k1], -0.458218661455
+
+!--- B2FODO3: FODO lattice: mux=27deg, muy=76.5deg per cell
+set, QD.16.B2[k1], +0.896095548995
+set, QD.17.B2[k1], -1.263284384025
+set, QD.18.B2[k1], +0.896095548995
+set, QD.19.B2[k1], -1.263284384025
+
+!set, QD.16.B2[k1], +1.0566*0.2/0.2367
+!set, QD.17.B2[k1], -1.4912*0.2/0.2367
+!set, QD.18.B2[k1], +1.0566*0.2/0.2367
+!set, QD.19.B2[k1], -1.4912*0.2/0.2367
+
+!--- B2FODO4: Section behind FODO lattice
+set, QD.21.B2[k1], -0.67413*0.2/0.2367
+set, QD.22.B2[k1], +1.53650*0.2/0.2367
+set, QD.23.B2[k1], -0.29216*0.2/0.2367
+
+!--- B2TL3: Matching to Linac3 (or spectrometer)
+set, QD.24.B2[k1], -1.128906739434
+set, QD.25.B2[k1], +0.661179776067
+endcomment
+
+
+comment
+!----- Setting for FODO lattice: mux=45deg, muy=76deg
+
+!--- (B2FODO1,B2FODO2): Section between TDS and FODO
+set, QD.11.B2[k1], +0.388733743153
+set, QD.12.B2[k1], -0.357708597074
+set, QD.13.B2[k1], +0.446668046096
+set, QD.14.B2[k1], -0.787565121360
+set, QD.15.B2[k1], -0.300534070833
+
+!--- B2FODO3: FODO lattice: mux=45deg, muy=76deg per cell
+set, QD.16.B2[k1], +1.042093984964
+set, QD.17.B2[k1], -1.302092747417
+set, QD.18.B2[k1], +1.042093984964
+set, QD.19.B2[k1], -1.302092747417
+
+!--- B2FODO4: Section behind FODO lattice
+set, QD.21.B2[k1], -0.695804336698
+set, QD.22.B2[k1], +1.357266899981
+set, QD.23.B2[k1], -0.213382110666
+
+!--- B2TL3: Matching to Linac3 (or spectrometer)
+set, QD.24.B2[k1], -1.240432443807
+set, QD.25.B2[k1], +0.793154646681
+endcomment
+
+!================================================================================
+!================================================================================
+
+

@@ -1,0 +1,49 @@
+!================================================================================
+!
+!----- Magnet setting for the injector beamline leading to the dump in I1 section
+!
+!----- Starting at Z = 37.6484 m, in the front of 1st cold quadrupole Q.A1.1.I1
+!
+!----- LINE = (OPTICS.G1toT1D, I1TI1D_L0C8)
+!
+!----- I1TI1D_L0C8: LINE = (L0C8, I1LH, I1DIAU, I1DIACORE, I1DIAD1, I1D)
+!
+!================================================================================
+
+!--------------------------------------------------------------------------------
+!----- LINACs
+!--------------------------------------------------------------------------------
+
+call, "MAGNET_SET_LINAC.txm"
+
+!--------------------------------------------------------------------------------
+!----- Injector
+!--------------------------------------------------------------------------------
+
+!--- (I1LH1, I1DIAU):  Matching to injector FODO lattice
+set, QI.1.I1[k1], +0.080143479095
+set, QI.2.I1[k1], +0.376142884621
+set, QI.3.I1[k1], -0.864662329448
+set, QI.4.I1[k1], -0.352207614007
+
+!--- I1DIACORE: TDS quadrupoles
+set, QI.5.I1[k1], +2.104794185668490
+set, QI.6.I1[k1], +0.794366106339083
+
+!--- I1DIACORE: Diagnostic FODO lattice
+set, QI.7.I1[k1], -3.526311E+00
+set, QI.8.I1[k1], +3.526311E+00
+set, QI.9.I1[k1], -3.526311E+00
+
+!--- I1DIAD1: Matching to injector dogleg (or injector dump)
+set, QI.11.I1[k1], 0.0
+set, QI.12.I1[k1], 0.0
+
+!---I1D: Quadrupoles behind the dump dipole
+set, QI.41.I1D[k1], +4.401795E+00
+set, QI.42.I1D[k1],  0.0
+
+!================================================================================
+
+
+

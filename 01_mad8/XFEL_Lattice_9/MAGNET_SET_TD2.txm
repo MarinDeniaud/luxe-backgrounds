@@ -1,0 +1,176 @@
+!============================================================================================
+!
+!----- Magnet setting for the beamline TD2 = (T2, SA1, T4, SA3, T4D)
+!
+!----- Setting of TL line is in MAGNET_SET_TL.txm
+!
+!============================================================================================
+
+!--------------------------------------------------------------------------------------------
+!
+!----- TL Line: (STSEC.TL.TL, TL1, TL2TL, TL3TL, TL5, ENSEC.TL.TL)
+!
+!--------------------------------------------------------------------------------------------
+
+!---- Setting is in MAGNET_SET_TL.txm
+
+!--------------------------------------------------------------------------------------------
+!
+!----- T2 Line: (T2A, T2B)
+!
+!--------------------------------------------------------------------------------------------
+
+!--- 30 m FODO lattice: T2A
+!KFscale = 0.1906949*0.5/0.5321   ! defined in MAGNET_SET_TL.txm
+set, QF.1.1.T2[k1], +KFscale      ! 0.17919084758504
+set, QF.1.2.T2[k1], -KFscale
+set, QF.2.1.T2[k1], +KFscale
+set, QF.2.2.T2[k1], -KFscale
+
+
+!----- Matching section from FODO lattice to SASE1: T2B
+
+!--- Setting: Undulator SASE1 open
+!set, QF.2.T2[k1], +0.154547042567
+set, QF.3.T2[k1], -0.155080318226
+set, QF.4.T2[k1], +0.152454154852
+set, QF.5.T2[k1], -0.128671683097
+set, QF.6.T2[k1], +0.120612721647
+
+set, QA.1.T2[k1], -0.562055063894   ! = QA.1.SA1
+set, QA.2.T2[k1], +0.562055063894   ! = QA.2.SA1
+
+
+!--------------------------------------------------------------------------------------------
+!
+!----- SASE1 Undulator
+!
+!----- Setting of quadrupoles depends on energy, undulator gap, required betatron functions
+!
+!--------------------------------------------------------------------------------------------
+
+!--- Undulator Sase1 open (mean beta-function 32 m)
+
+set, QA.1.SA1[k1], -0.562055063894
+set, QA.2.SA1[k1], +0.562055063894
+
+comment
+!--- Undulator Sase1 closed (mean beta-function 32 m)
+
+!--- Setting for 17.5 GeV, K=3.9, <beta>=32m
+set, QA.1.SA1[k1], -0.540443776747
+set, QA.2.SA1[k1], +0.547330655439
+
+!--- Setting for 17.5 GeV, K=1.7, <beta>=32m
+set, QA.1.SA1[k1], -0.557995868049
+set, QA.2.SA1[k1], +0.559303372343
+endcomment
+
+
+!--------------------------------------------------------------------------------------------
+!
+!----- T4 Beam Transport and Deflection to SASE3 in XS3
+!
+!--------------------------------------------------------------------------------------------
+
+!----- FODO cell in T4 (mux = muy = 60 deg): T4LFODO
+set, QE.1.T4[k1], -0.192279551578
+set, QE.2.T4[k1], +0.192279551578
+
+
+!----- Matching section from SASE1 to T4LFODO: T4MATCH1
+
+!--- Setting: Undulator SASE1 open
+set, QE.3.T4[k1], +0.223792251712
+set, QE.4.T4[k1], -0.204091452363
+set, QE.5.T4[k1], +0.240596358538
+set, QE.6.T4[k1], -0.230659760613
+
+
+!----- Deflection arc T4M
+!----- ang3:= (1.3182 / 2.0)  * (PI / 180.0)= 0.011503465099895
+
+comment
+!--- Setting: mux=0.75, muy=0.75
+set, QH.1.T4[k1], +0.295960672943
+set, QM.2.T4[k1], -0.288325311503
+set, QM.1.T4[k1], +0.288202101931
+set, QH.2.T4[k1], -0.295665789195
+endcomment
+
+!--- Setting used: QH.1.T4 and QH.2.T4 are used for matching 
+set, QH.1.T4[k1], +0.294889644110
+set, QM.2.T4[k1], -0.288466077501
+set, QM.1.T4[k1], +0.288229145377
+set, QH.2.T4[k1], -0.294826790306
+
+set, SAOX.1.T4[k2], +25.23*0.3/0.3164
+set, SAOX.2.T4[k2],  +8.91*0.3/0.3164
+
+
+!----- Matching from/to FODO lattice (T4LFODO): T4MATCH2
+set, QH.3.T4[k1], -0.196526138301
+set, QH.4.T4[k1], +0.196531553235
+
+
+!----- Matching to SASE3: T4MATCH4
+
+!--- Setting: Undulator SASE3 open
+set, QF.7.T4[k1],  -0.115603151925
+set, QF.8.T4[k1],  +0.147539065796
+set, QF.9.T4[k1],  -0.150512591618
+set, QF.10.T4[k1], +0.183634534573
+
+set, QA.3.T4[k1],  -1.116577785585     ! not QA.1.SA3
+set, QA.4.T4[k1],  +1.243898667667     ! not QA.2.SA3
+
+
+!--------------------------------------------------------------------------------------------
+!
+!----- SASE3 Undulator
+!
+!----- Setting of quadrupoles depends on energy, undulator gap, required betatron functions
+!
+!--------------------------------------------------------------------------------------------
+
+!--- Undulator Sase3 open (mean beta-function 15 m)
+
+set, QA.1.SA3[k1], -1.197430122553
+set, QA.2.SA3[k1], +1.197430122553
+
+comment
+!--- Undulator Sase3 closed (mean beta-function 15 m)
+
+! Setting for 17.5GeV, K=9.3, <beta>=15m:
+set, QA.1.SA3[k1], -1.17553573964
+set, QA.2.SA3[k1], +1.188231183259
+
+! Setting for 17.5GeV, K=4.0, <beta>=15m:
+set, QA.1.SA3[k1], -1.193398645792
+set, QA.2.SA3[k1], +1.195743656915
+endcomment
+
+!--------------------------------------------------------------------------------------------
+
+
+!----- Matching section from SASE3 to the dump arc: SA3TT4D
+
+!--- Setting: Undulator SASE3 open
+set, QF.1.T4D[k1], +0.096951350076
+set, QF.2.T4D[k1], -0.183528639772
+set, QF.3.T4D[k1], +0.140191397823
+set, QF.4.T4D[k1], +0.154574365226
+set, QF.5.T4D[k1], -0.068595812123
+
+
+!----- Beamline to the dump T4D: Deflection downwards (to negative y)
+set, QK.1.T4D[k1], -0.172994430289
+set, SK.1.T4D[k2], +2.30979461997958*0.3/0.3430
+
+set, QK.6.T4D[k1], -0.162577092156
+
+
+!================================================================================
+!================================================================================
+
+

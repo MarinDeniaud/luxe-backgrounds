@@ -1,0 +1,894 @@
+!============================================================================
+!
+! Beam Line TD2: SASE1, XS3, SASE3
+!
+! TD2: LINE = (TL1, TL2TL, TL3TL, TL5, T2, SA1, T4, SA3, T4D)
+!
+!============================================================================
+
+!----- Section and Subsection Markers
+
+STSEC.T1.T1:  MARKER   ! used in this file
+ENSEC.T1.T1:  MARKER   ! used in TD1 file
+
+STSEC.TLD.TLD: MARKER  ! used in this file
+ENSEC.TLD.TLD: MARKER  ! used in TLD file
+
+
+!--- Vacuum Markers and Vacuum Components 
+
+VCST40T98.TL:   MARKER              ! Transition 40 to 100
+VCST98T40.TL:   MARKER 
+VCST40T30.TL:   MARKER 
+VCST30T40.TL:   MARKER 
+VCST98T40.TLD:  MARKER 
+VCST98T40.T1:   MARKER 
+VCST40T10.T2:   MARKER
+VCST10T40.T4:   MARKER
+VCST40T10.T4:   MARKER
+VCST10T40.T4D:  MARKER
+VCST93YT40.T4D: MARKER
+VCST98T98Y.T4D: MARKER
+VCST98YT98.T4D: MARKER
+VCST40T93Y.T4D: MARKER
+VCST40T98.T4D:  MARKER
+VCST98T200.T4D: MARKER
+
+VCV100.TL: DRIFT, L = 0.085    ! 100 mm diameter valve 
+VCB100.TL: DRIFT, L = 0.180    ! 100 mm bellow
+VCABSA.TL: DRIFT, L = 0.610    ! Absorber and pump cross in front of Septum
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!---------- TL Line: (STSEC.TL.TL, TL1, TL2TL, TL3TL, TL5, ENSEC.TL.TL) 
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!----- Section and Subsection Markers
+
+STSEC.TL.TL:  MARKER
+ENSEC.TL.TL:  MARKER
+
+STSUB.TL1.TL: MARKER   ! Start of matching and IBFB section
+ENSUB.TL1.TL: MARKER
+
+STSUB.TL2.TL: MARKER   ! Start of KS kickers (TLD line)
+ENSUB.TL2.TL: MARKER
+
+STSUB.TL3.TL: MARKER   ! Start of first septum to TLD line
+ENSUB.TL3.TL: MARKER
+
+STSUB.TL4.TL: MARKER   ! Start of KL kickers (TD1 line)
+ENSUB.TL4.TL: MARKER
+
+STSUB.TL5.TL: MARKER   ! Start of first septum to TD1 line
+ENSUB.TL5.TL: MARKER
+
+
+!----- Diagnostics Marker
+
+BPMA.TL:  MONITOR
+BPMD.TL:  MONITOR
+OTRBW.TL: MARKER
+OTRE.TL:  MARKER
+DCM.TL:   MARKER
+BAM.TL:   MARKER
+TORA.TL:  MARKER
+CRD.TL:   MARKER
+
+
+!----- Correctors (L_yoke is used)
+
+CFX.TL: HKICKER, L = 0.100
+CFY.TL: VKICKER, L = 0.100
+CHX.TL: HKICKER, L = 0.200
+CHY.TL: VKICKER, L = 0.200
+CNX.TL: HKICKER, L = 0.300  !  HERA CH
+CNY.TL: VKICKER, L = 0.300  !  HERA CV
+
+
+!----- IBFB BPMs
+
+BPMI.X1.TL: Monitor
+BPMI.Y1.TL: Monitor
+BPMI.X2.TL: Monitor
+BPMI.Y2.TL: Monitor
+BPMI.X3.TL: Monitor
+BPMI.Y3.TL: Monitor
+BPMI.X4.TL: Monitor
+BPMI.Y4.TL: Monitor
+
+MIDBPMI.X1.TL: Marker
+MIDBPMI.Y1.TL: Marker
+MIDBPMI.X2.TL: Marker
+MIDBPMI.Y2.TL: Marker
+MIDBPMI.X3.TL: Marker
+MIDBPMI.Y3.TL: Marker
+MIDBPMI.X4.TL: Marker
+MIDBPMI.Y4.TL: Marker
+
+
+!--- IBFB Kickers
+
+KFB0.TL:    Kicker,  L = 2.0
+KFBX.11.TL: Hkicker, L = 2.0, kick = 0.0
+KFBX.12.TL: Hkicker, L = 2.0, kick = 0.0
+KFBX.21.TL: Hkicker, L = 2.0, kick = 0.0
+KFBX.22.TL: Hkicker, L = 2.0, kick = 0.0
+
+KFBY.11.TL: Vkicker, L = 2.0, kick = 0.0
+KFBY.12.TL: Vkicker, L = 2.0, kick = 0.0
+KFBY.21.TL: Vkicker, L = 2.0, kick = 0.0
+KFBY.22.TL: Vkicker, L = 2.0, kick = 0.0
+
+!============================================================================
+
+
+!----- 30 m FODO cells (mux = muy = 90 degree)
+
+!----- FODO cell with two QF quadrupoles
+
+!--- Quadrupoles
+QF.1.TL:  Quadrupole, L = L_QF_eff, K1 = 0  
+QF.2.TL:  Quadrupole, L = L_QF_eff, K1 = 0
+
+D14250: Drift, L = 14.250
+
+fodo_TL: Line = (QF.1.TL, fD0125, D14250, fD0125, QF.2.TL, &
+                          fD0125, D14250, fD0125)
+dofo_TL: Line = (QF.2.TL, fD0125, D14250, fD0125, QF.1.TL, &
+                          fD0125, D14250, fD0125)
+
+
+!----- FODO cell with one QF and one QK (HERA quad, 1 m long) quadrupoles 
+!      There are 3 QK quadrupoles:
+!      1) QK.1.TL behind 1st septum for TLD  line
+!      2) QK.2.TL behind 1st septum for TD1  line
+!      3) QK.2.TL behind 2d  septum for future TD20 line
+
+QK.1.TL: Quadrupole, L = L_QK_eff, K1 = 0
+QK.2.TL: Quadrupole, L = L_QK_eff, K1 = 0
+
+D14000: Drift, L = 14.000
+
+fodo_TL_QK: Line = (QF.1.TL, fD0125, D14000, kD0125, QK.2.TL,  &
+                             kD0125, D14000, fD0125)
+dofo_TL_QK: Line = (QF.2.TL, fD0125, D14000, kD0125, QK.1.TL,  &
+                             kD0125, D14000, fD0125)
+
+
+comment
+! 30m FODO cells from quadrupole center: only for test, not used
+QFH.1.TL: Quadrupole, L = L_QF_eff/2, K1 = +0.179321977095
+QFH.2.TL: Quadrupole, L = L_QF_eff/2, K1 = -0.179321977095
+fodo_TL: Line = (QFH.1.TL, fD0125, D14250, fD0125, QF.2.TL, &
+                           fD0125, D14250, fD0125, QFH.1.TL)
+
+QKH.2.TL: Quadrupole, L = L_QK_eff/2, K1 = -0.091130871750
+fodo_TL_QK: Line = (QFH.1.TL, fD0125, D14000, kD0125, QKH.2.TL,  &
+                    QKH.2.TL, kD0125, D14000, fD0125, QFH.1.TL)
+endcomment
+
+
+!----- Matching from CL to FODO lattice: CLTS -------------------------------
+
+QH.5.TL:  Quadrupole, L = L_QH_eff, k1 = 0
+QH.6.TL:  Quadrupole, L = L_QH_eff, k1 = 0
+QH.7.TL:  Quadrupole, L = L_QH_eff, k1 = 0
+QH.8.TL:  Quadrupole, L = L_QH_eff, k1 = 0
+QF.8.TL:  Quadrupole, L = L_QF_eff, k1 = 0
+QF.9.TL:  Quadrupole, L = L_QF_eff, k1 = 0
+QF.10.TL: Quadrupole, L = L_QF_eff, k1 = 0
+QF.11.TL: Quadrupole, L = L_QF_eff, k1 = 0
+
+
+CLTS: Line = (STSEC.TL.TL, STSUB.TL1.TL,                          & 
+              fD0125, D0045, CFY.TL, D0490, D0200, CHX.TL, D0045, &
+              hD0125, QH.5.TL, hD0125, hD0125, QH.6.TL, hD0125,   &
+              D0350, &
+              hD0125, QH.7.TL, hD0125, hD0125, QH.8.TL, hD0125,   &
+              D0075, BPMISEC(MIDBPMI.Y1.TL,BPMI.Y1.TL),            &
+              D0170, CHY.TL, D0040, D0505, D1000, D0410,          &  
+              D0100,D00315,BPMI.X1.TL,D0096,MIDBPMI.X1.TL,D01275,D0100,&
+              fD0125, QF.8.TL, fD0125, D0045, CFX.TL, D0040,      &
+              D0890, TORA.TL, D0100, DCM.TL, D2225,               &
+              QFSEC(BPMA.TL, QF.9.TL, CFY.TL),                    &
+              D3715, QFSEC(BPMA.TL, QF.10.TL, CFX.TL),            &
+              D4585, BPMISEC(MIDBPMI.Y2.TL, BPMI.Y2.TL),           &
+              D0250, KFB0.TL, D0125, fD0125, QF.11.TL, fD0125,    &
+              D0125, KFBY.12.TL, D0100, D0170, CFY.TL,            & 
+              D2030, D0200, D0400, D1495,                         &   
+              BPMISEC(MIDBPMI.X2.TL, BPMI.X2.TL),                  &
+              D0250, KFB0.TL, D0125, fD0125, ENBLOCK.FODO.CL)
+
+
+!----- IBFB section ---------------------------------------------------------
+
+IBFB: Line = (QF.1.TL, fD0125, D0125, KFBX.12.TL,               &
+              D0100, D0200, CFX.TL,                             &
+              D3900, D0200,OTRBW.TL,D0900, D4600,               &   ! 1st screen
+              KFB0.TL, D0125, fD0125, QF.2.TL, fD0125, D0125,   &
+              KFBY.22.TL,                                       &
+              D0250, BPMISEC(MIDBPMI.Y3.TL, BPMI.Y3.TL),         &
+              D0170, CFY.TL,                                    & 
+              D3325, D0200,OTRBW.TL,D0900, D4600,               &   ! 2d screen
+              KFB0.TL, D0125, fD0125, QF.1.TL, fD0125, D0125,   &
+              KFBX.22.TL,                                       &
+              D0250, BPMISEC(MIDBPMI.X3.TL, BPMI.X3.TL),         &
+              D0170, CFX.TL,                                    &
+              D3325, D0200,OTRBW.TL,D0900, D0150,               &   ! 3d screen
+              BPMISEC(MIDBPMI.Y4.TL,BPMI.Y4.TL),                 &
+              D0940, BAM.TL, D0300, BAM.TL, D26775, CRD.TL,     &
+              D2000, D00025, QFSEC(D0000, QF.2.TL, CFY.TL),     &
+              D1235, BPMISEC(MIDBPMI.X4.TL, BPMI.X4.TL), D0250,  &
+              D0100, BL.1.TL, D0150, D0120, ENSUB.TL1.TL)
+
+TL1: Line = (CLTS, IBFB)
+
+
+!----- Section with TLD/TD1 kickers and septa ---------------------------------------
+
+!--- Kickers:
+!--- KS.TL:  for TLD, horizontal kick
+!--- KL.TL:  for TD1, vertical   kick
+
+LEN_KS = 2.0
+LEN_KL = 0.93
+
+KSK.TL:  Hkicker, L = LEN_KS, KICK  = 0.0000
+Kick_KSK: Line = (D0100, KSK.TL, D0100)          ! L = 2.2 m
+KS.1.TL: Rbend,   L = LEN_KS, ANGLE = 0
+Kick_KS: Line = (D0100, KS.1.TL, D0100)  
+
+KLK.TL:    Vkicker, L = LEN_KL, KICK  = 0
+KL.1.TL: Rbend,   L = LEN_KL, ANGLE = 0, TILT = pi/2
+KL.2.TL: Rbend,   L = LEN_KL, ANGLE = 0, TILT = pi/2
+Kick1_KL:  Line = (D0035, KL.1.TL, D0035)          
+Kick2_KL:  Line = (D0035, KL.2.TL, D0035)          
+
+
+!--- Commissioning dipoles for TLD beamline
+BL.1.TL:  Hkicker, L = 0.2, KICK = 0    ! B_max = 0.31 T 
+BL.2.TL:  Hkicker, L = 0.2, KICK = 0    ! B_max = 0.31 T
+
+!--- Commissioning dipoles for TD1 beamline
+CHY.21.TL:  Vkicker, L = 0.2, KICK = 0.0   ! B_max = 0.15 T
+CHY.22.TL:  Vkicker, L = 0.2, KICK = 0.0   ! B_max = 0.15 T 
+
+
+!--- HELP elements for survey
+HELP.1a.TLD: RBEND, L=0.000001
+HELP.1b.TLD: RBEND, L=0.000001
+HELP.2a.TLD: RBEND, L=0.000001
+HELP.2b.TLD: RBEND, L=0.000001
+HELP.3a.TLD: RBEND, L=0.000001
+HELP.3b.TLD: RBEND, L=0.000001
+
+HELP.1a.T1:  RBEND, L=0.000001
+HELP.1b.T1:  RBEND, L=0.000001
+HELP.2a.T1:  RBEND, L=0.000001
+HELP.2b.T1:  RBEND, L=0.000001
+
+
+!--- TLD/TD1 septa and HELP elements for TL straight line
+
+!BZ.0.TL:   Sbend, L = 1.0, ANGLE = 0, E1 = 0, E2 = 0   ! to Winni: RBEND
+BZ.0.TL:   Rbend, L = 1.0, ANGLE = 0
+HELP.0.TL: Drift, L = 0.000001
+
+BZ1T20: Drift, L = 1.0
+BZ2T20: Drift, L = 1.0
+BZ3T20: Drift, L = 1.0
+
+
+!----- Section with TLD kickers and 1st TLD septum: TL2TL straight 
+!----- TLD septum is defined as RBEND with zero angle 
+!----- HELP elements are drifts of 1e-6 m
+
+
+TL2TL: Line = (STSUB.TL2.TL, VCST40T30.TL,                              &
+        Kick_KS,D0120,Kick_KS,D0120,Kick_KS,D0120,Kick_KS,D0120,Kick_KS,& 
+        D0075, fD0125, HELP.1a.TLD,QF.1.TL,HELP.1b.TLD, fD0125, D0075,  &
+        Kick_KS,D0120,Kick_KS,D0120,Kick_KS,D0120,Kick_KS,D0120,Kick_KS,&
+        VCST30T40.TL, D0120, D0150, BL.2.TL, D0100, D0170, D0100,       &
+        D0100, D0170, CHX.TL, D0135, D0200, D0250, D0200, D0400,        &
+        D0100,BPMA.TL,D0100,                                            &
+        fD0125, HELP.2a.TLD,QF.2.TL,HELP.2b.TLD, fD0125,                &
+        D0045, CHX.TL, D0200, CHY.TL,                                   &
+        D1480, VCST40T98.TL, D5000, D2300, D01044,                      &
+        D01848, CNX.TL, D0100, CNY.TL, D0100,                           &
+        D0050, BPMD.TL, D0050, D0150, OTRE.TL, D0150,                   &
+        D0085, D05857, VCB100.TL, VCABSA.TL, D0250, D000002, D000002,   &
+        ENSUB.TL2.TL,   & 
+        STSUB.TL3.TL,   &
+        VCST98T40.TL, BZ.0.TL, D0375,                                   &
+        kD0125, HELP.0.TL,QK.1.TL,HELP.0.TL, kD0125, D0375)
+
+
+!----- Section with TLD kickers and 1st TLD septum: TL2TL to TLD
+!----- TLD septum and HELP elements are defined in TLD file
+
+TL2TLD: Line = (STSUB.TL2.TL, VCST40T30.TL,                             &
+        Kick_KS,D0120,Kick_KS,D0120,Kick_KS,D0120,Kick_KS,D0120,Kick_KS,& 
+        D0075, fD0125, HELP.1a.TLD,QF.1.TL,HELP.1b.TLD, fD0125, D0075,  &
+        Kick_KS,D0120,Kick_KS,D0120,Kick_KS,D0120,Kick_KS,D0120,Kick_KS,&
+        VCST30T40.TL, D0120, D0150, BL.2.TL, D0100, D0170, D0100,       &
+        D0100, D0170, CHX.TL, D0135, D0200, D0250, D0200, D0400,        &
+        D0100,BPMA.TL,D0100,                                            &
+        fD0125, HELP.2a.TLD,QF.2.TL,HELP.2b.TLD, fD0125,                &
+        D0045, CHX.TL, D0200, CHY.TL,                                   &
+        D1480, VCST40T98.TL, D5000, D2300, D01044,                      &
+        D01848, CNX.TL, D0100, CNY.TL, D0100,                           &
+        D0050, BPMD.TL, D0050, D0150, OTRE.TL, D0150,                   &
+        D0085, D05857, VCB100.TL, VCABSA.TL, D0250, D000002, D000002,   &
+        ENSUB.TL2.TL,    & 
+        STSEC.TLD.TLD,   &
+        VCST98T40.TLD, BZ.1.TLD, D0375,                                 &
+        kD0125, HELP.3a.TLD,QK.1.TL,HELP.3b.TLD, kD0125, D0375)
+
+
+!----- Section with three TLD septa, TD1 kickers and 1st TD1 septum: TL3TL straight
+!----- TLD septa are defined as RBEND with zero angle 
+!----- TD1 septum is defined as RBEND with zero angle
+!----- HELP elements are drifts of 1e-6 m
+
+TL3TL: Line = (BZ.0.TL, D0500, BZ.0.TL, D0500, BZ.0.TL, D8475,          &
+               D0100, BPMA.TL, D0100, D0950,                            &
+               fD0125, QF.2.TL, fD0125, D0045, CHY.21.TL,                & 
+               ENSUB.TL3.TL,     & 
+               STSUB.TL4.TL,     &
+               D0125, 3*Kick1_KL, D0210, 2*Kick1_KL,1*Kick2_KL, D0170,  &
+               CHY.22.TL, D6500, CFY.TL, D0400, D00457,                  &
+               TORA.TL, D01543, BPMA.TL, D0100,                         &
+               fD0125, HELP.0.TL,QF.1.TL,HELP.0.TL, fD0125,             &
+               D0045, CHX.TL, D0200, CHY.TL,                            &
+               D1480, VCST40T98.TL, D5000, D1200, D01047,               &
+               CNX.TL, D0100, CNY.TL, D13847,                           &
+               D0050, BPMD.TL, D0050, D0150, OTRE.TL, D0150,            &
+               VCV100.TL, D05857, VCB100.TL, VCABSA.TL, D0250, D000002, &
+               ENSUB.TL4.TL,    &
+               STSUB.TL5.TL,    & 
+               VCST98T40.TL, BZ.0.TL, D0375,                            &
+               kD0125, HELP.0.TL,QK.2.TL,HELP.0.TL, kD0125,             &
+               D0375, D000002, BZ1T20, D0500)
+
+
+!----- Section with three TLD septa, TD1 kickers and 1st TD1 septum: TL3T1 to TD1
+!----- TLD septa are defined as RBEND with zero angle 
+!----- TD1 Septum and HELP elements are defined in TD1 file
+
+TL3T1: Line = (BZ.0.TL, D0500, BZ.0.TL, D0500, BZ.0.TL, D8475,          &
+               D0100, BPMA.TL, D0100, D0950,                            &
+               fD0125, QF.2.TL, fD0125, D0045, CHY.21.TL,                & 
+               ENSUB.TL3.TL,    & 
+               STSUB.TL4.TL,    &
+               D0125, 3*Kick1_KL, D0210, 2*Kick1_KL, 1*Kick2_KL, D0170, &
+               CHY.22.TL, D6500, CFY.TL, D0400, D00457,                  &
+               TORA.TL, D01543, BPMA.TL, D0100,                         &
+               fD0125, HELP.1a.T1,QF.1.TL,HELP.1b.T1, fD0125,           &
+               D0045, CHX.TL, D0200, CHY.TL,                            &
+               D1480, VCST40T98.TL, D5000, D1200, D01047,               &
+               CNX.TL, D0100, CNY.TL, D13847,                           &
+               D0050, BPMD.TL, D0050, D0150, OTRE.TL, D0150,            &
+               VCV100.TL, D05857, VCB100.TL, VCABSA.TL, D0250, D000002, &
+               ENSUB.TL4.TL,    &
+               STSEC.T1.T1,     &
+               VCST98T40.T1, BZ.1.T1, D0375,                            &
+               kD0125, HELP.2a.T1,QK.2.TL,HELP.2b.T1, kD0125,           &
+               D0375, D000002, BZ1T20, D0500)
+
+
+!----- Section with three TD1 septa: TL5 straight
+!----- TD1 septa are defined as RBEND with zero angle 
+ 
+TL5: Line = (BZ.0.TL, D0500, BZ.0.TL, D0500, BZ.0.TL, D7925,           &
+             D0100, BPMA.TL, D0100,                                    &
+             fD0125, D0000001, QF.1.TL, D0000001, fD0125,              &
+             D0045, CFX.TL, D11370,                                    &
+             CHX.TL, D0170, CHY.TL, D0170, D0100,BPMA.TL,D0100, D0170, &
+             BZ2T20, D0375, kD0125, D0000001,QK.2.TL,D0000001, kD0125, &
+             D0375, D000002, D000002, ENSUB.TL5.TL, ENSEC.TL.TL)
+
+
+!----- Total TL line: TL
+
+TL: Line = (TL1, TL2TL, TL3TL, TL5) 
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!---------- T2 Line: (T2A, T2B)
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!----- Section and Subsection Markers
+
+STSEC.T2.T2: MARKER
+ENSEC.T2.T2: MARKER
+
+
+!----- Diagnostic Markers
+
+BPMA.T2: MONITOR
+BPME.T2: MONITOR
+OTRB.T2: MARKER
+TORA.T2: MARKER
+BCM.T2:  MARKER
+
+
+!----- Vacuum Markers and Vacuum Components
+
+VCBSHUT.T2: DRIFT, L=0.3
+VCBSTOP.T2: DRIFT, L=0.3
+
+
+!----- Correctors (L_yoke is used)
+
+CEX.T2: HKICKER, L = 0.100
+CEY.T2: VKICKER, L = 0.100
+CFX.T2: HKICKER, L = 0.100
+CFY.T2: VKICKER, L = 0.100
+CNY.T2: VKICKER, L = 0.300
+
+
+BD.10.T2: RBEND, L=1.0, ANGLE=0
+BSECT.T2: RBEND, L=1.5, ANGLE=0
+ABSP.T2:  DRIFT, L=0.05
+
+
+!----- 30 m FODO lattice: T2A 
+
+!--- Quadrupoles
+
+QF.1.1.T2:  Quadrupole, L = L_QF_eff, K1 = 0
+QF.1.2.T2:  Quadrupole, L = L_QF_eff, K1 = 0
+
+QF.2.1.T2:  Quadrupole, L = L_QF_eff, K1 = 0
+QF.2.2.T2:  Quadrupole, L = L_QF_eff, K1 = 0
+
+
+T2A: Line = (BZ3T20, D0500, BZ3T20, D0500, BZ3T20, D9425,        &
+             D0100,BPMA.T2,D0100, fD0125, QF.1.1.T2, fD0125,     &
+             D0045, CFX.T2, D6405, BD.10.T2, D6500,              &
+             D0100,BPMA.T2,D0100, fD0125, QF.1.2.T2, fD0125,     &
+             D0045, CFY.T2, D13905,                              &
+             D0100,BPMA.T2,D0100, fD0125, QF.1.1.T2, fD0125,     &
+             D0045, CFX.T2, D0300, BSECT.T2, D0400, D11705,      &
+             D00001, D0100,BPMA.T2,D0100, fD0125)
+
+
+!----- Matching section from FODO lattice to SASE1: T2B
+
+QF.3.T2:  Quadrupole, L = L_QF_eff, K1 = 0
+QF.4.T2:  Quadrupole, L = L_QF_eff, K1 = 0
+QF.5.T2:  Quadrupole, L = L_QF_eff, K1 = 0
+QF.6.T2:  Quadrupole, L = L_QF_eff, K1 = 0
+
+QA.1.T2:  Quadrupole, L = L_QA_eff, K1 = 0
+QA.2.T2:  Quadrupole, L = L_QA_eff, K1 = 0
+
+
+!--- First QF.1.T2 is shifted upstream for 0.5m (08.02.2012) 
+!--- (from standard position in FODO lattice)
+D3950733: DRIFT, L = 3.950733
+D3626817: DRIFT, L = 3.626817
+D0615: DRIFT, L = 0.615
+
+T2B: Line = (QF.1.2.T2, fD0125, D0045, CFY.T2, D122482,        &
+             VCBSHUT.T2, D01568, D1900,                        &
+             QFSEC(BPMA.T2, QF.1.1.T2, CFX.T2), D11165, D0800, &
+             QFSEC(BPMA.T2, QF.2.2.T2, CFY.T2), D15065,        &
+             QFSEC(BPMA.T2, QF.2.1.T2,   CFX.T2), D6740,       &
+             D0200, OTRB.T2, D0400, D6525,                     &   ! 1st screen
+             QFSEC(BPMA.T2, QF.3.T2,   CFY.T2), D6740,         &
+             D0200,          D0400, D6525,                     &   
+             QFSEC(BPMA.T2, QF.4.T2,   CFX.T2), D6740,         &
+             D0200, OTRB.T2, D0400, D6525,                     &   ! 2d  screen
+             QFSEC(BPMA.T2, QF.5.T2,   CFY.T2), D5140,         &
+             D0200, OTRB.T2, D0400, D4925,                     &   ! 3d  screen
+             QFSEC(BPMA.T2, QF.6.T2,   CFX.T2),                &
+             D0200, D849255,                                   &
+!             D0200, D3626817, BPMA.T2,                         &   !!! insert for BPM and beam stop in front of SASE1
+!             D0615, VCBSHUT.T2, D3950733,                      &   !!!
+             D0300, TORA.T2, D000675, D0500,                   & 
+             D0100, VCST40T10.T2, D009975,                     &
+             D0100, BPME.T2, D0100, aD0125,                    &
+             QA.1.T2, aD0125, D0035, D0025, CNY.T2, D0125,     &
+             CEX.T2, D20575, D0110, U40S.T2, D0110,            &                      
+             D17167, CNY.T2, D0150, CEX.T2, D0160, D0050,      &
+             ABSP.T2, D01723, BPME.T2, aD01935, QA.2.T2, aD0047)    
+
+
+T2: Line = (STSEC.T2.T2, T2A, T2B, ENSEC.T2.T2)
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!---------- T4 Beam Transport and Deflection to SASE3 in XS3
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+!----- Section and Subsection Markers
+
+STSEC.T4.T4:   MARKER
+ENSEC.T4.T4:   MARKER
+
+STSUB.T4U.T4:  MARKER   ! Start of subsection from start of T4 up to first photon beamline start
+ENSUB.T4U.T4:  MARKER
+
+STSUB.T4T.T4:  MARKER   ! Start of subsection from photon beamline start to end of T4 section
+ENSUB.T4T.T4:  MARKER  
+
+
+!----- Diagnostics Marker
+
+BPMA.T4:  MONITOR
+BPME.T4:  MONITOR
+OTRB.T4:  MARKER
+OTRBW.T4: MARKER
+BAM.T4:   MARKER
+TORA.T4:  MARKER
+
+
+!----- Vacuum Markers and Vacuum Components
+
+VCSTEP.T4:     MARKER
+VCST40T93X.T4: MARKER
+VCST93XT40.T4: MARKER
+VCBSHUT.T4: DRIFT, L=0.3
+
+
+!----- Correctors (L_yoke is used)
+
+CEX.T4: HKICKER, L = 0.1
+CEY.T4: VKICKER, L = 0.1
+CFX.T4: HKICKER, L = 0.1
+CFY.T4: VKICKER, L = 0.1
+CHX.T4: HKICKER, L = 0.2
+CHY.T4: VKICKER, L = 0.2
+CNY.T4: VKICKER, L = 0.3
+
+
+ABSP.T4: DRIFT, L=0.05
+
+KS.T4:  Hkicker, L = LEN_KS, KICK  = 0.00
+
+!----------------------------------------------------------------------------
+
+!----- FODO cell in T4 (mux = muy = 60 deg): T4LFODO
+
+!--- Quadrupoles 
+
+QE.1.T4: Quadrupole, L = L_QE_eff, K1 = 0
+QE.2.T4: Quadrupole, L = L_QE_eff, K1 = 0
+
+T4LFODO: LINE=(D10000, D0450, QESEC(BPMA.T4, QE.2.T4, CEX.T4),  & 
+               D10000, &
+               D10000, D0935, QESEC(BPMA.T4, QE.1.T4, CEY.T4),  &
+               D10000, D0485)
+
+
+
+!----- Matching section from SASE1 to T4LFODO: T4MATCH1
+
+!--- Quadrupoles 
+
+QE.3.T4: QUADRUPOLE, L = L_QE_eff, K1 = 0
+QE.4.T4: QUADRUPOLE, L = L_QE_eff, K1 = 0
+QE.5.T4: QUADRUPOLE, L = L_QE_eff, K1 = 0
+QE.6.T4: QUADRUPOLE, L = L_QE_eff, K1 = 0
+
+T4MATCH1: LINE = (STSUB.T4U.T4,                            &
+                  VCST10T40.T4, D0058, D03325,             &
+                  D0990, TORA.T4, D0210, D0230,            &
+                  D5138,  QESEC(BPMA.T4, QE.3.T4, CEX.T4), &
+                  D11795, QESEC(BPMA.T4, QE.4.T4, CEY.T4), &
+                  D11795, QESEC(BPMA.T4, QE.5.T4, CEX.T4), &
+                  D11795, QESEC(BPMA.T4, QE.6.T4, CEY.T4), &
+                  D8430)
+
+
+!----- Deflection arc T4M
+!----- ang3:= (1.318203999257485/2.0)*(PI/180.0)= 0.0115035
+
+ 
+!LEN_BE =  2.5       ! defined in COLL
+
+ANG_T4 = 0.0115035         !  0.023007
+ARC_T4 = (0.5*LEN_BE*ANG_T4)/sin(0.5*ANG_T4)
+E12_T4 = 0.5 * ANG_T4
+
+BE.1.T4: Sbend, L = ARC_T4, ANGLE = ANG_T4, &
+                E1 = E12_T4, E2 = E12_T4
+
+
+!--- Quadrupoles and sextupoles
+
+QH.1.T4: Quadrupole, L = L_QH_eff, K1 = 0
+QM.2.T4: Quadrupole, L = L_QM_eff, K1 = 0
+QM.1.T4: Quadrupole, L = L_QM_eff, K1 = 0
+QH.2.T4: Quadrupole, L = L_QH_eff, K1 = 0
+
+SAOX.1.T4: Sextupole, L = L_SA_eff, K2 = 0
+SAOX.2.T4: Sextupole, L = L_SA_eff, K2 = 0
+
+
+T4M1: LINE = (D1000, CHX.T4, D0145,                                &
+              D0040, CHY.T4, D0040, D0050, D0100, BPMA.T4, D0100,  &
+              hD0125, QH.1.T4, hD0125, &
+              D0025, VCST40T93X.T4, D0250, ENSUB.T4U.T4)
+
+ 
+T4M2: LINE = (STSUB.T4T.T4,                                         &
+              BE.1.T4, VCST93XT40.T4, D0100,                        &
+              D0500, D0025, QMSEC(D0000, QM.2.T4, D0200), D1440,    &
+              D1500, D0025, QMSEC(BPMA.T4, QM.1.T4, CHX.T4),        &
+              D0515, sD0125, SAOX.1.T4, sD0125, D1900,              &
+              QMSEC(BPMA.T4, QM.2.T4, CHY.T4),                      &
+              D1165, sD0125, SAOX.2.T4, sD0125, D0920,              &
+              D0040, CHX.T4, D0040, D0050, D0100, BPMA.T4, D0100,   &
+              D0150, mD0125, QM.1.T4, mD0125, D0275, BE.1.T4,       &
+              D0100, D0500, D0175, QHSEC(BPMA.T4, QH.2.T4, CHY.T4), D1590)
+
+T4M: LINE = (T4M1, T4M2)
+
+
+!----- Matching from/to FODO lattice (T4LFODO): T4MATCH2
+
+QH.3.T4: QUADRUPOLE, L = L_QH_eff, K1 = 0
+QH.4.T4: QUADRUPOLE, L = L_QH_eff, K1 = 0
+
+T4MATCH2: LINE = (D7930, D0175, QHSEC(BPMA.T4, QH.4.T4, CHX.T4), D1230,&
+                         D0175, QHSEC(BPMA.T4, QH.3.T4, CHY.T4), D8020)
+
+
+!----- Matching to SASE3: T4MATCH4
+
+!--- Quadrupoles 
+
+QF.7.T4:  QUADRUPOLE, L = L_QF_eff, K1 = 0
+QF.8.T4:  QUADRUPOLE, L = L_QF_eff, K1 = 0
+QF.9.T4:  QUADRUPOLE, L = L_QF_eff, K1 = 0
+QF.10.T4: QUADRUPOLE, L = L_QF_eff, K1 = 0
+
+QA.3.T4:  QUADRUPOLE, L = L_QA_eff, K1 = 0
+QA.4.T4:  QUADRUPOLE, L = L_QA_eff, K1 = 0
+
+D1754987: DRIFT, L =   1.754987
+D0445: DRIFT, L =  0.445
+D1535703: DRIFT, L =  1.535703
+
+T4MATCH3: LINE = (D0275, OTRBW.T4, D10000, D0175,         &
+                  QESEC(BPMA.T4, QE.2.T4, CEX.T4),        &
+                  D9860, D10000, D0175,                   &
+                  QFSEC(BPMA.T4, QF.7.T4, CFY.T4),        &
+                  D5240, D0200, OTRBW.T4, D0400, D5025,   &
+                  QFSEC(BPMA.T4, QF.8.T4, CFX.T4),        &
+                  D5240, D0200,           D0400, D5025,   &
+                  QFSEC(BPMA.T4, QF.9.T4, CFY.T4),        &
+                  D5240, D0200, OTRBW.T4, D0400, D5025,   &
+                  QFSEC(BPMA.T4, QF.10.T4, CFX.T4),       &
+                  D22507, D4400,                          &
+!                  D0445, KS.T4, D1754987,                 &   !!! Insert for Kicker, BPM and Beam Stop in front of SASE3
+!                  BPMA.T4, D0615, VCBSHUT.T4,D1535703,    &   !!!
+                  D0400, TORA.T4, D000675, &
+                  D0500, D0100, VCST40T10.T4, D009975,    &
+                  D0100, BPME.T4, D0100,                  &
+                  aD0125, QA.3.T4, aD0125, D0035,         &
+                  D0025,  CNY.T4, D0125, CEX.T4, D20575,  & 
+                  D0110, U40S.T4, D0110,                  & 
+                  D17167, CNY.T4, D0150, CEX.T4, D0160,   &
+                  D0050, ABSP.T4, D01723, BPME.T4,        &
+                  aD01935, QA.4.T4, aD0047, &
+                  ENSUB.T4T.T4) 
+                  
+
+SA1TT4: LINE = (T4MATCH1, 1 * T4LFODO, T4MATCH2)
+T4TSA3: LINE = (T4MATCH2, 2 * T4LFODO, T4MATCH3)
+
+T4:     LINE = (STSEC.T4.T4, SA1TT4, T4M, T4TSA3, ENSEC.T4.T4)
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!---------- T9 Line: T9
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+STSEC.T9.T9:  MARKER
+ENSEC.T9.T9:  MARKER
+
+OTRC.T9:   MARKER
+VV0.T9:    MARKER
+BSECP.T9:  RBEND, L=0.7
+
+D716773922: DRIFT, L = 716.774022
+
+T9: LINE = (STSEC.T9.T9, D10000, D10000, D5400, D0200, BSECP.T9, D3600,&
+            D0200, BSECP.T9, D0944, OTRC.T9, D0036,                    &
+            D1000, VV0.T9, D0400, D0036, D716773922, ENSEC.T9.T9)
+
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!---------- Beam Dump T4D after SASE3: SA3TT4D
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+!----- Section and Subsection Markers
+
+STSEC.T4D.T4D:   MARKER
+ENSEC.T4D.T4D:   MARKER
+
+STSUB.T4DU.T4D:  MARKER   ! Start of subsection from start of T4D up to photon beamline start
+ENSUB.T4DU.T4D:  MARKER   ! 
+
+STSUB.T4DT.T4D:  MARKER   ! Start of subsection from photon beamline start to end of T4D section
+ENSUB.T4DT.T4D:  MARKER   ! 
+
+
+!----- Diagnostic Markers
+
+BPMA.T4D:   MONITOR
+MIDBPMF.T4D:MARKER
+BPMF.T4D:   MONITOR
+BPMD.T4D:   MONITOR
+BPMW.T4D:   MONITOR
+BPME.T4D:   MONITOR
+TORC.T4D:   MARKER
+OTRD.T4D:   MARKER
+OTRA.T4D:   MARKER
+BAM.T4D:    MARKER
+TORA.T4D:   MARKER
+BHM.T4D:    MARKER
+SCRW.T4D:   MARKER
+
+
+!----- Correctors (L_yoke is used)
+
+CEX.T4D: HKICKER, L=0.1
+CEY.T4D: VKICKER, L=0.1
+CFX.T4D: HKICKER, L=0.1
+CFY.T4D: VKICKER, L=0.1
+CNX.T4D: HKICKER, L=0.3
+CNY.T4D: VKICKER, L=0.3
+
+!---------------------------------------------------------------------------
+
+
+!----- Matching section from SASE3 to the dump arc: SA3TT4D
+
+!--- Quadrupoles
+
+QF.1.T4D: Quadrupole, L = L_QF_eff, K1 = 0
+QF.2.T4D: Quadrupole, L = L_QF_eff, K1 = 0
+QF.3.T4D: Quadrupole, L = L_QF_eff, K1 = 0
+QF.4.T4D: Quadrupole, L = L_QF_eff, K1 = 0
+QF.5.T4D: Quadrupole, L = L_QF_eff, K1 = 0
+
+
+SA3TT4D: LINE = (STSUB.T4DU.T4D,                            &
+                 VCST10T40.T4D, D0058, D03325,              &
+                 D0990, TORA.T4D, D3000, D0240, D085775,    & 
+                 QFSEC(D0000, QF.1.T4D, CFX.T4D), D080725,  &
+                 D23831, D5600, D0200, D5275,               &
+                 QFSEC(BPMA.T4D, QF.2.T4D, CFY.T4D), D0190, &
+                 D5400, D0400, D5075,                       & 
+                 QFSEC(BPMA.T4D, QF.3.T4D, CFX.T4D), D0190, &
+                 D5400, D0200, D0900,                 &
+                 D5600, D0200, D6200, D0800,          &
+                 D5600, D0200, D6200, D0800,          &
+                 D5600, D0200, D6200, D0800,          &
+                 D5600, D0200, D6200, D0800,          &
+                 D5600, D0200, D6200, D0800,          &
+                 D5600, D0200, D6200, D0475,          &
+                 QFSEC(BPMA.T4D, QF.4.T4D, CFX.T4D),        &
+                 D0190, D5075, D0055, CFY.T4D, D0045,       &
+                 fD0125, QF.5.T4D, fD0125, D00275,          &
+                 D01275,MIDBPMF.T4D,D0096,BPMF.T4D,D00315,   &
+                 D00793, TORA.T4D, D028294, VCST40T93Y.T4D, &
+                 D0256, ENSUB.T4DU.T4D)
+
+
+!----- Beamline to the dump: Deflection downwards (to negative y)
+!----- 10 deg arc - 4 bends: 10.0*pi/180/4 = 0.043633231299858
+
+!LEN_BV = 2.5    ! defined in TLD file
+
+ANG_T4D = 0.043633231
+ARC_T4D = (0.5*LEN_BV*ANG_T4D)/sin(0.5*ANG_T4D)
+E12_T4D = 0.5 * ANG_T4D
+
+BV.1.T4D: SBEND, L = ARC_T4D, ANGLE = ANG_T4D,   &
+                 E1 = E12_T4D, E2 = E12_T4D,     &
+                 TILT = 1.570796326795
+
+
+BX.1.T4D: DRIFT, L=0.5   ! RBEND,ANGLE= 0.226892802759E-2,L=0.5
+BX.2.T4D: DRIFT, L=0.5   ! RBEND,ANGLE=-0.226892802759E-2,L=0.5
+
+SWEEP.1.T4D: RBEND, ANGLE=0, L=0.64, TILT=-1.570796326795
+SWEEP.2.T4D: RBEND, ANGLE=0, L=0.64
+
+
+!--- Sextupoles and quadrupoles with 100 mm aperture
+
+QK.1.T4D: QUADRUPOLE, L = L_QK_eff, K1 = 0
+QK.6.T4D: QUADRUPOLE, L = L_QK_eff, K1 = 0
+
+SK.1.T4D: SEXTUPOLE,  L = L_SK_eff, K2 = 0, TILT = 1.570796326795
+
+
+T4DM: LINE =(STSUB.T4DT.T4D,                            & 
+             BV.1.T4D, VCST93YT40.T4D, D0500, BV.1.T4D, &
+             D05919, VCST40T98.T4D, D05081,             &
+             D0200, D0300, D0100, D0190,                &
+             -QKSEC(BPMD.T4D, QK.1.T4D, CNX.T4D),       & 
+             D0350, skD0125, SK.1.T4D, skD0125, D0700,  &
+             D0100, OTRD.T4D, D0100,                    &
+             D0650, skD0125, SK.1.T4D, skD0125, D0350,  &
+             QKSEC(BPMD.T4D, QK.1.T4D, CNY.T4D),        & 
+             D0582, D1100, VCST98T98Y.T4D, D0208,       &
+             BV.1.T4D, D0500, BV.1.T4D, D0208,          &
+             VCST98YT98.T4D,                            &
+             D04037, BPMD.T4D, D00633,                  &
+             kD0125, QK.6.T4D, kD0125, D0150,           &
+             kD0125, QK.6.T4D, kD0125, D0150,           &
+             kD0125, QK.6.T4D, kD0125, D0150,           &
+             kD0125, QK.6.T4D)
+
+
+DUWINDOW.T4D:   MARKER
+DUFLANGE.T4D:   MARKER
+DUCONCRETE.T4D: MARKER
+DUABSORB.T4D:   MARKER
+
+T4DD: Line = (kD0125, D0092, D0025, BPMD.T4D, D0150, D0408, &
+              SWEEP.1.T4D, D0500, SWEEP.2.T4D,              &
+              D0822, BPMD.T4D, D0200, OTRD.T4D,             &
+              D0450, TORC.T4D, D0113, D0200, BHM.T4D,       &
+              D0643, VCST98T200.T4D,                        &
+              D3227, BPMW.T4D, D03223, SCRW.T4D,            &
+              DUWINDOW.T4D, D08578, DUFLANGE.T4D, D107324,  &
+              DUCONCRETE.T4D, D20144, DUABSORB.T4D,         &
+              ENSUB.T4DT.T4D)
+
+
+T4D: LINE=(STSEC.T4D.T4D, SA3TT4D, T4DM, T4DD, ENSEC.T4D.T4D)
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!---------- T10 Line: T10
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+STSEC.T10.T10: MARKER
+ENSEC.T10.T10: MARKER
+
+OTRC.T10:  MARKER
+VV0.T10:   MARKER
+BSECP.T10: RBEND, L=0.6
+
+D233674566: DRIFT, L = 233.674666
+
+T10: LINE = (STSEC.T10.T10, D10000, D10000, D6800, D0200, BSECP.T10, D0200, &
+             D2200, D0200, BSECP.T10, D0944, OTRC.T10, D0036, &
+             D1000, VV0.T10, D0400, D0036, D233674566, ENSEC.T10.T10)
+
+
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!---------- Total TD2 Line: TD2
+!
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+TD2: LINE = (TL1, TL2TL, TL3TL, TL5, T2, SA1, T4, SA3, T4D)
+
+!============================================================================
+!============================================================================
+

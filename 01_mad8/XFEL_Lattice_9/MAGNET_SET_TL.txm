@@ -1,0 +1,53 @@
+!============================================================================================
+!
+!----- Magnet setting for the beamline TL = (TL1, TL2TL, TL3TL, TL5)
+!
+!============================================================================================
+
+
+!----- 30 m FODO cells in TL
+
+!--- Scaled values are used (phase advances are not exactly 90 deg)
+
+KFscale = 0.1906949*0.5/0.5321    ! 0.17919084758504
+
+set, QF.1.TL[k1], +KFscale
+set, QF.2.TL[k1], -KFscale
+set, QK.1.TL[k1], +KFscale*(0.5321/1.0552)
+set, QK.2.TL[k1], -KFscale*(0.5321/1.0552)
+
+
+!----- Matching from CL to FODO lattice: CLTS 
+
+!--- Setting for periodic FODO transport in CL
+set, QH.5.TL[k1],  +0.174333375275
+set, QH.6.TL[k1],   0
+set, QH.7.TL[k1],  -0.149544348108
+set, QH.8.TL[k1],   0
+set, QF.8.TL[k1],  +0.265412295064
+set, QF.9.TL[k1],  -0.194687356694
+set, QF.10.TL[k1], +0.189900135337
+set, QF.11.TL[k1], -0.209319084491
+
+comment
+!----- 30 m FODO cells (mux=muy=90deg) 
+set, QF.1.TL[k1], +0.179321977095
+set, QF.2.TL[k1], -0.179321977095
+set, QK.1.TL[k1], +0.091130871750
+set, QK.2.TL[k1], -0.091130871750
+!--- Setting for periodic FODO transport in CL
+set, QH.5.TL[k1],  +0.174245354924
+set, QH.6.TL[k1],   0
+set, QH.7.TL[k1],  -0.149574495861
+set, QH.8.TL[k1],   0
+set, QF.8.TL[k1],  +0.265454944126
+set, QF.9.TL[k1],  -0.194581212829
+set, QF.10.TL[k1], +0.189858018386
+set, QF.11.TL[k1], -0.209587577665
+endcomment
+
+
+!================================================================================
+!================================================================================
+
+

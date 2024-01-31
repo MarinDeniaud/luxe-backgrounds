@@ -1,0 +1,129 @@
+!================================================================================
+!
+!----- Magnet setting for the beamline leading to the line TLD 
+!
+!----- Starting at Z = 37.6484 m, in the front of 1st cold quadrupole Q.A1.1.I1
+!
+!----- LINE = (I1_L0C8, L1, B1, L2, B2, L3, CL, TL1, TL2TLD, TLD)
+!
+!------TLD: LINE = (TLD1, TLD2, TLD3)
+!
+!================================================================================
+
+
+!--------------------------------------------------------------------------------
+!----- Injector I1
+!--------------------------------------------------------------------------------
+
+call, "MAGNET_SET_I1.txm"
+
+!--------------------------------------------------------------------------------
+!----- BC1: different FODO in diagnostic section
+!--------------------------------------------------------------------------------
+
+call, "MAGNET_SET_B1.txm"
+
+!--------------------------------------------------------------------------------
+!----- BC2: different FODO in diagnostic section
+!--------------------------------------------------------------------------------
+
+call, "MAGNET_SET_B2.txm"
+
+!--------------------------------------------------------------------------------
+!----- CL: different optics (FODO transport, collimation)
+!--------------------------------------------------------------------------------
+
+call, "MAGNET_SET_COLL.txm"
+
+!--------------------------------------------------------------------------------
+!----- LINACs
+!--------------------------------------------------------------------------------
+
+call, "MAGNET_SET_LINAC.txm"
+
+!--------------------------------------------------------------------------------
+!----- Part of TL: (TL1, TL2TLD) 
+!--------------------------------------------------------------------------------
+
+call, "MAGNET_SET_TL.txm"
+
+!--------------------------------------------------------------------------------
+!----- TLD 
+!--------------------------------------------------------------------------------
+
+call, "MAGNET_SET_TLD.txm"
+
+
+!--------------------------------------------------------------------------------
+!----- Setting for KL kickers and T1 HELP elements (for run after T5D)
+!--------------------------------------------------------------------------------
+
+! KL kickers are RBEND with zero angle
+set, KL.1.TL[ANGLE],  0
+set, KL.2.TL[ANGLE],  0
+
+! HELP are RBEND with zero angle
+set, HELP.1a.T1[ANGLE], 0
+set, HELP.1b.T1[ANGLE], 0
+set, HELP.2a.T1[ANGLE], 0
+set, HELP.2b.T1[ANGLE], 0
+
+!--------------------------------------------------------------------------------
+!----- Setting for KS kickers and HELP elements (for survey only)
+!--------------------------------------------------------------------------------
+
+xQF1a_TLD:=1
+xQF1b_TLD:=1
+xQF2a_TLD:=1
+xQF2b_TLD:=1
+xQKa_TLD:=1
+yQKa_TLD:=1
+xQKb_TLD:=1
+yQKb_TLD:=1
+
+! Setting: Nov 2015
+!set, xQKa_TLD,   +2.3338127613e-02*1.00065622
+!set, yQKa_TLD,   +7.2594733702e-03*1.00131
+!set, xQKb_TLD,   +2.3696632352e-02
+!set, yQKb_TLD,   +9.0592036579e-03*0.999305
+
+
+setTLDlay: Subroutine
+
+! KS kickers are defined as RBEND
+set, KS.1.TL[ANGLE],  -ang_KS_mad     
+
+!----- Setting of HELP elements for survey
+
+set, xQF1a_TLD,   +1.8413615167e-03*1.000008360
+set, xQF1b_TLD,   +1.8750542868e-03*0.9999917949
+
+set, HELP.1a.TLD[ANGLE], +0.5*QF.1.TL[K1]*QF.1.TL[L]*xQF1a_TLD
+set, HELP.1b.TLD[ANGLE], +0.5*QF.1.TL[K1]*QF.1.TL[L]*xQF1b_TLD
+
+set, xQF2a_TLD,   +6.4124747085e-03*0.999993275
+set, xQF2b_TLD,   +6.5272115862e-03*1.000006596
+
+set, HELP.2a.TLD[ANGLE], +0.5*QF.2.TL[K1]*QF.2.TL[L]*xQF2a_TLD
+set, HELP.2b.TLD[ANGLE], +0.5*QF.2.TL[K1]*QF.2.TL[L]*xQF2b_TLD
+
+set, xQKa_TLD,   +2.3338127613e-02*1.00065622
+set, yQKa_TLD,   +7.2594733702e-03*1.0015
+set, xQKb_TLD,   +2.3696632352e-02*0.9998725
+set, yQKb_TLD,   +9.0592036579e-03*0.999067
+
+set, HELP.3a.TLD[ANGLE],   &
+     +0.5*QK.1.TL[K1]*QK.1.TL[L]*xQKa_TLD/cos(atan(yQKa_TLD/xQKa_TLD))
+set, HELP.3a.TLD[TILT], -atan(yQKa_TLD/xQKa_TLD)
+set, HELP.3b.TLD[ANGLE],   &
+     +0.5*QK.1.TL[K1]*QK.1.TL[L]*xQKb_TLD/cos(atan(yQKb_TLD/xQKb_TLD))
+set, HELP.3b.TLD[TILT], -atan(yQKb_TLD/xQKb_TLD)
+
+Endsubroutine
+
+
+!================================================================================
+!================================================================================
+
+
+
