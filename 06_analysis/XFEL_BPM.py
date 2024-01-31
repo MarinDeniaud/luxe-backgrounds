@@ -208,6 +208,7 @@ def copyGroupsAndDatasets(rawdata, newdata):
 
 
 def copyAndSelectRecursive(rawdata, newdata, trains, bunches):
+    setAttributes(rawdata, newdata)
     keys = rawdata.keys()
     print(rawdata.name)
     for key in keys:
@@ -261,23 +262,24 @@ def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
     TrainID = bpmdata[bpmlist[0]]['TrainId']
     nbtrain, nbbunch = getNbTrainsBunches(rawdata)
     keys = ['X', 'DX', 'Y', 'DY', 'Charge', 'Valid', 'S', 'E', 'DE', 'Time', 'DTime']
+    keys = ['X', 'Y', 'Charge', 'Valid', 'S', 'E', 'Time']
     data = {}
     for k in keys:
         data[k] = []
     for bpm in bpmlist:
         data['X'].append(_np.array(bpmdata[bpm]['X.TD'])*1e-3)  # mm converted in m
-        data['DX'].append(_np.full((nbtrain, nbbunch), 2e-6))
+        # data['DX'].append(_np.full((nbtrain, nbbunch), 2e-6))
         data['Y'].append(_np.array(bpmdata[bpm]['Y.TD'])*1e-3)  # mm converted in m
-        data['DY'].append(_np.full((nbtrain, nbbunch), 2e-6))
+        # data['DY'].append(_np.full((nbtrain, nbbunch), 2e-6))
         data['Charge'].append(_np.array(bpmdata[bpm]['CHARGE.TD'])*1e-9)  # nC converted to C
         data['Valid'].append(_np.array(bpmdata[bpm]['BUNCH_VALID.TD']))
         data['S'].append(_np.full((nbtrain, nbbunch), bpmdict[bpm]['S']))  # m
         E = _np.tile(energydata['Value'], (nbbunch, 1)).transpose()*1e-3  # MeV converted to GeV
         data['E'].append(E)
-        data['DE'].append(E/100)
+        # data['DE'].append(E/100)
         T = timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value']  # [:, :nbbunch]  # us ??
         data['Time'].append(_np.array(T))
-        data['DTime'].append(_np.array(T)/100)
+        # data['DTime'].append(_np.array(T)/100)
     names = ['BPM', 'TrainID', 'BunchID']
     print('All bpm done')
     for key in data:
@@ -311,9 +313,11 @@ def reduceDFbyIndex(df, index, value):
         pass
 
     try:
-        df = df.loc[df.index.get_level_values(indexname) == value]
-    except TypeError:
-        df = df.loc[df.index.get_level_values(indexname).isin(value)]
+        mask = df.index.get_level_values(indexname) == value
+        df = df.loc[mask]
+    except:
+        mask = df.index.get_level_values(indexname).isin(value)
+        df = df.loc[mask]
     return df
 
 
@@ -552,8 +556,6 @@ def plotSurvey(inputfilename):
     plotHistogram(df_bpm, bpm=0, train=0)
     plotHistogram(df_bpm, bpm=0, bunch=0)
 
-    _plt.show()
-
 
 def plotDifferentTraj(data, bpm=None, train=None, bunch=None, valid=True):
     data_reduced = reduceDFbyBPMTrainBunchByIndex(data, bpms=bpm, trains=train, bunches=bunch, valid=valid)
@@ -564,7 +566,6 @@ def plotDifferentTraj(data, bpm=None, train=None, bunch=None, valid=True):
         _plt.plot(S, Y, '+')
     _plt.ylabel('$Y$ [m]')
     _plt.xlabel('$S$ [m]')
-    _plt.show()
 
 
 def plotTrajectory(data, bpm=None, train=None, bunch=None, valid=True):
@@ -578,8 +579,8 @@ def plotTrajectory(data, bpm=None, train=None, bunch=None, valid=True):
     plotOptions()
     ax1 = _plt.gca()
     ax2 = ax1.twinx()
-    ax1.plot(S, X, '+', color='C0', markersize=15, markeredgewidth=2, label='$X$')
-    ax1.plot(S, Y, '+', color='C1', markersize=15, markeredgewidth=2, label='$Y$')
+    ax1.plot(S, X, '+-', color='C0', markersize=15, markeredgewidth=2, label='$X$')
+    ax1.plot(S, Y, '+-', color='C1', markersize=15, markeredgewidth=2, label='$Y$')
     ax2.plot(S, Charge, '+', color='C2', markersize=15, markeredgewidth=2, label='$Charge$')
     ax1.set_ylabel('$X/Y$ [m]')
     ax2.set_ylabel('$Charge$ [C]')
@@ -587,8 +588,6 @@ def plotTrajectory(data, bpm=None, train=None, bunch=None, valid=True):
     h1, l1 = ax1.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
     _plt.legend(h1 + h2, l1 + l2)
-
-    _plt.show()
 
 
 def plotHistogram(data, bpm=None, train=None, bunch=None, valid=True, bins=10):
@@ -610,8 +609,6 @@ def plotHistogram(data, bpm=None, train=None, bunch=None, valid=True, bins=10):
     _plt.hist(Charge, bins=bins, histtype='step', color='C2', label='$Charge : std = {:1.2e} C$'.format(_np.std(Charge)))
     _plt.xlabel('$Charge$ [C]')
     _plt.legend()
-
-    _plt.show()
 
 
 def convertBPMNameToPosition(bpmnames, bpmdict=BPM_DICT):
