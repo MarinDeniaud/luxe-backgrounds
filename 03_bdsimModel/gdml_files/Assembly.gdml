@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+	<define>
+		<constant name="ws_rescaled_x" value="16.000001000000001"/>
+		<constant name="ws_rescaled_y" value="59.700001000000000"/>
+		<constant name="ws_rescaled_z" value="4.000001000000000"/>
+	</define>
+	<materials/>
+	<solids>
+		<box name="ws" x="ws_rescaled_x" y="ws_rescaled_y" z="ws_rescaled_z" lunit="mm"/>
+		<box name="box_solid" x="0.016" y="0.0552" z="0.004" lunit="m"/>
+		<cone name="hole_solid" rmin1="0" rmax1="0.00325" rmin2="0" rmax2="0.00325" z="0.004" startphi="0" deltaphi="6.283185307179586" lunit="m" aunit="rad"/>
+		<subtraction name="mount_solid">
+			<first ref="box_solid"/>
+			<second ref="hole_solid"/>
+			<position name="mount_solid_translation" x="0.000000000000000" y="-19.100000000000001" z="0.000000000000000" unit="mm"/>
+		</subtraction>
+		<cone name="bar_solid" rmin1="0" rmax1="0.000125" rmin2="0" rmax2="0.000125" z="0.002" startphi="0" deltaphi="6.283185307179586" lunit="m" aunit="rad"/>
+		<cone name="needle_solid" rmin1="0" rmax1="0.000125" rmin2="0" rmax2="7e-06" z="0.0025" startphi="0" deltaphi="6.283185307179586" lunit="m" aunit="rad"/>
+	</solids>
+	<structure>
+		<volume name="mount_logical">
+			<materialref ref="G4_Al"/>
+			<solidref ref="mount_solid"/>
+		</volume>
+		<volume name="bar_logical">
+			<materialref ref="G4_W"/>
+			<solidref ref="bar_solid"/>
+		</volume>
+		<volume name="needle_logical">
+			<materialref ref="G4_W"/>
+			<solidref ref="needle_solid"/>
+		</volume>
+		<volume name="wl">
+			<materialref ref="G4_Galactic"/>
+			<solidref ref="ws"/>
+			<physvol name="ALTA_mount_physical_1">
+				<volumeref ref="mount_logical"/>
+				<position name="vec_ALTA_mount_physical_pos_sub_" x="(0.000000000000000)-(0.000000000000000)" y="(0.000000000000000)-(-2.250000000000002)" z="(0.000000000000000)-(0.000000000000000)" unit="mm"/>
+			</physvol>
+			<physvol name="ALTA_bar_physical_1">
+				<volumeref ref="bar_logical"/>
+				<position name="vec_ALTA_bar_physical_pos_sub_" x="(0.000000000000000)-(0.000000000000000)" y="(-28.600000000000001)-(-2.250000000000002)" z="(0.000000000000000)-(0.000000000000000)" unit="mm"/>
+				<rotation name="ALTA_bar_physical_rot" x="-1.570796326794897" y="0.000000000000000" z="0.000000000000000" unit="rad"/>
+			</physvol>
+			<physvol name="ALTA_needle_physical_1">
+				<volumeref ref="needle_logical"/>
+				<position name="vec_ALTA_needle_physical_pos_sub_" x="(0.000000000000000)-(0.000000000000000)" y="(-30.850000000000001)-(-2.250000000000002)" z="(0.000000000000000)-(0.000000000000000)" unit="mm"/>
+				<rotation name="ALTA_needle_physical_rot" x="-1.570796326794897" y="0.000000000000000" z="0.000000000000000" unit="rad"/>
+			</physvol>
+		</volume>
+	</structure>
+	<setup name="Default" version="1.0">
+		<world ref="wl"/>
+	</setup>
+</gdml>
