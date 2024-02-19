@@ -5,6 +5,7 @@ import numpy as _np
 import pandas as _pd
 import time as t
 import pymad8 as _m8
+import matplotlib.ticker as mtick
 
 bunch_pattern_adress = "XFEL.DIAG/TIMER/DI1914TL/BUNCH_PATTERN"
 
@@ -297,6 +298,40 @@ def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
     return df_bpm
 
 
+def getH5dataInSmallDF(inputfilename, bpmdict=BPM_DICT):
+    rawdata = _h5.File(inputfilename, 'r')
+    bpmdata = rawdata['XFEL.DIAG']['BPM']
+    if len(findUnmatchedTrainID(inputfilename)) > 0:
+        raise ValueError("Inconsistant Train IDs in file : {}".format(inputfilename))
+    bpmlist = list(bpmdata.keys())
+    TrainID = bpmdata[bpmlist[0]]['TrainId']
+    nbtrain, nbbunch = getNbTrainsBunches(rawdata)
+    keys = ['X', 'Y', 'Valid', 'S']
+    data = {}
+    for k in keys:
+        data[k] = []
+    for bpm in bpmlist:
+        data['X'].append(_np.array(bpmdata[bpm]['X.TD'])*1e-3)  # mm converted in m
+        data['Y'].append(_np.array(bpmdata[bpm]['Y.TD'])*1e-3)  # mm converted in m
+        data['Valid'].append(_np.array(bpmdata[bpm]['BUNCH_VALID.TD']))
+        data['S'].append(_np.full((nbtrain, nbbunch), bpmdict[bpm]['S']))  # m
+    names = ['BPM', 'TrainID', 'BunchID']
+    print('All bpm done')
+    for key in data:
+        data[key] = _np.asarray(data[key])
+    print('Asarray done')
+    index = _pd.MultiIndex.from_product([range(s) for s in data['X'].shape], names=names)
+    for key in data:
+        data[key] = data[key].flatten()
+    print('Flatten done')
+    df_bpm = _pd.DataFrame(data, index=index)
+    df_bpm.index.set_levels([bpmlist, TrainID], level=[0, 1], inplace=True)
+    print('MI done')
+    rawdata.close()
+
+    return df_bpm
+
+
 def reduceDFbyIndex(df, index, value):
     if type(index) == int:
         indexid = index
@@ -334,10 +369,37 @@ def reduceDFbyBPMTrainBunchByIndex(df, bpms=None, trains=None, bunches=None, val
     return df
 
 
-def buildMatrixAndVectorForSVD(df, refbpmname, coord='X', trains=None, bunches=None):
-    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
-    df_ref = df_reduced.loc[df_reduced.index.get_level_values('BPM') == refbpmname][['X', 'Y']]
-    df_matrix = df_reduced.loc[df_reduced.index.get_level_values('BPM') != refbpmname][['X', 'Y']]
+def getBunchPattern(df, refT1='BPMA.2097.T1', refT2='BPMA.2161.T2', sample=1):
+    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=1)
+    df_T1 = df_reduced[df_reduced.index.get_level_values(0) == refT1]
+    df_T2 = df_reduced[df_reduced.index.get_level_values(0) == refT2]
+    bunchIDs_T1 = df_T1.index.get_level_values(2).unique().values
+    bunchIDs_T2 = df_T2.index.get_level_values(2).unique().values
+    bunchIDs_TL = df_reduced.index.get_level_values(2).unique().values
+    bunchIDs_TL = _np.setdiff1d(bunchIDs_TL, bunchIDs_T1)
+    bunchIDs_TL = _np.setdiff1d(bunchIDs_TL, bunchIDs_T2)
+
+    return bunchIDs_TL[0::sample], bunchIDs_T1[0::sample], bunchIDs_T2[0::sample]
+
+
+def buildPositionMatrix(df_reduced, coord):
+    nb_trains = df_reduced.index.levshape[1]
+    nb_bunches = df_reduced.index.levshape[2]
+    M = df_reduced[coord].to_numpy().reshape((-1, nb_trains * nb_bunches))
+    return M
+
+
+def calcPositionMean(df_reduced, coord):
+    M = buildPositionMatrix(df_reduced, coord)
+    Mean = _np.array([])
+    for i in range(len(M)):
+        Mean = _np.append(Mean, _np.mean(_np.abs(M[i])))
+    return Mean
+
+
+def buildMatrixAndVectorForSVD(df, refbpmname, coord='X'):
+    df_ref = df.loc[df.index.get_level_values('BPM') == refbpmname][['X', 'Y']]
+    df_matrix = df.loc[df.index.get_level_values('BPM') != refbpmname][['X', 'Y']]
 
     nb_trains = df_matrix.index.levshape[1]
     nb_bunches = df_matrix.index.levshape[2]
@@ -364,7 +426,6 @@ def SVD(M):
 
 
 def calcCoeffsWithSVD(M, ref_Vect):
-    """Return the correlation coefficients from a given matrix M using a Singular Value Decomposition method"""
     U, d, V_t = _np.linalg.svd(M, full_matrices=False)
     D = _np.diag(d)
 
@@ -376,12 +437,90 @@ def calcCoeffsWithSVD(M, ref_Vect):
     return C
 
 
-def calcJitterAndNoise(M, ref_Vect):
+def calcMeasuredPositionAndNResidual(M, ref_Vect):
     C = calcCoeffsWithSVD(M, ref_Vect)
-    Jitter = _np.dot(M, C)
-    Noise = ref_Vect - _np.dot(M, C)
+    meas_Vect = _np.dot(M, C)
+    Residual = ref_Vect - _np.dot(M, C)
+
+    return meas_Vect, Residual
+
+
+def calcJitterAndNoise(df, coord):
+    Jitter = _np.array([])
+    Noise = _np.array([])
+    for bpm in df.index.get_level_values(0).unique():
+        V, M = buildMatrixAndVectorForSVD(df, bpm, coord=coord)
+        meas_Vect, Residual = calcMeasuredPositionAndNResidual(M, V)
+        Jitter = _np.append(Jitter, meas_Vect.std())
+        Noise = _np.append(Noise, Residual.std())
 
     return Jitter, Noise
+
+
+def calcJitterAverage(S, Jitter_X, Jitter_Y, Smin=None, Smax=None):
+    if Smin is not None:
+        index_min = (_np.abs(S - Smin)).argmin()
+    else:
+        index_min = 0
+    if Smax is not None:
+        index_max = (_np.abs(S - Smax)).argmin()
+    else:
+        index_max = len(S)
+    return _np.mean(Jitter_X[index_min:index_max]), _np.mean(Jitter_Y[index_min:index_max])
+
+
+def calcJitterAverageForMultipleBunches(df, bunch_list, trains=None, Smin=None, Smax=None):
+    Jitter_X_mean_list = _np.array([])
+    Jitter_Y_mean_list = _np.array([])
+    unused_bunches = _np.array([])
+    for bunch in bunch_list:
+        df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunch)
+        df_reduced = df_reduced.sort_values(by='S')
+        S = df_reduced.S.unique()
+        try:
+            Jitter_X, Noise_X = calcJitterAndNoise(df_reduced, 'X')
+            Jitter_Y, Noise_Y = calcJitterAndNoise(df_reduced, 'Y')
+            Jitter_X_mean, Jitter_Y_mean = calcJitterAverage(S, Jitter_X, Jitter_Y, Smin=Smin, Smax=Smax)
+            Jitter_X_mean_list = _np.append(Jitter_X_mean_list, Jitter_X_mean)
+            Jitter_Y_mean_list = _np.append(Jitter_Y_mean_list, Jitter_Y_mean)
+        except:
+            print('bunch {} not working'.format(bunch))
+            unused_bunches = _np.append(unused_bunches, bunch)
+    return Jitter_X_mean_list, Jitter_Y_mean_list, unused_bunches
+
+
+def calcPositionMatrix(df, coord):
+    for i, bpm in enumerate(df.index.get_level_values(0).unique()):
+        V, M = buildMatrixAndVectorForSVD(df, bpm, coord=coord)
+        meas_Vect, Residual = calcMeasuredPositionAndNResidual(M, V)
+        try:
+            Position_Matrix = _np.concatenate((Position_Matrix, [meas_Vect]))
+        except:
+            Position_Matrix = _np.array([meas_Vect])
+    return Position_Matrix
+
+
+def calcAngleMatrix(df, coord):
+    Position_Matrix = calcPositionMatrix(df, coord)
+    S = df.S.unique()
+    for i in range(len(Position_Matrix)-1):
+        Position_diff = Position_Matrix[i]-Position_Matrix[i+1]
+        S_diff = _np.abs(S[i]-S[i+1])
+        Angle_Vector = _np.tan(Position_diff/S_diff)
+        try:
+            Angle_Matrix = _np.concatenate((Angle_Matrix, [Angle_Vector]))
+        except:
+            Angle_Matrix = _np.array([Angle_Vector])
+    return Angle_Matrix
+
+
+def calcMaxAngle(df, coord):
+    S = df.S.unique()
+    Angle_Matrix = calcAngleMatrix(df, coord)
+    Angle_Max = _np.array([])
+    for Angle_Vector in Angle_Matrix:
+        Angle_Max = _np.append(Angle_Max, max(_np.abs(Angle_Vector)))
+    return S[1:], Angle_Max
 
 
 def plotBPM2D(bpmdict=BPM_DICT):
@@ -400,60 +539,111 @@ def plotBPM2D(bpmdict=BPM_DICT):
     # _plt.legend()
 
 
-def plotJitterAndNoise(df, twissfile, trains=None, bunches=None):
+def plotBunchPattern(df, sample=1, figsize=[14, 4]):
+    bunchIDs_TL, bunchIDs_T1, bunchIDs_T2 = getBunchPattern(df, sample=sample)
+    fig, ax = plotOptions(figsize=figsize)
+    _plt.plot(bunchIDs_TL, bunchIDs_TL * 0, '+', color='C0', markersize=8, markeredgewidth=1, label='TLD')
+    _plt.plot(bunchIDs_T1, bunchIDs_T1 * 0 + 1, '+', color='C1', markersize=8, markeredgewidth=1, label='T1')
+    _plt.plot(bunchIDs_T2, bunchIDs_T2 * 0 + 2, '+', color='C2', markersize=8, markeredgewidth=1, label='T2')
+    _plt.ylabel('Path')
+    _plt.xlabel('Bunch ID')
+    _plt.legend()
+
+
+def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, height_ratios=None,
+                       plotAngle=False, plotSigma=False, plotBeta=False, plotDisp=False, plotNoise=False, plotMean=False, figsize=[14, 6]):
     df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
     df_reduced = df_reduced.sort_values(by='S')
     S = df_reduced.S.unique()
-    Jitter_X = _np.array([])
-    Jitter_Y = _np.array([])
-    Noise_X = _np.array([])
-    Noise_Y = _np.array([])
-    for bpm in df_reduced.index.get_level_values(0).unique():
-        V_X, M_X = buildMatrixAndVectorForSVD(df, bpm, coord='X', trains=trains, bunches=bunches)
-        V_Y, M_Y = buildMatrixAndVectorForSVD(df, bpm, coord='Y', trains=trains, bunches=bunches)
-        J_X, N_X = calcJitterAndNoise(M_X, V_X)
-        J_Y, N_Y = calcJitterAndNoise(M_Y, V_Y)
-        Jitter_X = _np.append(Jitter_X, J_X.std())
-        Jitter_Y = _np.append(Jitter_Y, J_Y.std())
-        Noise_X = _np.append(Noise_X, N_X.std())
-        Noise_Y = _np.append(Noise_Y, N_Y.std())
+    Jitter_X, Noise_X = calcJitterAndNoise(df_reduced, 'X')
+    Jitter_Y, Noise_Y = calcJitterAndNoise(df_reduced, 'Y')
 
     twiss = _m8.Output(twissfile)
-    twiss.calcBeamSize(3.58e-11, 3.58e-11, 1e-6)
+    twiss.calcBeamSize(ex, ey, esprd)
     df_cut = twiss.data[twiss.data.S.between(min(S), max(S))]
-    df_bpm = df_cut[df_cut.TYPE == 'MONI']
-    print(S, df_bpm.S)
 
-    rows_colums = [5, 1]
+    rows_colums = [1+plotAngle+plotSigma+plotBeta+plotDisp+plotNoise+plotMean, 1]
+    fig, ax = plotOptions(figsize=figsize, rows_colums=rows_colums, sharex='all', height_ratios=height_ratios)
+
     spnum = 1
-    fig, ax = plotOptions(figsize=[14, 14], rows_colums=rows_colums, height_ratios=[2, 2, 1, 1, 1], sharex='all')
     _plt.subplot(rows_colums[0], rows_colums[1], spnum)
-    plot2CurvesSameAxis(S, Jitter_X, Jitter_Y, ls='+-', legend1='$J_X$', legend2='$J_Y$', labelX=None, labelY='Jitter [m]')
-    spnum += 1
-    _plt.subplot(rows_colums[0], rows_colums[1], spnum)
-    plot2CurvesSameAxis(S, Jitter_X/df_bpm.SIGX, Jitter_Y/df_bpm.SIGY, ls='+-', legend1=r'$\frac{J_X}{\sigma_X}$', legend2=r'$\frac{J_Y}{\sigma_Y}$', labelX=None, labelY='Jitter/sigma [m]')
-    spnum += 1
-    _plt.subplot(rows_colums[0], rows_colums[1], spnum)
-    plot2CurvesSameAxis(df_cut.S, df_cut.BETX, df_cut.BETY, ls='-', legend1=r'$\beta_X$', legend2=r'$\beta_Y$', labelX=None, labelY=r'$\beta$ [m]')
-    spnum += 1
-    _plt.subplot(rows_colums[0], rows_colums[1], spnum)
-    plot2CurvesSameAxis(df_cut.S, df_cut.DX, df_cut.DY, ls='--', legend1='$D_X$', legend2='$D_Y$', labelX=None, labelY='Disp [m]')
-    spnum += 1
-    _plt.subplot(rows_colums[0], rows_colums[1], spnum)
-    plot2CurvesSameAxis(S, Noise_X, Noise_Y, ls='+-', legend1='$N_X$', legend2='$N_Y$', labelX='$S$ [m]', labelY='Noise [m]')
+    plot2CurvesSameAxis(S, Jitter_X, Jitter_Y, ls1='+-', ls2='+-', legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', labelX='$S$ [m]', labelY='Jitter [m]')
+    if plotAngle:
+        spnum += 1
+        _plt.subplot(rows_colums[0], rows_colums[1], spnum)
+        S_angle, Angle_Max_X = calcMaxAngle(df_reduced, 'X')
+        S_angle, Angle_Max_Y = calcMaxAngle(df_reduced, 'Y')
+        plot2CurvesSameAxis(S_angle, Angle_Max_X, Angle_Max_Y, ls1='+-', ls2='+-', legend1=r'$max(\theta_X)$', legend2=r'$max(\theta_Y)$', labelX='$S$ [m]', labelY='Max angle')
+    if plotSigma:
+        spnum += 1
+        _plt.subplot(rows_colums[0], rows_colums[1], spnum)
+        df_bpm = df_cut[df_cut.TYPE == 'MONI']
+        S_match, JitterX_SigX, JitterY_SigY = matchJitterAndBeamSizeArray(S, Jitter_X, Jitter_Y, df_bpm)
+        plot2CurvesSameAxis(S_match, JitterX_SigX*100, JitterY_SigY*100, ls1='+-', ls2='+-', legend1=r'$\frac{J_X}{\sigma_X}$', legend2=r'$\frac{J_Y}{\sigma_Y}$',
+                            labelX='$S$ [m]', labelY='Jitter/sigma', ticksType='plain')
+        _plt.hlines([5], min(S_match), max(S_match), ls='--', colors='C3')
+        ax[1].yaxis.set_major_formatter(mtick.PercentFormatter())
+    if plotBeta:
+        spnum += 1
+        _plt.subplot(rows_colums[0], rows_colums[1], spnum)
+        plot2CurvesSameAxis(df_cut.S, df_cut.BETX, df_cut.BETY, ls1='-', ls2='-', legend1=r'$\beta_X$', legend2=r'$\beta_Y$', labelX='$S$ [m]', labelY=r'$\beta$ [m]')
+    if plotDisp:
+        spnum += 1
+        _plt.subplot(rows_colums[0], rows_colums[1], spnum)
+        plot2CurvesSameAxis(df_cut.S, df_cut.DX, df_cut.DY, ls1='--', ls2='--', legend1='$D_X$', legend2='$D_Y$', labelX='$S$ [m]', labelY='Disp [m]')
+    if plotNoise:
+        spnum += 1
+        _plt.subplot(rows_colums[0], rows_colums[1], spnum)
+        plot2CurvesSameAxis(S, Noise_X, Noise_Y, ls1='+-', ls2='+-', legend1=r'$\sigma_{N,X}$', legend2=r'$\sigma_{N,X}$', labelX='$S$ [m]', labelY='Noise [m]')
+    if plotMean:
+        spnum += 1
+        _plt.subplot(rows_colums[0], rows_colums[1], spnum)
+        X_bar = calcPositionMean(df_reduced, 'X')
+        Y_bar = calcPositionMean(df_reduced, 'Y')
+        plot2CurvesSameAxis(S, X_bar, Y_bar, ls1='+-', ls2='+-', legend1='$mean(|X|)$', legend2='$mean(|Y|)$', labelX='$S$ [m]', labelY='Mean [m]')
 
     fig.align_labels()
     _m8.Plot.AddMachineLatticeToFigure(fig, twiss)
-    _plt.xlim(min([min(S), min(twiss.S)]), max([max(S), max(twiss.S)]) + 50)
+    _plt.xlim(min([min(S), min(df_cut.S)]) - 2, max([max(S), max(df_cut.S)]) + 2)
+
+
+def plotJitterAverageForAllBunches(df, trains=None, Smin=None, Smax=None, sample=1, figsize=[14, 6]):
+    bunchIDs_TL, bunchIDs_T1, bunchIDs_T2 = getBunchPattern(df, sample=sample)
+    Jitter_X_mean_TL, Jitter_Y_mean_TL, unused_bunches = calcJitterAverageForMultipleBunches(df, bunchIDs_TL, trains=trains, Smin=Smin, Smax=Smax)
+    bunchIDs_TL = _np.setdiff1d(bunchIDs_TL, unused_bunches)
+    Jitter_X_mean_T1, Jitter_Y_mean_T1, unused_bunches = calcJitterAverageForMultipleBunches(df, bunchIDs_T1, trains=trains, Smin=Smin, Smax=Smax)
+    bunchIDs_T1 = _np.setdiff1d(bunchIDs_T1, unused_bunches)
+    Jitter_X_mean_T2, Jitter_Y_mean_T2, unused_bunches = calcJitterAverageForMultipleBunches(df, bunchIDs_T2, trains=trains, Smin=Smin, Smax=Smax)
+    bunchIDs_T2 = _np.setdiff1d(bunchIDs_T2, unused_bunches)
+
+    fig, ax = plotOptions(figsize=figsize)
+    plot2CurvesSameAxis(bunchIDs_TL, Jitter_X_mean_TL, Jitter_Y_mean_TL, ls1='+', ls2='x', labelX='bunchID', labelY='Average Jitter',
+                        legend1='X_TL', legend2='Y_TL', color1='C0', color2='C0', markersize=8, markeredgewidth=1)
+    plot2CurvesSameAxis(bunchIDs_T1, Jitter_X_mean_T1, Jitter_Y_mean_T1, ls1='+', ls2='x', labelX='bunchID', labelY='Average Jitter',
+                        legend1='X_T1', legend2='Y_T1', color1='C1', color2='C1')
+    plot2CurvesSameAxis(bunchIDs_T2, Jitter_X_mean_T2, Jitter_Y_mean_T2, ls1='+', ls2='x', labelX='bunchID', labelY='Average Jitter',
+                        legend1='X_T2', legend2='Y_T2', color1='C2', color2='C2')
+
+
+def matchJitterAndBeamSizeArray(S, JitterX, JitterY, df_bpm, tolerence=0.001):
+    if len(S) == len(df_bpm.S):
+        return S, JitterX/df_bpm.SIGX, JitterY/df_bpm.SIGY
+    else:
+        for i, s in enumerate(df_bpm.S):
+            if _np.abs(s - S[i]) > tolerence:
+                S = _np.delete(S, i)
+                JitterX = _np.delete(JitterX, i)
+                JitterY = _np.delete(JitterY, i)
+        return S, JitterX/df_bpm.SIGX, JitterY/df_bpm.SIGY
 
 
 def plot2CurvesSameAxis(X, Y1, Y2, labelX='X', labelY='Y', legend1='Y1', legend2='Y2',
-                        ls='-', color1='C0', color2='C1', markersize=15, markeredgewidth=2, printLegend=True):
-    _plt.plot(X, Y1, ls, color=color1, markersize=markersize, markeredgewidth=markeredgewidth, label=legend1)
-    _plt.plot(X, Y2, ls, color=color2, markersize=markersize, markeredgewidth=markeredgewidth, label=legend2)
+                        ls1='-', ls2='-', color1='C0', color2='C1', markersize=15, markeredgewidth=2, ticksType='sci', printLegend=True):
+    _plt.plot(X, Y1, ls1, color=color1, markersize=markersize, markeredgewidth=markeredgewidth, label=legend1)
+    _plt.plot(X, Y2, ls2, color=color2, markersize=markersize, markeredgewidth=markeredgewidth, label=legend2)
     _plt.ylabel(labelY)
     _plt.xlabel(labelX)
-    _plt.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    _plt.ticklabel_format(axis="y", style=ticksType, scilimits=(0, 0))
     if printLegend:
         _plt.legend()
 
