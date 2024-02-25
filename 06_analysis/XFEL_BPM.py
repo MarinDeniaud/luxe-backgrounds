@@ -157,7 +157,7 @@ def removeUnmatchedTrainID(inputfilename, outputfilename=None):
     energytrains = energydata['CL']['ENERGY.ALL']['TrainId'][:]
     timetrains = timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['TrainId'][:]
 
-    nbtrainmax, nbbunchmax = getNbTrainsBunches(rawdata)
+    nbbpm, nbtrainmax, nbbunchmax = getNbBPMTrainsBunches(rawdata)
     unmatched_train_ids = findUnmatchedTrainID(inputfilename)
 
     copyGroupsAndDatasets(rawdata, newdata)
@@ -188,7 +188,7 @@ def reduceH5FileByTrainBunch(inputfilename, outputfilename=None, trains=None, bu
     rawdata = _h5.File(inputfilename, 'r')
     newdata = _h5.File(outputfilename, 'w')
 
-    nbtrainmax, nbbunchmax = getNbTrainsBunches(rawdata)
+    nbbpmmax, nbtrainmax, nbbunchmax = getNbBPMTrainsBunches(rawdata)
     if trains is None:
         print(Warning("Train selection not provided. Using all {} trains".format(nbtrainmax)))
         trains = _np.arange(nbtrainmax)
@@ -239,7 +239,7 @@ def setAttributes(rawdata, newdata):
         newdata.attrs.create(name, value)
 
 
-def getNbTrainsBunches(rawdata):
+def getNbBPMTrainsBunches(rawdata):
     bpmlist = list(rawdata['XFEL.DIAG']['BPM'].keys())
     try:
         nbtrain, nbbunch = rawdata['XFEL.DIAG']['BPM'][bpmlist[0]]['X.TD'].shape
@@ -249,87 +249,62 @@ def getNbTrainsBunches(rawdata):
             nbbunch = len(rawdata['XFEL.DIAG']['BPM'][bpmlist[0]]['X.TD'])
         else:
             nbbunch = 1
-    return nbtrain, nbbunch
+    nbbpm = len(bpmlist)
+
+    return nbbpm, nbtrain, nbbunch
 
 
-def getH5dataInDF(inputfilename, bpmdict=BPM_DICT):
+def sortBPMListByS(bpmlist, bpmdict=BPM_DICT):
+    slist = _np.array([])
+    for bpm in bpmlist:
+        slist = _np.append(slist, bpmdict[bpm]['S'])
+
+    slist_sorted = [x for x, _ in sorted(zip(slist, bpmlist))]
+    bpmlist_sorted = [y for _, y in sorted(zip(slist, bpmlist))]
+
+    return slist_sorted, bpmlist_sorted
+
+
+def getH5dataInDF(inputfilename, getPosition=True, getCharge=False, getEnergy=False, getTime=False):
+    if len(findUnmatchedTrainID(inputfilename)) > 0:
+        raise ValueError("Inconsistant Train IDs in file : {}".format(inputfilename))
+
     rawdata = _h5.File(inputfilename, 'r')
     bpmdata = rawdata['XFEL.DIAG']['BPM']
     energydata = rawdata['XFEL.DIAG']['BEAM_ENERGY_MEASUREMENT']['CL']['ENERGY.ALL']
     timedata = rawdata['XFEL.SDIAG']['BAM.DAQ']
-    if len(findUnmatchedTrainID(inputfilename)) > 0:
-        raise ValueError("Inconsistant Train IDs in file : {}".format(inputfilename))
-    bpmlist = list(bpmdata.keys())
-    TrainID = bpmdata[bpmlist[0]]['TrainId']
-    nbtrain, nbbunch = getNbTrainsBunches(rawdata)
-    # keys = ['X', 'DX', 'Y', 'DY', 'Charge', 'Valid', 'S', 'E', 'DE', 'Time', 'DTime']
-    keys = ['X', 'Y', 'Charge', 'Valid', 'S', 'E', 'Time']
-    data = {}
-    for k in keys:
-        data[k] = []
-    for bpm in bpmlist:
-        data['X'].append(_np.array(bpmdata[bpm]['X.TD'])*1e-3)  # mm converted in m
-        # data['DX'].append(_np.full((nbtrain, nbbunch), 2e-6))
-        data['Y'].append(_np.array(bpmdata[bpm]['Y.TD'])*1e-3)  # mm converted in m
-        # data['DY'].append(_np.full((nbtrain, nbbunch), 2e-6))
-        data['Charge'].append(_np.array(bpmdata[bpm]['CHARGE.TD'])*1e-9)  # nC converted to C
-        data['Valid'].append(_np.array(bpmdata[bpm]['BUNCH_VALID.TD']))
-        data['S'].append(_np.full((nbtrain, nbbunch), bpmdict[bpm]['S']))  # m
-        E = _np.tile(energydata['Value'], (nbbunch, 1)).transpose()*1e-3  # MeV converted to GeV
-        data['E'].append(E)
-        # data['DE'].append(E/100)
-        T = timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value']  # [:, :nbbunch]  # us ??
-        data['Time'].append(_np.array(T))
-        # data['DTime'].append(_np.array(T)/100)
-    names = ['BPM', 'TrainID', 'BunchID']
-    print('All bpm done')
-    for key in data:
-        data[key] = _np.asarray(data[key])
-    print('Asarray done')
-    index = _pd.MultiIndex.from_product([range(s) for s in data['X'].shape], names=names)
-    for key in data:
-        data[key] = data[key].flatten()
-    print('Flatten done')
-    df_bpm = _pd.DataFrame(data, index=index)
-    df_bpm.index.set_levels([bpmlist, TrainID], level=[0, 1], inplace=True)
-    print('MI done')
+
+    slist, bpmlist = sortBPMListByS(list(bpmdata.keys()))
+    nbbpm, nbtrain, nbbunch = getNbBPMTrainsBunches(rawdata)
+    data_dict = {}
+
+    def storedata(data_dict, key, data, factor=1.0):
+        try:
+            data_dict[key].append(data[:]*factor)
+        except:
+            data_dict[key] = [data[:]*factor]
+
+    for i, bpm in enumerate(bpmlist):
+        _printProgressBar(i, nbbpm, prefix='Load hdf5 file {} with {} bpms, {} trains and {} bunches in df:'.format(inputfilename, nbbpm, nbtrain, nbbunch), suffix='Complete', length=50)
+        storedata(data_dict, 'Valid', bpmdata[bpm]['BUNCH_VALID.TD'])
+        if getPosition:
+            storedata(data_dict, 'X', bpmdata[bpm]['X.TD'], factor=1e-3)  # mm converted in m
+            storedata(data_dict, 'Y', bpmdata[bpm]['Y.TD'], factor=1e-3)  # mm converted in m
+            storedata(data_dict, 'S', _np.full((nbtrain, nbbunch), slist[i]))  # m
+        if getCharge:
+            storedata(data_dict, 'Charge', bpmdata[bpm]['CHARGE.TD'], factor=1e-9)  # nC converted to C
+        if getTime:
+            storedata(data_dict, 'Time', timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'], factor=1e-6)  # us converted to s
+        if getEnergy:
+            storedata(data_dict, 'E', _np.tile(energydata['Value'], (nbbunch, 1)).transpose(), factor=1e-3)  # MeV converted to GeV
+    for key in data_dict:
+        data_dict[key] = _np.asarray(data_dict[key]).flatten()
+    df = _pd.DataFrame(data_dict, index=_pd.MultiIndex.from_product([range(s) for s in (nbbpm, nbtrain, nbbunch)], names=['BPM', 'TrainID', 'BunchID']))
+    df.index.set_levels([bpmlist, bpmdata[bpmlist[0]]['TrainId']], level=[0, 1], inplace=True)
     rawdata.close()
+    _printProgressBar(nbbpm, nbbpm, prefix='Load hdf5 file {} with {} bpms, {} trains and {} bunches in df:'.format(inputfilename, nbbpm, nbtrain, nbbunch), suffix='Complete', length=50)
 
-    return df_bpm
-
-
-def getH5dataInSmallDF(inputfilename, bpmdict=BPM_DICT):
-    rawdata = _h5.File(inputfilename, 'r')
-    bpmdata = rawdata['XFEL.DIAG']['BPM']
-    if len(findUnmatchedTrainID(inputfilename)) > 0:
-        raise ValueError("Inconsistant Train IDs in file : {}".format(inputfilename))
-    bpmlist = list(bpmdata.keys())
-    TrainID = bpmdata[bpmlist[0]]['TrainId']
-    nbtrain, nbbunch = getNbTrainsBunches(rawdata)
-    keys = ['X', 'Y', 'Valid', 'S']
-    data = {}
-    for k in keys:
-        data[k] = []
-    for bpm in bpmlist:
-        data['X'].append(_np.array(bpmdata[bpm]['X.TD'])*1e-3)  # mm converted in m
-        data['Y'].append(_np.array(bpmdata[bpm]['Y.TD'])*1e-3)  # mm converted in m
-        data['Valid'].append(_np.array(bpmdata[bpm]['BUNCH_VALID.TD']))
-        data['S'].append(_np.full((nbtrain, nbbunch), bpmdict[bpm]['S']))  # m
-    names = ['BPM', 'TrainID', 'BunchID']
-    print('All bpm done')
-    for key in data:
-        data[key] = _np.asarray(data[key])
-    print('Asarray done')
-    index = _pd.MultiIndex.from_product([range(s) for s in data['X'].shape], names=names)
-    for key in data:
-        data[key] = data[key].flatten()
-    print('Flatten done')
-    df_bpm = _pd.DataFrame(data, index=index)
-    df_bpm.index.set_levels([bpmlist, TrainID], level=[0, 1], inplace=True)
-    print('MI done')
-    rawdata.close()
-
-    return df_bpm
+    return df
 
 
 def reduceDFbyIndex(df, index, value):
@@ -369,6 +344,36 @@ def reduceDFbyBPMTrainBunchByIndex(df, bpms=None, trains=None, bunches=None, val
     return df
 
 
+def checkTrainBunchConsistancy(df):
+    # df = getH5dataInDF(inputfilename, getPosition=False)
+    df_valid = reduceDFbyBPMTrainBunchByIndex(df)
+    bpmids_count = df_valid.index.get_level_values(0).value_counts(sort=False).values
+    nbpm = len(bpmids_count)
+    # print('nbbpms = ', nbpm)
+    trainids_count = df_valid.index.get_level_values(1).value_counts(sort=False).values
+    ntrains = len(trainids_count)
+    # print('nbtrains = ', ntrains)
+    bunchids_count = df_valid.index.get_level_values(2).value_counts(sort=False).values
+    nbunches = len(bunchids_count)
+    # print('nbbunches = ', nbunches)
+
+    A = bpmids_count/ntrains
+    B = trainids_count
+    C = bunchids_count/ntrains
+
+    fig, ax = plotOptions(figsize=[14, 8], rows_colums=[3, 1])
+    _plt.subplot(3, 1, 1)
+    _plt.plot(_np.abs(A - A.round()))
+    bpmnames = df_valid.index.get_level_values(0).unique().values
+    ax[0].set_xticks(range(len(bpmnames)))
+    ax[0].set_xticklabels(bpmnames, fontsize=8, rotation=45, ha='right')
+    _plt.subplot(3, 1, 2)
+    _plt.plot(B)
+    ax[1].ticklabel_format(useOffset=False)
+    _plt.subplot(3, 1, 3)
+    _plt.plot(_np.abs(C - C.round()))
+
+
 def getBunchPattern(df, refT1='BPMA.2097.T1', refT2='BPMA.2161.T2', sample=1):
     df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=1)
     df_T1 = df_reduced[df_reduced.index.get_level_values(0) == refT1]
@@ -385,7 +390,7 @@ def getBunchPattern(df, refT1='BPMA.2097.T1', refT2='BPMA.2161.T2', sample=1):
 def buildPositionMatrix(df_reduced, coord):
     nb_trains = df_reduced.index.levshape[1]
     nb_bunches = df_reduced.index.levshape[2]
-    M = df_reduced[coord].to_numpy().reshape((-1, nb_trains * nb_bunches))
+    M = df_reduced[coord].to_numpy().reshape((-1, nb_trains * nb_bunches)).transpose()
     return M
 
 
@@ -401,11 +406,8 @@ def buildMatrixAndVectorForSVD(df, refbpmname, coord='X'):
     df_ref = df.loc[df.index.get_level_values('BPM') == refbpmname][['X', 'Y']]
     df_matrix = df.loc[df.index.get_level_values('BPM') != refbpmname][['X', 'Y']]
 
-    nb_trains = df_matrix.index.levshape[1]
-    nb_bunches = df_matrix.index.levshape[2]
-
-    M_X = df_matrix['X'].to_numpy().reshape((-1, nb_trains*nb_bunches)).transpose()
-    M_Y = df_matrix['Y'].to_numpy().reshape((-1, nb_trains*nb_bunches)).transpose()
+    M_X = buildPositionMatrix(df_matrix, 'X')
+    M_Y = buildPositionMatrix(df_matrix, 'Y')
     Vect_ref = df_ref[coord].to_numpy()
     M = _np.concatenate((M_X, M_Y), axis=1)
 
@@ -457,7 +459,34 @@ def calcJitterAndNoise(df, coord):
     return Jitter, Noise
 
 
-def calcJitterAverage(S, Jitter_X, Jitter_Y, Smin=None, Smax=None):
+def matchJitterAndBeamSizeArray(S, Jitter_X, Jitter_Y, df_bpm, tolerence=0.001):
+    if len(S) == len(df_bpm.S):
+        return S, Jitter_X, Jitter_Y
+    else:
+        for i, s in enumerate(df_bpm.S):
+            if _np.abs(s - S[i]) > tolerence:
+                S = _np.delete(S, i)
+                Jitter_X = _np.delete(Jitter_X, i)
+                Jitter_Y = _np.delete(Jitter_Y, i)
+        return S, Jitter_X, Jitter_Y
+
+
+def calcJitterSigmaRatio(df, twiss, Jitter_X, Jitter_Y):
+    S = df.S.unique()
+    df_cut = twiss.data[twiss.data.S.between(min(S), max(S))]
+    df_bpm = df_cut[df_cut.TYPE == 'MONI']
+    S_match, Jitter_X_matched, Jitter_Y_matched = matchJitterAndBeamSizeArray(S, Jitter_X, Jitter_Y, df_bpm)
+    return S_match, Jitter_X_matched/df_bpm.SIGX*100, Jitter_Y_matched/df_bpm.SIGY*100
+
+
+def calcJitterAverageForOneBunch(df, twiss, Smin=None, Smax=None, SigmaRatio=False):
+    S = df.S.unique()
+    Jitter_X, Noise_X = calcJitterAndNoise(df, 'X')
+    Jitter_Y, Noise_Y = calcJitterAndNoise(df, 'Y')
+
+    if SigmaRatio:
+        S, Jitter_X, Jitter_Y = calcJitterSigmaRatio(df, twiss, Jitter_X, Jitter_Y)
+
     if Smin is not None:
         index_min = (_np.abs(S - Smin)).argmin()
     else:
@@ -469,24 +498,52 @@ def calcJitterAverage(S, Jitter_X, Jitter_Y, Smin=None, Smax=None):
     return _np.mean(Jitter_X[index_min:index_max]), _np.mean(Jitter_Y[index_min:index_max])
 
 
-def calcJitterAverageForMultipleBunches(df, bunch_list, trains=None, Smin=None, Smax=None):
+def openAllMAD8Files(ex=3.58e-11, ey=3.58e-11, esprd=1e-6):
+    twiss_tld = _m8.Output('../01_mad8/XFEL_Lattice_9/TWISS_TLD')
+    twiss_tld.calcBeamSize(ex, ey, esprd)
+    twiss_t1 = _m8.Output('../01_mad8/XFEL_Lattice_9/TWISS_T5D')
+    twiss_t1.calcBeamSize(ex, ey, esprd)
+    twiss_t2 = _m8.Output('../01_mad8/XFEL_Lattice_9/TWISS_T4D')
+    twiss_t2.calcBeamSize(ex, ey, esprd)
+    return twiss_tld, twiss_t1, twiss_t2
+
+
+def selectRightMAD8File(bunch, bunchIDs_TL, bunchIDs_T1, bunchIDs_T2, twiss_tld, twiss_t1, twiss_t2):
+    if bunch in bunchIDs_TL:
+        return twiss_tld
+    elif bunch in bunchIDs_T1:
+        return twiss_t1
+    elif bunch in bunchIDs_T2:
+        return twiss_t2
+    else:
+        raise ValueError('Bunch ID {} not in the bunch pattern'. format(bunch))
+
+
+def calcJitterAverageForMultipleBunches(df, trains=None, Smin=None, Smax=None, sample=1, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, SigmaRatio=False):
+    bunchIDs_TL, bunchIDs_T1, bunchIDs_T2 = getBunchPattern(df, sample=sample)
+    bunchIDs = _np.append(_np.append(bunchIDs_TL, bunchIDs_T1), bunchIDs_T2)
+    bunchIDs.sort()
+    nbbunch = len(bunchIDs)
+
+    twiss_tld, twiss_t1, twiss_t2 = openAllMAD8Files(ex=ex, ey=ey, esprd=esprd)
+
     Jitter_X_mean_list = _np.array([])
     Jitter_Y_mean_list = _np.array([])
     unused_bunches = _np.array([])
-    for bunch in bunch_list:
+    for i, bunch in enumerate(bunchIDs):
+        _printProgressBar(i, nbbunch, prefix='Caluclate average jitter for bunch {}/{}:'.format(i, nbbunch), suffix='Complete', length=50)
         df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunch)
-        df_reduced = df_reduced.sort_values(by='S')
-        S = df_reduced.S.unique()
+        twiss = selectRightMAD8File(bunch, bunchIDs_TL, bunchIDs_T1, bunchIDs_T2, twiss_tld, twiss_t1, twiss_t2)
         try:
-            Jitter_X, Noise_X = calcJitterAndNoise(df_reduced, 'X')
-            Jitter_Y, Noise_Y = calcJitterAndNoise(df_reduced, 'Y')
-            Jitter_X_mean, Jitter_Y_mean = calcJitterAverage(S, Jitter_X, Jitter_Y, Smin=Smin, Smax=Smax)
+            Jitter_X_mean, Jitter_Y_mean = calcJitterAverageForOneBunch(df_reduced, twiss, Smin=Smin, Smax=Smax, SigmaRatio=SigmaRatio)
             Jitter_X_mean_list = _np.append(Jitter_X_mean_list, Jitter_X_mean)
             Jitter_Y_mean_list = _np.append(Jitter_Y_mean_list, Jitter_Y_mean)
         except:
             print('bunch {} not working'.format(bunch))
             unused_bunches = _np.append(unused_bunches, bunch)
-    return Jitter_X_mean_list, Jitter_Y_mean_list, unused_bunches
+    bunch_list = _np.setdiff1d(bunchIDs, unused_bunches)
+    _printProgressBar(nbbunch, nbbunch, prefix='Caluclate average jitter for bunch {}/{}:'.format(nbbunch, nbbunch), suffix='Complete', length=50)
+    return bunch_list, Jitter_X_mean_list, Jitter_Y_mean_list
 
 
 def calcPositionMatrix(df, coord):
@@ -523,28 +580,12 @@ def calcMaxAngle(df, coord):
     return S[1:], Angle_Max
 
 
-def plotBPM2D(bpmdict=BPM_DICT):
-    plotOptions()
-
-    X = [BPM_DICT[key]['X'] for key in BPM_DICT]
-    S = [BPM_DICT[key]['S'] for key in BPM_DICT]
-    _plt.scatter(X, S, marker='o')
-
-    Sdiff = _np.abs(max(S)-min(S))/2
-    # _plt.xlim(_np.mean(Y) - Sdiff, _np.mean(Y) + Sdiff)
-
-    _plt.xlabel('X [m]')
-    _plt.ylabel('S [m]')
-
-    # _plt.legend()
-
-
 def plotBunchPattern(df, sample=1, figsize=[14, 4]):
     bunchIDs_TL, bunchIDs_T1, bunchIDs_T2 = getBunchPattern(df, sample=sample)
     fig, ax = plotOptions(figsize=figsize)
     _plt.plot(bunchIDs_TL, bunchIDs_TL * 0, '+', color='C0', markersize=8, markeredgewidth=1, label='TLD')
-    _plt.plot(bunchIDs_T1, bunchIDs_T1 * 0 + 1, '+', color='C1', markersize=8, markeredgewidth=1, label='T1')
-    _plt.plot(bunchIDs_T2, bunchIDs_T2 * 0 + 2, '+', color='C2', markersize=8, markeredgewidth=1, label='T2')
+    _plt.plot(bunchIDs_T1, bunchIDs_T1 * 0 + 1, '+', color='C2', markersize=8, markeredgewidth=1, label='T1')
+    _plt.plot(bunchIDs_T2, bunchIDs_T2 * 0 + 2, '+', color='C3', markersize=8, markeredgewidth=1, label='T2')
     _plt.ylabel('Path')
     _plt.xlabel('Bunch ID')
     _plt.legend()
@@ -553,7 +594,6 @@ def plotBunchPattern(df, sample=1, figsize=[14, 4]):
 def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, height_ratios=None,
                        plotAngle=False, plotSigma=False, plotBeta=False, plotDisp=False, plotNoise=False, plotMean=False, figsize=[14, 6]):
     df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
-    df_reduced = df_reduced.sort_values(by='S')
     S = df_reduced.S.unique()
     Jitter_X, Noise_X = calcJitterAndNoise(df_reduced, 'X')
     Jitter_Y, Noise_Y = calcJitterAndNoise(df_reduced, 'Y')
@@ -577,9 +617,8 @@ def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey
     if plotSigma:
         spnum += 1
         _plt.subplot(rows_colums[0], rows_colums[1], spnum)
-        df_bpm = df_cut[df_cut.TYPE == 'MONI']
-        S_match, JitterX_SigX, JitterY_SigY = matchJitterAndBeamSizeArray(S, Jitter_X, Jitter_Y, df_bpm)
-        plot2CurvesSameAxis(S_match, JitterX_SigX*100, JitterY_SigY*100, ls1='+-', ls2='+-', legend1=r'$\frac{J_X}{\sigma_X}$', legend2=r'$\frac{J_Y}{\sigma_Y}$',
+        S_match, JitterX_SigX, JitterY_SigY = calcJitterSigmaRatio(df_reduced, twiss, Jitter_X, Jitter_Y)
+        plot2CurvesSameAxis(S_match, JitterX_SigX, JitterY_SigY, ls1='+-', ls2='+-', legend1=r'$\frac{J_X}{\sigma_X}$', legend2=r'$\frac{J_Y}{\sigma_Y}$',
                             labelX='$S$ [m]', labelY='Jitter/sigma', ticksType='plain')
         _plt.hlines([5], min(S_match), max(S_match), ls='--', colors='C3')
         ax[1].yaxis.set_major_formatter(mtick.PercentFormatter())
@@ -607,34 +646,26 @@ def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey
     _plt.xlim(min([min(S), min(df_cut.S)]) - 2, max([max(S), max(df_cut.S)]) + 2)
 
 
-def plotJitterAverageForAllBunches(df, trains=None, Smin=None, Smax=None, sample=1, figsize=[14, 6]):
+def plotJitterAverageForAllBunches(df, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, trains=None, Smin=None, Smax=None,
+                                   SigmaRatio=False, sample=1, figsize=[14, 6]):
     bunchIDs_TL, bunchIDs_T1, bunchIDs_T2 = getBunchPattern(df, sample=sample)
-    Jitter_X_mean_TL, Jitter_Y_mean_TL, unused_bunches = calcJitterAverageForMultipleBunches(df, bunchIDs_TL, trains=trains, Smin=Smin, Smax=Smax)
-    bunchIDs_TL = _np.setdiff1d(bunchIDs_TL, unused_bunches)
-    Jitter_X_mean_T1, Jitter_Y_mean_T1, unused_bunches = calcJitterAverageForMultipleBunches(df, bunchIDs_T1, trains=trains, Smin=Smin, Smax=Smax)
-    bunchIDs_T1 = _np.setdiff1d(bunchIDs_T1, unused_bunches)
-    Jitter_X_mean_T2, Jitter_Y_mean_T2, unused_bunches = calcJitterAverageForMultipleBunches(df, bunchIDs_T2, trains=trains, Smin=Smin, Smax=Smax)
-    bunchIDs_T2 = _np.setdiff1d(bunchIDs_T2, unused_bunches)
+
+    bunchIDs_cut, Jitter_X_mean, Jitter_Y_mean = calcJitterAverageForMultipleBunches(df, trains=trains, Smin=Smin, Smax=Smax, sample=sample,
+                                                                                     ex=ex, ey=ey, esprd=esprd, SigmaRatio=SigmaRatio)
 
     fig, ax = plotOptions(figsize=figsize)
-    plot2CurvesSameAxis(bunchIDs_TL, Jitter_X_mean_TL, Jitter_Y_mean_TL, ls1='+', ls2='x', labelX='bunchID', labelY='Average Jitter',
-                        legend1='X_TL', legend2='Y_TL', color1='C0', color2='C0', markersize=8, markeredgewidth=1)
-    plot2CurvesSameAxis(bunchIDs_T1, Jitter_X_mean_T1, Jitter_Y_mean_T1, ls1='+', ls2='x', labelX='bunchID', labelY='Average Jitter',
-                        legend1='X_T1', legend2='Y_T1', color1='C1', color2='C1')
-    plot2CurvesSameAxis(bunchIDs_T2, Jitter_X_mean_T2, Jitter_Y_mean_T2, ls1='+', ls2='x', labelX='bunchID', labelY='Average Jitter',
-                        legend1='X_T2', legend2='Y_T2', color1='C2', color2='C2')
-
-
-def matchJitterAndBeamSizeArray(S, JitterX, JitterY, df_bpm, tolerence=0.001):
-    if len(S) == len(df_bpm.S):
-        return S, JitterX/df_bpm.SIGX, JitterY/df_bpm.SIGY
+    if SigmaRatio:
+        plot2CurvesSameAxis(bunchIDs_cut, Jitter_X_mean, Jitter_Y_mean, ls1='-', ls2='-', labelX='bunchID', labelY='Average Jitter',
+                            legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', color1='C0', color2='C1', markersize=8, markeredgewidth=1)
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
     else:
-        for i, s in enumerate(df_bpm.S):
-            if _np.abs(s - S[i]) > tolerence:
-                S = _np.delete(S, i)
-                JitterX = _np.delete(JitterX, i)
-                JitterY = _np.delete(JitterY, i)
-        return S, JitterX/df_bpm.SIGX, JitterY/df_bpm.SIGY
+        plot2CurvesSameAxis(bunchIDs_cut, Jitter_X_mean, Jitter_Y_mean, ls1='-', ls2='-', labelX='bunchID', labelY='Average Jitter',
+                            legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', color1='C0', color2='C1', markersize=8, markeredgewidth=1)
+    _plt.vlines(x=list(bunchIDs_T1), ymin=min(min(Jitter_X_mean), min(Jitter_Y_mean)), ymax=max(max(Jitter_X_mean), max(Jitter_Y_mean)),
+                colors='C2', alpha=0.5, label='T1')
+    _plt.vlines(x=list(bunchIDs_T2), ymin=min(min(Jitter_X_mean), min(Jitter_Y_mean)), ymax=max(max(Jitter_X_mean), max(Jitter_Y_mean)),
+                colors='C3', alpha=0.5, label='T2')
+    _plt.legend()
 
 
 def plot2CurvesSameAxis(X, Y1, Y2, labelX='X', labelY='Y', legend1='Y1', legend2='Y2',
@@ -646,14 +677,6 @@ def plot2CurvesSameAxis(X, Y1, Y2, labelX='X', labelY='Y', legend1='Y1', legend2
     _plt.ticklabel_format(axis="y", style=ticksType, scilimits=(0, 0))
     if printLegend:
         _plt.legend()
-
-
-def plotSurvey(inputfilename):
-    df_bpm, df_e, df_at = getH5dataInDF(inputfilename)
-
-    plotTrajectory(df_bpm, train=0, bunch=0)
-    plotHistogram(df_bpm, bpm=0, train=0)
-    plotHistogram(df_bpm, bpm=0, bunch=0)
 
 
 def plotDifferentTraj(data, bpm=None, train=None, bunch=None, valid=True):
@@ -720,3 +743,25 @@ def plotOptions(figsize=[9, 6], rows_colums=[1, 1], height_ratios=None, sharex=F
                                 sharex=sharex, sharey=sharey)
     fig.tight_layout()
     return fig, ax
+
+
+def _printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
+    # Print New Line on Complete
+    if iteration == total:
+        print()
