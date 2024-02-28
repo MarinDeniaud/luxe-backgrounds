@@ -285,7 +285,8 @@ def getH5dataInDF(inputfilename, getPosition=True, getCharge=False, getEnergy=Fa
             data_dict[key] = [data[:]*factor]
 
     for i, bpm in enumerate(bpmlist):
-        _printProgressBar(i, nbbpm, prefix='Load hdf5 file {} with {} bpms, {} trains and {} bunches in df:'.format(inputfilename, nbbpm, nbtrain, nbbunch), suffix='Complete', length=50)
+        _printProgressBar(i, nbbpm, prefix='Load {} | {} bpms, {} trains, {} bunches:'.format(inputfilename.split('/')[-1], nbbpm, nbtrain, nbbunch),
+                          suffix='Complete', length=50)
         storedata(data_dict, 'Valid', bpmdata[bpm]['BUNCH_VALID.TD'])
         if getPosition:
             storedata(data_dict, 'X', bpmdata[bpm]['X.TD'], factor=1e-3)  # mm converted in m
@@ -302,8 +303,8 @@ def getH5dataInDF(inputfilename, getPosition=True, getCharge=False, getEnergy=Fa
     df = _pd.DataFrame(data_dict, index=_pd.MultiIndex.from_product([range(s) for s in (nbbpm, nbtrain, nbbunch)], names=['BPM', 'TrainID', 'BunchID']))
     df.index.set_levels([bpmlist, bpmdata[bpmlist[0]]['TrainId']], level=[0, 1], inplace=True)
     rawdata.close()
-    _printProgressBar(nbbpm, nbbpm, prefix='Load hdf5 file {} with {} bpms, {} trains and {} bunches in df:'.format(inputfilename, nbbpm, nbtrain, nbbunch), suffix='Complete', length=50)
-
+    _printProgressBar(nbbpm, nbbpm, prefix='Load {} | {} bpms, {} trains, {} bunches:'.format(inputfilename.split('/')[-1], nbbpm, nbtrain, nbbunch),
+                      suffix='Complete', length=50)
     return df
 
 
@@ -618,7 +619,8 @@ def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey
         spnum += 1
         _plt.subplot(rows_colums[0], rows_colums[1], spnum)
         S_match, JitterX_SigX, JitterY_SigY = calcJitterSigmaRatio(df_reduced, twiss, Jitter_X, Jitter_Y)
-        plot2CurvesSameAxis(S_match, JitterX_SigX, JitterY_SigY, ls1='+-', ls2='+-', legend1=r'$\frac{J_X}{\sigma_X}$', legend2=r'$\frac{J_Y}{\sigma_Y}$',
+        plot2CurvesSameAxis(S_match, JitterX_SigX, JitterY_SigY, ls1='+-', ls2='+-',
+                            legend1=r'$\frac{\sigma_{J,X}}{\sigma_X}$', legend2=r'$\frac{\sigma_{J,Y}}{\sigma_Y}',
                             labelX='$S$ [m]', labelY='Jitter/sigma', ticksType='plain')
         _plt.hlines([5], min(S_match), max(S_match), ls='--', colors='C3')
         ax[1].yaxis.set_major_formatter(mtick.PercentFormatter())
@@ -654,17 +656,18 @@ def plotJitterAverageForAllBunches(df, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, tra
                                                                                      ex=ex, ey=ey, esprd=esprd, SigmaRatio=SigmaRatio)
 
     fig, ax = plotOptions(figsize=figsize)
-    if SigmaRatio:
-        plot2CurvesSameAxis(bunchIDs_cut, Jitter_X_mean, Jitter_Y_mean, ls1='-', ls2='-', labelX='bunchID', labelY='Average Jitter',
-                            legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', color1='C0', color2='C1', markersize=8, markeredgewidth=1)
-        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
-    else:
-        plot2CurvesSameAxis(bunchIDs_cut, Jitter_X_mean, Jitter_Y_mean, ls1='-', ls2='-', labelX='bunchID', labelY='Average Jitter',
-                            legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', color1='C0', color2='C1', markersize=8, markeredgewidth=1)
     _plt.vlines(x=list(bunchIDs_T1), ymin=min(min(Jitter_X_mean), min(Jitter_Y_mean)), ymax=max(max(Jitter_X_mean), max(Jitter_Y_mean)),
                 colors='C2', alpha=0.5, label='T1')
     _plt.vlines(x=list(bunchIDs_T2), ymin=min(min(Jitter_X_mean), min(Jitter_Y_mean)), ymax=max(max(Jitter_X_mean), max(Jitter_Y_mean)),
                 colors='C3', alpha=0.5, label='T2')
+    if SigmaRatio:
+        plot2CurvesSameAxis(bunchIDs_cut, Jitter_X_mean, Jitter_Y_mean, ls1='-', ls2='-', labelX='bunchID', labelY='Average ratio Jitter Beam size',
+                            legend1=r'$\frac{\sigma_{J,X}}{\sigma_X}$', legend2=r'$\frac{\sigma_{J,Y}}{\sigma_Y}$', color1='C0', color2='C1',
+                            markersize=8, markeredgewidth=1)
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+    else:
+        plot2CurvesSameAxis(bunchIDs_cut, Jitter_X_mean, Jitter_Y_mean, ls1='-', ls2='-', labelX='bunchID', labelY='Average Jitter [m]',
+                            legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', color1='C0', color2='C1', markersize=8, markeredgewidth=1)
     _plt.legend()
 
 
