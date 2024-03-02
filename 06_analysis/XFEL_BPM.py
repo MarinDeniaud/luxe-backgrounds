@@ -1,4 +1,3 @@
-# import pydoocs
 import h5py as _h5
 import matplotlib.pyplot as _plt
 import numpy as _np
@@ -6,6 +5,83 @@ import pandas as _pd
 import time as t
 import pymad8 as _m8
 import matplotlib.ticker as mtick
+
+
+class CrispData:
+    def __init__(self, inputfilename):
+        self.inputfilename = inputfilename
+        self.df = _pd.read_pickle(inputfilename)
+
+    def calcLengthOneTrain(self, trainID):
+        time = self.df.Time
+        train = self.df[self.df.keys()[1+trainID]]
+        return 2 * _np.std(time[train > 0])
+
+    def calcLengthOneTrainCUMSUM(self, trainID, percentile=0.95, plotCumsum=False):
+        time = self.df.Time
+        current = self.df[self.df.keys()[1 + trainID]]
+        cumsum = _np.cumsum(current/current.sum())
+
+        def calcBunchEdge(time, cumsum, value):
+            time1 = time.to_numpy()[cumsum.to_numpy() < value][-1]
+            time2 = time.to_numpy()[cumsum.to_numpy() > value][0]
+            cumsum1 = cumsum.to_numpy()[cumsum.to_numpy() < value][-1]
+            cumsum2 = cumsum.to_numpy()[cumsum.to_numpy() > value][0]
+
+            slope = (cumsum2 - cumsum1) / (time2 - time1)
+            intercept = cumsum1 - slope * time1
+
+            return (value - intercept)/slope
+
+        timemax = calcBunchEdge(time, cumsum, percentile)
+        timemin = calcBunchEdge(time, cumsum, 1-percentile)
+
+        if plotCumsum:
+            _plt.plot(time, cumsum, '+', color='C0')
+            _plt.hlines([1-percentile, percentile], xmin=min(time), xmax=max(time), colors=['C1', 'C2'], linestyles='--')
+            _plt.vlines([timemin, timemax], ymin=min(cumsum), ymax=max(cumsum), colors=['C1', 'C2'], linestyles='-')
+
+        return timemax - timemin
+
+    def calcLengthAllTrains(self, percentile=0.95):
+        Lengths = _np.array([])
+        trainIDs = range(len(self.df.keys())-1)
+        for trainID in trainIDs:
+            Lengths = _np.append(Lengths, self.calcLengthOneTrainCUMSUM(trainID, percentile=percentile))
+        return trainIDs, Lengths
+
+    def plotFirstTrainProfile(self, figsize=[9, 7]):
+        fig, ax = plotOptions(figsize=figsize)
+        _plt.plot(self.df.Time, self.df.Train1, label=self.df.Train1.name)
+        _plt.ylabel('$Current$ [?]')
+        _plt.xlabel('$Time$ [us]')
+        _plt.legend()
+
+    def plotAllTrainProfile(self, figsize=[10, 8]):
+        fig, ax = plotOptions(figsize=figsize)
+        time = self.df.Time
+        for train in self.df.keys()[1:]:
+            _plt.plot(time, self.df[train])
+        _plt.ylabel('$Current$ [?]')
+        _plt.xlabel('$Time$ [us]')
+
+    def plotSelectTrainProfile(self, select=_np.array([0]), figsize=[10, 8]):
+        fig, ax = plotOptions(figsize=figsize)
+        time = self.df.Time
+        for train in self.df.keys()[1:][select]:
+            _plt.plot(time, self.df[train], label=self.df[train].name)
+        _plt.ylabel('$Current$ [?]')
+        _plt.xlabel('$Time$ [us]')
+        _plt.legend()
+
+    def plotLengthPerTrain(self, percentile=0.95, figsize=[14, 4]):
+        fig, ax = plotOptions(figsize=figsize)
+        trainIDs, Lengths = self.calcLengthAllTrains(percentile=percentile)
+        _plt.plot(trainIDs, Lengths, label='Bunch length per train')
+        _plt.ylabel('$Length$ [us]')
+        _plt.xlabel('$Train ID$')
+        _plt.legend()
+
 
 bunch_pattern_adress = "XFEL.DIAG/TIMER/DI1914TL/BUNCH_PATTERN"
 
@@ -92,6 +168,7 @@ def writeXmlFile(outputfilename="marin-daq.xml", DICT=BPM_DICT):
 
 
 def crisp(outputfilename='crisp_bunch_{}_for_{}_trains.pk', bunch=1, nbtrain=100):
+    import pydoocs
     bunch_read = pydoocs.read(bl_number_adress)['data']
     if bunch != bunch_read:
         pydoocs.write(bl_number_adress, bunch)
@@ -375,8 +452,8 @@ def checkTrainBunchConsistancy(df):
     _plt.plot(_np.abs(C - C.round()))
 
 
-def getBunchPattern(df, refT1='BPMA.2097.T1', refT2='BPMA.2161.T2', sample=1):
-    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=1)
+def getBunchPattern(df, refT1='BPMA.2097.T1', refT2='BPMA.2161.T2', sample=1, valid=True):
+    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=1, valid=valid)
     df_T1 = df_reduced[df_reduced.index.get_level_values(0) == refT1]
     df_T2 = df_reduced[df_reduced.index.get_level_values(0) == refT2]
     bunchIDs_T1 = df_T1.index.get_level_values(2).unique().values
