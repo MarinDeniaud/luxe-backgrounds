@@ -167,6 +167,6 @@ D01500: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas",
 D08500: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=0.85, vacuumMaterial="luxeVacuum";
 D46200: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=4.62, vacuumMaterial="luxeVacuum";
 D2890L: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=2.890001, vacuumMaterial="luxeVacuum";
-NEEDLE: element, aper1=0.1, apertureType="circular", l=1e-3, geometryFile="gdml:Needle.gdml", offsetX=0, offsetY=0, stripOuterVolume=1;
+NEEDLE: element, aper1=0.1, apertureType="circular", l=1e-3, geometryFile="gdml:../gdml_files/Needle.gdml", offsetX=0, offsetY=0, stripOuterVolume=1;
 DRIFT: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=1, vacuumMaterial="luxeVacuum";
 D70899L: drift, aper1=0.1, apertureType="circular", biasVacuum="biasElecBeamGas", l=7.089999, vacuumMaterial="luxeVacuum";
