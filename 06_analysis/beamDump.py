@@ -3,25 +3,10 @@ import ROOT as _rt
 import numpy as _np
 import matplotlib.pyplot as _plt
 import re
+import G4Dict
 
-
-Decoder_dict = {0:    {'Name': 'All',                    'Symbol': 'All'},
-                11:   {'Name': 'electron',               'Symbol': '$e^-$'},
-                -11:  {'Name': 'positron',               'Symbol': '$e^+$'},
-                12:   {'Name': 'electron_neutrino',      'Symbol': r'${\nu}_e$'},
-                -12:  {'Name': 'electron_anti_neutrino', 'Symbol': r'$\overline{{\nu}_e}$'},
-                13:   {'Name': 'muon',                   'Symbol': r'${\mu}^-$'},
-                -13:  {'Name': 'anti_muon',              'Symbol': r'${\mu}^+$'},
-                14:   {'Name': 'muon_neutrino',          'Symbol': r'${\nu}_{\mu}$'},
-                -14:  {'Name': 'muon_anti_neutrino',     'Symbol': r'$\overline{{\nu}_{\mu}}$'},
-                22:   {'Name': 'photon',                 'Symbol': r'$\gamma$'},
-                211:  {'Name': 'pion',                   'Symbol': r'${\pi}^+$'},
-                -211: {'Name': 'anti_pion',              'Symbol': r'${\pi}^-$'},
-                321:  {'Name': 'kaon',                   'Symbol': '$K^+$'},
-                2112: {'Name': 'neutron',                'Symbol': 'n'},
-                2212: {'Name': 'proton',                 'Symbol': 'p'},
-                }
-
+Particle_type_dict = G4Dict.Particle_type_dict
+Process_type_dict = G4Dict.Process_type_subtype_dict
 
 Coord_dict = {'x':  {'Name': "$X$",  'Unit': '[m]'},
               'xp': {'Name': "$X'$", 'Unit': '[rad]'},
@@ -30,7 +15,6 @@ Coord_dict = {'x':  {'Name': "$X$",  'Unit': '[m]'},
               'E':  {'Name': "$E$",  'Unit': '[GeV]'},
               'KE': {'Name': "$kE$", 'Unit': '[GeV]'}
               }
-
 
 SamplerList = ['D08500', 'DUM1', 'EXT1', 'DUM2', 'EXT2', 'DUM3', 'WALL']
 
@@ -66,20 +50,123 @@ def analysis(inputfilename):
                 storedata(HIST_DICT, '{}_KE_All'.format(samplername), samplerdata.kineticEnergy, samplerdata.weight)
                 storedata(HIST_DICT, '{}_E_All'.format(samplername), samplerdata.energy, samplerdata.weight)
                 for i, partID in enumerate(samplerdata.partID):
-                    storedata(HIST_DICT, '{}_x_{}'.format(samplername, Decoder_dict[partID]['Name']), samplerdata.x[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_xp_{}'.format(samplername, Decoder_dict[partID]['Name']), samplerdata.xp[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_y_{}'.format(samplername, Decoder_dict[partID]['Name']), samplerdata.y[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_yp_{}'.format(samplername, Decoder_dict[partID]['Name']), samplerdata.yp[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_KE_{}'.format(samplername, Decoder_dict[partID]['Name']), samplerdata.kineticEnergy[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_E_{}'.format(samplername, Decoder_dict[partID]['Name']), samplerdata.energy[i], samplerdata.weight[i])
+                    storedata(HIST_DICT, '{}_x_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.x[i], samplerdata.weight[i])
+                    storedata(HIST_DICT, '{}_xp_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.xp[i], samplerdata.weight[i])
+                    storedata(HIST_DICT, '{}_y_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.y[i], samplerdata.weight[i])
+                    storedata(HIST_DICT, '{}_yp_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.yp[i], samplerdata.weight[i])
+                    storedata(HIST_DICT, '{}_KE_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.kineticEnergy[i], samplerdata.weight[i])
+                    storedata(HIST_DICT, '{}_E_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.energy[i], samplerdata.weight[i])
 
     return HIST_DICT
 
 
+def analysisHIST(inputfilename, nbins=50):
+    root_data = _bd.Data.Load(inputfilename)
+    e = root_data.GetEvent()
+    et = root_data.GetEventTree()
+
+    HIST_DICT = {}
+    HIST_DICT['ELECTRONS_E_det'] = _rt.TH1D('ELECTRONS_E_det', "{} Electrons wrt energy at detector".format(tag), nbins, 0, 14)
+    HIST_DICT['ELECTRONS_X_Y_det'] = _rt.TH2D('ELECTRONS_X_Y_det', "{} Electrons X-Y at detector".format(tag), nbins, 0.1, 0.6, nbins, -0.25, 0.25)
+    HIST_DICT['PHOTONS_E_Theta_log'] = _rt.TH2D('PHOTONS_E_Theta_log', r"{} Photons E-$\theta$ at sampler".format(tag),
+                                                nbins, _np.logspace(-4, 2, nbins + 1),
+                                                nbins, _np.logspace(-6, -2, nbins + 1))
+
+
 def getSymbolByName(name):
-    for key in Decoder_dict.keys():
-        if Decoder_dict[key]['Name'] == name:
-            return Decoder_dict[key]['Symbol']
+    for key in Particle_type_dict.keys():
+        if Particle_type_dict[key]['Name'] == name:
+            return Particle_type_dict[key]['Symbol']
+
+
+def getParticleTypes(inputfilename):
+    root_data = _bd.Data.Load(inputfilename)
+    et = root_data.GetEventTree()
+    partIDset = set()
+    for i, evt in enumerate(et):
+        traj_data = _bd.Data.TrajectoryData(root_data, i)
+        for traj in traj_data.trajectories:
+            partIDset.add(traj['partID'])
+    return partIDset
+
+
+class TrajData:
+    def __init__(self, inputfilename):
+        self.inputfilename = inputfilename
+        self.bdsim_data = _bd.Data.Load(inputfilename)
+
+    def printTrajLog(self, evtnb):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        print(f'{"partID":10s}{"min Z":10s}{"max Z":10s}{"trackID":10s}{"parentID":10s}{"parentIDX":10s}{"parentStepIDX":15s}{"primaryStepIDX":15s}')
+        for traj in traj_data.trajectories:
+            line = [traj['partID'], round(traj['Z'].min(), 3), round(traj['Z'].max(), 3), traj['trackID'], traj['parentID'],
+                    traj['parentIDX'], traj['parentStepIDX'], traj['primaryStepIDX']]
+            print(f'{str(line[0]):10s}{str(line[1]):10s}{str(line[2]):10s}{str(line[3]):10s}{str(line[4]):10s}'
+                  f'{str(line[5]):10s}{str(line[6]):15s}{str(line[7]):15s}')
+
+    def getEndOfChainTrackID(self, evtnb):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        trackIDlist = []
+        parentIDlist = []
+        for traj in traj_data.trajectories:
+            trackIDlist.append(traj['trackID'])
+            parentIDlist.append(traj['parentID'])
+        return _np.setdiff1d(trackIDlist, parentIDlist)
+
+    def getEndOfChainIndex(self, evtnb):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        trackIDs = self.getEndOfChainTrackID(evtnb)
+        indexList = []
+        for trackID in trackIDs:
+            for index, traj in enumerate(traj_data):
+                if trackID == traj['trackID']:
+                    indexList.append(index)
+        return indexList
+
+    def getTrackNumberWithID(self, evtnb, trackID):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        for tracknb, traj in enumerate(traj_data.trajectories):
+            if traj['trackID'] == trackID:
+                return tracknb
+
+    def getPocessTypeSubtype(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        traj = traj_data.trajectories[index]
+        preSet = []
+        postSet = []
+        for prePT, prePST, postPT, postPST in zip(traj['prePT'], traj['prePST'], traj['postPT'], traj['postPST']):
+            preSet.append((prePT, prePST))
+            postSet.append((postPT, postPST))
+        return preSet, postSet
+
+    def getProcessChain(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        traj = traj_data.trajectories[index]
+        processList = []
+        processNameList = []
+        while traj['parentID'] != 0:
+            processList.append((traj['prePST'][0], traj['prePT'][0]))
+            processNameList.append(())
+            traj = traj_data.trajectories[traj['parentIDX']]
+
+        return _np.flip(processList)
+
+    def printTrackDataByTrackID(self, evtnb, trackID):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        tracknb = self.getTrackNumberWithID(evtnb, trackID)
+        traj = traj_data[tracknb]
+        print('Particle : {}'.format(Particle_type_dict[traj['partID']]['Name']))
+        preSet, postSet = self.getPocessTypeSubtype(evtnb, tracknb)
+        print('preSet : ', preSet)
+        print('postSet : ', postSet)
+
+    def printTrackDataByIndex(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        traj = traj_data[index]
+        print('Particle : {}'.format(Particle_type_dict[traj['partID']]['Name']))
+        preSet, postSet = self.getPocessTypeSubtype(evtnb, index)
+        print('preSet : ', preSet)
+        print('postSet : ', postSet)
 
 
 def plothist(data_dict, sampler, coord, nbins=50, logScale=False, figsize=[11, 7]):
