@@ -21,37 +21,30 @@ def PrintDump(filename):
 
 
 ICSChamberList = ['BremsTargetChamber0x349eee0', 'BremsTargetContainer0x349f330', 'BeamPipeTM0x349ff60', 'BeamPipeTMVac0x34a03d0']
+ICSChamberVacList = ['BeamPipeTMVac0x34a03d0']
 FirstMagnetList = ['Imprint_1_0x34a4f00', 'DumpMagnetField0x34a7510']
-FirstDumpList = ['BeamDumpAssembly0x3498760', 'Shielding0x3499570',
-                 'BeamPipeNextToDump0x3498940', 'BeamPipeNextToDumpVac0x3498ee0',
-                 'ShieldingPipe0x349a370', 'ShieldingPipeVac0x349a880',
-                 'BeamPipeMB0x349bf20', 'BeamPipeMBVac0x349c1e0',
-                 'BeamPipeMD0x349c4a0', 'BeamPipeMDVac0x349c800',
-                 'BeamSplitContainer0x349bc40', 'ShieldAbsorberTop0x349a230']
-IPChamberList = ['BeamPipeSIP0x34ade90', 'BeamPipeSIPVac0x34ae330',
-                 'BeamPipeIPM0x34ae670', 'BeamPipeIPMVac0x34ae930',
-                 'logicTAUICContainer_pv0x3495c90', 'logicTAUIChamberBPipeFlange_pv0x3495e18',
-                 'logicTAUIChamberBPipe_pv0x3495da8', 'logicTAUIChamberBPipeVac_pv0x3495de0',
-                 'logicTAUIChamberBPipeOut_pv0x3495d38', 'logicTAUIChamberBPipeOutVac_pv0x3495d70',
-                 'logicTAUICBottom_pv0x3495d00']# , 'logicTAUICTop_pv0x3495cc8']
-IPChamberWithLegsList = ['BeamPipeSIP0x34ade90', 'BeamPipeSIPVac0x34ae330',
-                         'BeamPipeIPM0x34ae670', 'BeamPipeIPMVac0x34ae930',
-                         'Imprint_1_0x348f4a0']
+FirstMagnetVacList = ['']
+FirstDumpList = ['BeamDumpAssembly0x3498760', 'Shielding0x3499570', 'BeamPipeNextToDump0x3498940', 'BeamPipeNextToDumpVac0x3498ee0',
+                 'ShieldingPipe0x349a370', 'ShieldingPipeVac0x349a880', 'BeamPipeMB0x349bf20', 'BeamPipeMBVac0x349c1e0',
+                 'BeamPipeMD0x349c4a0', 'BeamPipeMDVac0x349c800', 'BeamSplitContainer0x349bc40', 'ShieldAbsorberTop0x349a230']
+IPChamberList = ['BeamPipeSIP0x34ade90', 'BeamPipeSIPVac0x34ae330', 'BeamPipeIPM0x34ae670', 'BeamPipeIPMVac0x34ae930',
+                 'logicTAUICContainer_pv0x3495c90', 'logicTAUIChamberBPipeFlange_pv0x3495e18', 'logicTAUIChamberBPipe_pv0x3495da8', 'logicTAUIChamberBPipeVac_pv0x3495de0',
+                 'logicTAUIChamberBPipeOut_pv0x3495d38', 'logicTAUIChamberBPipeOutVac_pv0x3495d70', 'logicTAUICBottom_pv0x3495d00']# , 'logicTAUICTop_pv0x3495cc8']
+IPChamberWithLegsList = ['BeamPipeSIP0x34ade90', 'BeamPipeSIPVac0x34ae330', 'BeamPipeIPM0x34ae670', 'BeamPipeIPMVac0x34ae930', 'Imprint_1_0x348f4a0']
 SecondMagnetList = ['Imprint_1_0x34b3ba0', 'IPMagnetField0x34b5950']
-ExtractionList = ['logicVCContainer_pv0x34a3af0', 'logicVCContainer_pv0x34a3b28',
-                  'logicVCMagFieldJoin_pv0x34a3bd0', 'logicVCMagFieldJoin1_pv0x34a3c08']
-ExtractionList2 = ['Imprint_1_0x34ad3c0']
-ScintillatorList = ['scintArmPhysical0x3520d90']
-ScintillatorList2 = ['HICSElectronScintillator0x3523710']
-DetectorsList = ['BeamPipeOPPPDGT0x348a380', 'BeamPipeOPPPDGTVac0x353a7e0',
-                 'scintArmPhysical0x3520d90']
+FirstExtractList = ['Imprint_1_0x34ad3c0']
+DetectorsList = ['BeamPipeOPPPDGT0x348a380', 'BeamPipeOPPPDGTVac0x353a7e0', 'scintArmPhysical0x3520d90']
 GammaChamberList = ['GammaTargetChamber0x34893c0', 'GammaTargetContainer0x34897d0']
 SecondDumpList = ['HICSDumpAssembly0x34b1010', 'HICSDump2T0x34f3790', 'HICSShieldingSide0x34f4c80', 'HICSShieldingMiddle0x34f53d0',
                   'HICSNeutronAbsorberSide0x34f6810', 'HICSNeutronAbsorberTop0x34f6e20', 'HICSNeutronAbsorberBottom0x34f6eb0',
-                  'Imprint_1_0x34f7d30',
-                  'BeamPipeGammaT1stC0x34c7740', 'BeamPipeGammaT1stCVac0x34c7a60',
-                  'BeamPipeGamma1stC2ndC0x34cd8b0', 'BeamPipeGamma1stC2ndCVac0x34c7dc0',
-                  'Collimator0x34a6d30']
+                  'Imprint_1_0x34f7d30', 'BeamPipeGammaT1stC0x34c7740', 'BeamPipeGammaT1stCVac0x34c7a60',
+                  'BeamPipeGamma1stC2ndC0x34cd8b0', 'BeamPipeGamma1stC2ndCVac0x34c7dc0', 'Collimator0x34a6d30']
+ThirdMagnetList = ['Imprint_1_0x3532360', 'GMagnetField0x3488670']
+SecondExtractList = ['GMagnetWideChamber0x352f740']
+SecondDectList = []
+ThirdDumpList = ['ComptShieldingConcrete0x353b3e0', 'ComptShieldingPlate0x353b6f0']
+ThirdDectList = []
+FinalWallList = ['BSMCalo0x34b7cf0']
 
 
 def All(inputfilename):
@@ -60,70 +53,92 @@ def All(inputfilename):
     FirstDump(inputfilename,    view=False)
     IPChamber(inputfilename,    view=False)
     SecondMagnet(inputfilename, view=False)
-    Extraction(inputfilename,   view=False)
-    Detectors(inputfilename,    view=False)
+    FirstExtraction(inputfilename,   view=False)
+    FirstDetectors(inputfilename,    view=False)
     GammaChamber(inputfilename, view=False)
     SecondDump(inputfilename,   view=False)
+    ThirdMagnet(inputfilename,   view=False)
+    SecondExtraction(inputfilename,   view=False)
+    ThirdDump(inputfilename,   view=False)
+    FinalWall(inputfilename,   view=False)
 
 
-def ICSChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='ICSChamber.gdml', centerPhysical='BremsTarget0x349f040',
-               view=True, axis=True, write=True):
+def ICSChamber(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/ICSChamber.gdml',
+               centerPhysical='BremsTarget0x349f040', view=True, axis=True, write=True):
     return keepPhysicalVolume(inputfilename, outputfilename, toKeep=ICSChamberList, centerPhysicalName=centerPhysical,
                               view=view, axis=axis, write=write)
 
 
-def FirstMagnet(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='FirstMagnet.gdml', centerPhysical='BeamPipeTM0x349ff60',
-                view=True, axis=True, write=True):
+def FirstMagnet(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/FirstMagnet.gdml',
+                centerPhysical='BeamPipeTM0x349ff60', view=True, axis=True, write=True):
     return keepPhysicalVolume(inputfilename, outputfilename, toKeep=FirstMagnetList, centerPhysicalName=centerPhysical,
                               view=view, axis=axis, write=write)
 
 
-def FirstDump(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='FirstDump.gdml', centerPhysical='ShieldingPipe0x349a370',
-              view=True, axis=True, write=True):
+def FirstDump(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/FirstDump.gdml',
+              centerPhysical='ShieldingPipe0x349a370', view=True, axis=True, write=True):
     return keepPhysicalVolume(inputfilename, outputfilename, toKeep=FirstDumpList, centerPhysicalName=centerPhysical,
                               view=view, axis=axis, write=write)
 
 
-def IPChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='IPChamber.gdml', centerPhysical='BeamPipeSIP0x34ade90',
-              view=True, axis=True, write=True):
+def IPChamber(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/IPChamber.gdml',
+              centerPhysical='BeamPipeSIP0x34ade90', view=True, axis=True, write=True, offset_pos=[0, 0, 0]):
     keepPhysicalVolume(inputfilename, outputfilename, toKeep=IPChamberList, centerPhysicalName=centerPhysical, view=False, write=write)
-    return addGeometryOnReference(outputfilename, 'Assembly.gdml', 'IPChamberWithAssembly.gdml', 'IPVolume0x347d9d0',
-                                  view=view, axis=axis, write=write)
+    return addGeometryOnReference(outputfilename, 'gdml_files/Assembly.gdml', 'gdml_files/IPChamberWithAssembly.gdml', 'IPVolume0x347d9d0',
+                                  view=view, axis=axis, write=write, offset_pos=offset_pos)
 
 
-def SecondMagnet(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='SecondMagnet.gdml', centerPhysical='IPMagnetField0x34b5950',
-                 view=True, axis=True, write=True):
+def SecondMagnet(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/SecondMagnet.gdml',
+                 centerPhysical='IPMagnetField0x34b5950', view=True, axis=True, write=True):
     return keepPhysicalVolume(inputfilename, outputfilename, toKeep=SecondMagnetList, centerPhysicalName=centerPhysical,
                               view=view, axis=axis, write=write)
 
 
-def Extraction(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Extraction.gdml', centerPhysical='logicBeamPipeVCG_pv0x34a3b60',
-               view=True, axis=True, write=True):
-    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=ExtractionList2, centerPhysicalName=centerPhysical,
+def FirstExtraction(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/FirstExtraction.gdml',
+                    centerPhysical='logicBeamPipeVCG_pv0x34a3b60', view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=FirstExtractList, centerPhysicalName=centerPhysical,
                               view=view, axis=axis, write=write)
 
 
-def Scintillator(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Scintillator.gdml',
-                 view=True, axis=True, write=True):
-    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=ScintillatorList,
-                              view=view, axis=axis, write=write)
-
-
-def Detectors(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='Detectors.gdml', centerPhysical='BeamPipeOPPPDGT0x348a380',
-              view=True, axis=True, write=True):
+def FirstDetectors(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/FirstDetectors.gdml',
+                   centerPhysical='BeamPipeOPPPDGT0x348a380', view=True, axis=True, write=True):
     return keepPhysicalVolume(inputfilename, outputfilename, toKeep=DetectorsList, centerPhysicalName=centerPhysical,
                               view=view, axis=axis, write=write)
 
 
-def GammaChamber(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='GammaChamber.gdml', centerPhysical='GAbsorber0x3489440',
-                 view=True, axis=True, write=True):
+def GammaChamber(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/GammaChamber.gdml',
+                 centerPhysical='GAbsorber0x3489440', view=True, axis=True, write=True):
     return keepPhysicalVolume(inputfilename, outputfilename, toKeep=GammaChamberList, centerPhysicalName=centerPhysical,
                               view=view, axis=axis, write=write)
 
 
-def SecondDump(inputfilename='lxgeomdump_fluka_3076aff1.gdml', outputfilename='SecondDump.gdml', centerPhysical='BeamPipeGammaT1stC0x34c7740',
-               view=True, axis=True, write=True):
+def SecondDump(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/SecondDump.gdml',
+               centerPhysical='BeamPipeGammaT1stC0x34c7740', view=True, axis=True, write=True):
     return keepPhysicalVolume(inputfilename, outputfilename, toKeep=SecondDumpList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
+
+
+def ThirdMagnet(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/ThirdMagnet.gdml',
+                centerPhysical='GMagnetField0x3488670', view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=ThirdMagnetList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
+
+
+def SecondExtraction(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/SecondExtraction.gdml',
+                     view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=SecondExtractList,
+                              view=view, axis=axis, write=write)
+
+
+def ThirdDump(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/ThirdDump.gdml',
+              centerPhysical='ComptShieldingPlate0x353b6f0', view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=ThirdDumpList, centerPhysicalName=centerPhysical,
+                              view=view, axis=axis, write=write)
+
+
+def FinalWall(inputfilename='gdml_files/lxgeomdump_fluka_3076aff1.gdml', outputfilename='gdml_files/FinalWall.gdml',
+              centerPhysical=None, view=True, axis=True, write=True):
+    return keepPhysicalVolume(inputfilename, outputfilename, toKeep=FinalWallList, centerPhysicalName=centerPhysical,
                               view=view, axis=axis, write=write)
 
 
