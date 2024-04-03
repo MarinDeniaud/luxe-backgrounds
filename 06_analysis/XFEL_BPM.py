@@ -90,6 +90,224 @@ bl_current_adress = "XFEL.SDIAG/THZ_SPECTROMETER.RECONSTRUCTION/CRD.1934.TL.NTH/
 bl_number_adress = "XFEL.SDIAG/THZ_SPECTROMETER.FORMFACTOR/CRD.1934.TL/NTH_BUNCH"
 
 
+class BPMData:
+    def __init__(self, inputfilename, excelfilename="~/Users/marindeniaud/Desktop/component_list_2023.07.02.xls",
+                 EmitX=3.58e-11, EmitY=3.58e-11, Esprd=1e-6):
+        print("Loaded file '{}'".format(inputfilename.split('/')[-1]))
+        self.inputfilename = inputfilename
+        self.bpm_adress = "XFEL.DIAG/BPM"
+        self.energy_adress = "XFEL.DIAG/BEAM_ENERGY_MEASUREMENT/CL/ENERGY.ALL"
+        self.time_S_adress = "XFEL.SDIAG/BAM.DAQ/1932S.TL.ARRIVAL_TIME.RELATIVE"
+        self.time_M_adress = "XFEL.SDIAG/BAM.DAQ/1932M.TL.ARRIVAL_TIME.RELATIVE"
+
+        self.rawdata = _h5.File(inputfilename, 'r')
+        self.bpmdata = self.rawdata[self.bpm_adress]
+        self.energydata = self.rawdata[self.energy_adress]
+        self.timeSdata = self.rawdata[self.time_S_adress]
+        self.timeMdata = self.rawdata[self.time_M_adress]
+
+        self.bpmIDs = _np.array(list(self.bpmdata.keys()))
+        self.nbbpm = len(self.bpmIDs)
+
+        self.trainIDs_raw = self.bpmdata[self.bpmIDs[0]]['TrainId'][:]
+        self.trainIDs_matched = _np.setdiff1d(self.trainIDs_raw, self.getUnmatchedTrainID())
+        self.nbtrain = len(self.trainIDs_matched)
+
+        self.nbbunch = self.bpmdata[self.bpmIDs[0]]['X.TD'].shape[1]
+        self.bunchIDs = _np.array(range(self.nbbunch))
+
+        df_excel_T1 = _pd.read_excel("/Users/marindeniaud/Desktop/component_list_2023.07.02.xls", sheet_name='I1toT5D')
+        df_excel_T1_bpm = df_excel_T1[df_excel_T1['NAME1'].isin(self.bpmIDs)]
+        df_excel_T2 = _pd.read_excel("/Users/marindeniaud/Desktop/component_list_2023.07.02.xls", sheet_name='I1toT4D')
+        df_excel_T2_bpm = df_excel_T2[df_excel_T2['NAME1'].isin(self.bpmIDs)]
+
+        self.df_excel = _pd.concat((df_excel_T1_bpm, df_excel_T2_bpm[df_excel_T2['NAME1'].isin(df_excel_T1['NAME1']) == False]))
+        self.calcBeamSize(EmitX, EmitY, Esprd)
+
+        self.s_by_section = _np.array(self.df_excel.S)
+        self.bpmIDs_by_section = _np.array(self.df_excel.NAME1)
+
+        self.s_by_s = self.s_by_section[self.s_by_section.argsort()]
+        self.bpmIDs_by_s = self.bpmIDs_by_section[self.s_by_section.argsort()]
+
+        self.df_bpm = self.getH5dataInDF()
+
+    def calcBeamSize(self, EmitX, EmitY, Esprd):
+        SigmaX = []
+        SigmaY = []
+        SigmaXP = []
+        SigmaYP = []
+        E0 = self.df_excel['ENERGY'].to_numpy()[0]
+        for i in range(self.nbbpm):
+            BetaX = self.df_excel['BETX'].to_numpy()[i]
+            BetaY = self.df_excel['BETY'].to_numpy()[i]
+            GammaX = (1 + self.df_excel['ALFX'].to_numpy()[i] ** 2) / BetaX
+            GammaY = (1 + self.df_excel['ALFY'].to_numpy()[i] ** 2) / BetaY
+            DispX = self.df_excel['DX'].to_numpy()[i]
+            DispY = self.df_excel['DY'].to_numpy()[i]
+            DispXP = self.df_excel['DPX'].to_numpy()[i]
+            DispYP = self.df_excel['DPY'].to_numpy()[i]
+
+            # Beam size calculation
+            SigmaX.append(_np.sqrt(BetaX * EmitX + (DispX * Esprd / E0) ** 2))
+            SigmaY.append(_np.sqrt(BetaY * EmitY + (DispY * Esprd / E0) ** 2))
+            # Beam divergence calculation
+            SigmaXP.append(_np.sqrt(GammaX * EmitX + (DispXP * Esprd / E0) ** 2))
+            SigmaYP.append(_np.sqrt(GammaY * EmitY + (DispYP * Esprd / E0) ** 2))
+
+        self.df_excel = self.df_excel.assign(SIGX=SigmaX, SIGY=SigmaY, SIGXP=SigmaXP, SIGYP=SigmaYP)
+
+    def isUnmatchedTrainIDinBPMs(self):
+        for bpm in self.bpmIDs:
+            check = _np.unique(self.bpmdata[self.bpmIDs[0]]['TrainId'][:] == self.bpmdata[bpm]['TrainId'][:])
+            if False in check:
+                return True
+            return False
+
+    def getUnmatchedTrainIDinBPMs(self):
+        firstbpmtrains = self.bpmdata[self.bpmIDs[0]]['TrainId'][:]
+        unmatched_trains = _np.array([])
+        for bpm in self.bpmIDs:
+            bpmtrains = self.bpmdata[bpm]['TrainId'][:]
+            unmatched_trains = _np.append(unmatched_trains, _np.setdiff1d(firstbpmtrains, bpmtrains))
+            unmatched_trains = _np.append(unmatched_trains, _np.setdiff1d(bpmtrains, firstbpmtrains))
+        return unmatched_trains
+
+    def getUnmatchedTrainID(self):
+        bpmtrains = self.bpmdata['BPMI.1860.TL']['TrainId'][:]
+        energytrains = self.energydata['TrainId'][:]
+        timeStrains = self.timeSdata['TrainId'][:]
+        timeMtrains = self.timeMdata['TrainId'][:]
+
+        unmatched_trains = _np.array([])
+
+        if self.isUnmatchedTrainIDinBPMs():
+            unmatched_trains = _np.append(unmatched_trains, self.getUnmatchedTrainIDinBPMs())
+
+        def diff2array(array1, array2):
+            diff1 = _np.setdiff1d(array1, array2)
+            diff2 = _np.setdiff1d(array2, array1)
+            return _np.concatenate((diff1, diff2))
+
+        unmatched_trains = _np.append(unmatched_trains, diff2array(bpmtrains, energytrains))
+        unmatched_trains = _np.append(unmatched_trains, diff2array(bpmtrains, timeMtrains))
+        unmatched_trains = _np.append(unmatched_trains, diff2array(bpmtrains, timeStrains))
+
+        return _np.unique(unmatched_trains).astype(int)
+
+    def getH5dataInDFviaDict(self):
+        dict_bpm = {}
+        keys = ['X', 'Y', 'S', 'Valid']
+        for i, bpm in enumerate(self.bpmIDs_by_s):
+            S = self.df_excel[self.df_excel['NAME1'] == bpm]['S'].to_numpy()[0]
+            _printProgressBar(i, self.nbbpm, prefix='Load in dict', suffix='Complete', length=50)
+            for train in self.trainIDs_matched[:100]:
+                for bunch in self.trainIDs_matched[:100]:
+                    dict_bpm[(bpm, train, bunch)] = {'X': 0.0, 'Y': 0.0, 'S': S, 'Valid': 1.0}
+        _printProgressBar(self.nbbpm, self.nbbpm, prefix='Load in dict:', suffix='Complete', length=50)
+        return _pd.DataFrame.from_dict(dict_bpm, orient="index").rename_axis(["BPM", "TrainID", "BunchID"])
+
+    def getH5dataInDF(self, getPosition=True, getCharge=False, getEnergy=False, getTime=False):
+
+        def storedata(data_dict, key, data, factor=1.0):
+            try:
+                data_dict[key].append(data[:] * factor)
+            except:
+                data_dict[key] = [data[:] * factor]
+
+        data_dict = {}
+        mask = _np.isin(self.trainIDs_raw, self.trainIDs_matched)
+        for i, bpm in enumerate(self.bpmIDs_by_s):
+            _printProgressBar(i, self.nbbpm, prefix='Loading {} bpms, {} trains and {} bunches in df:'.format(self.nbbpm, self.nbtrain, self.nbbunch),
+                              suffix='Complete', length=50)
+            storedata(data_dict, 'Valid', self.bpmdata[bpm]['BUNCH_VALID.TD'][mask])
+            if getPosition:
+                storedata(data_dict, 'X', self.bpmdata[bpm]['X.TD'][mask], factor=1e-3)  # mm converted in m
+                storedata(data_dict, 'Y', self.bpmdata[bpm]['Y.TD'][mask], factor=1e-3)  # mm converted in m
+                storedata(data_dict, 'S', _np.full((self.nbtrain, self.nbbunch), self.s_by_s[i]))  # m
+            if getCharge:
+                storedata(data_dict, 'Charge', self.bpmdata[bpm]['CHARGE.TD'][mask], factor=1e-9)  # nC converted to C
+            if getTime:
+                storedata(data_dict, 'TimeS', self.timeSdata['Value'][mask], factor=1e-6)  # us converted to s
+                storedata(data_dict, 'TimeM', self.timeMdata['Value'][mask], factor=1e-6)  # us converted to s
+            if getEnergy:
+                storedata(data_dict, 'E', _np.tile(self.energydata['Value'][mask], (self.nbbunch, 1)).transpose(), factor=1e-3)  # MeV converted to GeV
+        for key in data_dict:
+            data_dict[key] = _np.asarray(data_dict[key]).flatten()
+        df = _pd.DataFrame(data_dict, index=_pd.MultiIndex.from_product([range(s) for s in (self.nbbpm, self.nbtrain, self.nbbunch)],
+                                                                        names=['BPM', 'TrainID', 'BunchID']))
+        df.index.set_levels([self.bpmIDs_by_s, self.trainIDs_matched], level=[0, 1], inplace=True)
+        _printProgressBar(self.nbbpm, self.nbbpm, prefix='Loading {} bpms, {} trains and {} bunches in df:'.format(self.nbbpm, self.nbtrain, self.nbbunch),
+                          suffix='Complete', length=50)
+        return df
+
+    def reduceDFbyIndex(self, index, value):
+        if type(index) == int:
+            indexid = index
+            indexname = self.df_bpm.index.names[0]
+        elif type(index) == str:
+            indexid = self.df_bpm.index.names.index(index)
+            indexname = index
+        else:
+            raise TypeError('Unknown type {} for index value. Must be either int or str'.format(type(index)))
+
+        try:
+            value = self.df_bpm.index.levels[indexid][value]
+        except IndexError:
+            pass
+
+        try:
+            mask = self.df_bpm.index.get_level_values(indexname) == value
+        except:
+            mask = self.df_bpm.index.get_level_values(indexname).isin(value)
+        return self.df_bpm.loc[mask]
+
+    def reduceDFbyBPMTrainBunchByIndex(self, bpms=None, trains=None, bunches=None, valid=True):
+        if valid:
+            df = self.df_bpm[self.df_bpm['Valid'] == 1]
+        if bpms is not None:
+            df = self.reduceDFbyIndex('BPM', bpms)
+        if trains is not None:
+            df = self.reduceDFbyIndex('TrainID', trains)
+        if bunches is not None:
+            df = self.reduceDFbyIndex('BunchID', bunches)
+        df.index = df.index.remove_unused_levels()
+        return df
+
+    def checkTrainBunchConsistancy(self):
+        df_valid = self.reduceDFbyBPMTrainBunchByIndex()
+        bpmids_count = df_valid.index.get_level_values(0).value_counts(sort=False).values
+        trainids_count = df_valid.index.get_level_values(1).value_counts(sort=False).values
+        bunchids_count = df_valid.index.get_level_values(2).value_counts(sort=False).values
+
+        A = bpmids_count / self.nbtrain
+        B = trainids_count
+        C = bunchids_count / self.nbtrain
+
+        fig, ax = plotOptions(figsize=[14, 8], rows_colums=[3, 1])
+        _plt.subplot(3, 1, 1)
+        _plt.plot(_np.abs(A - A.round()))
+        ax[0].set_xticks(range(len(self.bpmIDs_by_s)))
+        ax[0].set_xticklabels(self.bpmIDs_by_s, fontsize=8, rotation=45, ha='right')
+        _plt.subplot(3, 1, 2)
+        _plt.plot(B)
+        ax[1].ticklabel_format(useOffset=False)
+        _plt.subplot(3, 1, 3)
+        _plt.plot(_np.abs(C - C.round()))
+
+    def getBunchPattern(self, refT1='BPMA.2097.T1', refT2='BPMA.2161.T2', sample=1):
+        df_reduced = reduceDFbyBPMTrainBunchByIndex(self.df_bpm, trains=1)
+        df_T1 = df_reduced[df_reduced.index.get_level_values(0) == refT1]
+        df_T2 = df_reduced[df_reduced.index.get_level_values(0) == refT2]
+        bunchIDs_T1 = df_T1.index.get_level_values(2).unique().values
+        bunchIDs_T2 = df_T2.index.get_level_values(2).unique().values
+        bunchIDs_TL = df_reduced.index.get_level_values(2).unique().values
+        bunchIDs_TL = _np.setdiff1d(bunchIDs_TL, bunchIDs_T1)
+        bunchIDs_TL = _np.setdiff1d(bunchIDs_TL, bunchIDs_T2)
+
+        return bunchIDs_TL[0::sample], bunchIDs_T1[0::sample], bunchIDs_T2[0::sample]
+
+
 BPM_DICT = {'BPMI.1860.TL': {'MAD8_name': 'BPMI.Y1.TL', 'Line': 'TL', 'S': 1838.149255, 'X': 0.000000, 'Y': -2.389866},
             'BPMI.1863.TL': {'MAD8_name': 'BPMI.X1.TL', 'Line': 'TL', 'S': 1840.737255, 'X': 0.000000, 'Y': -2.390811},
             'BPMA.1868.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1845.310755, 'X': 0.000000, 'Y': -2.392481},
@@ -475,8 +693,8 @@ def buildPositionMatrix(df_reduced, coord):
 def calcPositionMean(df_reduced, coord):
     M = buildPositionMatrix(df_reduced, coord)
     Mean = _np.array([])
-    for i in range(len(M)):
-        Mean = _np.append(Mean, _np.mean(_np.abs(M[i])))
+    for i in range(len(M[0])):
+        Mean = _np.append(Mean, _np.abs(_np.mean(M[:, i])))
     return Mean
 
 
