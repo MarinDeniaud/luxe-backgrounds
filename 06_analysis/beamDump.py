@@ -13,64 +13,179 @@ Coord_dict = {'x':  {'Name': "$X$",  'Unit': '[m]'},
               'y':  {'Name': "$Y$",  'Unit': '[m]'},
               'yp': {'Name': "$Y'$", 'Unit': '[rad]'},
               'E':  {'Name': "$E$",  'Unit': '[GeV]'},
-              'KE': {'Name': "$kE$", 'Unit': '[GeV]'}
-              }
-
-SamplerList = ['D08500', 'DUM1', 'EXT1', 'DUM2', 'EXT2', 'DUM3', 'WALL']
+              'KE': {'Name': "$kE$", 'Unit': '[GeV]'}}
 
 
-def analysis(inputfilename):
+def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
     root_data = _bd.Data.Load(inputfilename)
     e = root_data.GetEvent()
     et = root_data.GetEventTree()
+    npart = et.GetEntries()
 
     HIST_DICT = {}
+    HIST_SIZES_1D = {'x': {'Xmin': -2.5, 'Xmax': 2.5},
+                     'y': {'Xmin': -2.5, 'Xmax': 2.5},
+                     'xp': {'Xmin': -1, 'Xmax': 1},
+                     'yp': {'Xmin': -1, 'Xmax': 1}}
+    HIST_SIZES_1D_LOG = {'energy': {'XminExp': -4, 'XmaxExp': 1},
+                         'kineticEnergy': {'XminExp': -4, 'XmaxExp': 1}}
+    HIST_SIZES_2D = {'x_y': {'Xcoord': 'x', 'Ycoord': 'y', 'Xmin': -2.5, 'Xmax': 2.5, 'Ymin': -2.5, 'Ymax': 2.5},
+                     'xp_yp': {'Xcoord': 'xp', 'Ycoord': 'yp', 'Xmin': -1, 'Xmax': 1, 'Ymin': -1, 'Ymax': 1}}
 
-    def storedata(data_dict, key, data, weight=1.0):
+    def fill1D(data_dict, key, data, weight):
+        if type(data) == float:
+            data_dict[key].Fill(data, weight)
+        elif len(data) > 1:
+            for d, w in zip(data, weight):
+                data_dict[key].Fill(d, w)
+        else:
+            data_dict[key].Fill(data[0], weight[0])
+
+    def fill2D(data_dict, key, Xdata, Ydata, weight):
+        if type(Xdata) == float and type(Ydata) == float:
+            data_dict[key].Fill(Xdata, Ydata, weight)
+        elif len(Xdata) > 1 and len(Ydata) > 1:
+            for dx, dy, w in zip(Xdata, Ydata, weight):
+                data_dict[key].Fill(dx, dy, w)
+        else:
+            data_dict[key].Fill(Xdata[0], Ydata[0], weight[0])
+
+    def storedata1D(data_dict, key, data, weight, Xnbins, Xmin, Xmax):
         try:
-            if type(data) == float:
-                data_dict[key].append(data * weight)
-            elif len(data) > 1:
-                for d, w in zip(data, weight):
-                    data_dict[key].append(d * w)
-            else:
-                data_dict[key].append(data[0]*weight[0])
+            fill1D(data_dict, key, data, weight)
         except KeyError:
-            data_dict[key] = []
-            storedata(data_dict, key, data, weight)
+            data_dict[key] = _rt.TH1D(key, key, Xnbins, Xmin, Xmax)
+            fill1D(data_dict, key, data, weight)
 
-    for t in et:
-        for samplername in SamplerList:
-            samplerdata = e.GetSampler('{}.'.format(samplername))
-            if len(samplerdata.weight) != 0:
-                storedata(HIST_DICT, '{}_x_All'.format(samplername), samplerdata.x, samplerdata.weight)
-                storedata(HIST_DICT, '{}_xp_All'.format(samplername), samplerdata.xp, samplerdata.weight)
-                storedata(HIST_DICT, '{}_y_All'.format(samplername), samplerdata.y, samplerdata.weight)
-                storedata(HIST_DICT, '{}_yp_All'.format(samplername), samplerdata.yp, samplerdata.weight)
-                storedata(HIST_DICT, '{}_KE_All'.format(samplername), samplerdata.kineticEnergy, samplerdata.weight)
-                storedata(HIST_DICT, '{}_E_All'.format(samplername), samplerdata.energy, samplerdata.weight)
-                for i, partID in enumerate(samplerdata.partID):
-                    storedata(HIST_DICT, '{}_x_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.x[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_xp_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.xp[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_y_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.y[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_yp_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.yp[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_KE_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.kineticEnergy[i], samplerdata.weight[i])
-                    storedata(HIST_DICT, '{}_E_{}'.format(samplername, Particle_type_dict[partID]['Name']), samplerdata.energy[i], samplerdata.weight[i])
+    def storedata1DLog(data_dict, key, data, weight, Xnbins, XminExp, XmaxExp):
+        try:
+            fill1D(data_dict, key, data, weight)
+        except KeyError:
+            data_dict[key] = _rt.TH1D(key, key, Xnbins, _np.logspace(XminExp, XmaxExp, Xnbins + 1))
+            fill1D(data_dict, key, data, weight)
 
-    return HIST_DICT
+    def storedata2D(data_dict, key, Xdata, Ydata, weight, Xnbins, Ynbins, Xmin, Xmax, Ymin, Ymax):
+        try:
+            fill2D(data_dict, key, Xdata, Ydata, weight)
+        except KeyError:
+            data_dict[key] = _rt.TH2D(key, key, Xnbins, Xmin, Xmax, Ynbins, Ymin, Ymax)
+            fill2D(data_dict, key, Xdata, Ydata, weight)
+
+    def storedata2DLog(data_dict, key, Xdata, Ydata, weight, Xnbins, Ynbins, XminExp, XmaxExp, YminExp, YmaxExp):
+        try:
+            fill2D(data_dict, key, Xdata, Ydata, weight)
+        except KeyError:
+            data_dict[key] = _rt.TH2D(key, key, Xnbins, _np.logspace(XminExp, XmaxExp, Xnbins + 1), Ynbins, _np.logspace(YminExp, YmaxExp, Ynbins + 1))
+            fill2D(data_dict, key, Xdata, Ydata, weight)
+
+    def getParticleName(partID):
+        try:
+            return Particle_type_dict[partID]['Name']
+        except KeyError:
+            return partID
+
+    for j, t in enumerate(et):
+        _printProgressBar(j, npart, prefix='Building hist from {}. Event {}/{}:'.format(inputfilename.split('/')[-1], j, npart), suffix='Complete', length=50)
+        for sampler in e.Samplers:
+            weight = sampler.weight
+            name = sampler.samplerName
+            if len(weight) != 0:
+                for coord in HIST_SIZES_1D.keys():
+                    storedata1D(HIST_DICT, "{}_{}_All".format(name, coord), getattr(sampler, coord), weight,
+                                nbins, HIST_SIZES_1D[coord]['Xmin'], HIST_SIZES_1D[coord]['Xmax'])
+                    for i, partID in enumerate(sampler.partID):
+                        particle = getParticleName(partID)
+                        storedata1D(HIST_DICT, "{}_{}_{}".format(name, coord, particle), getattr(sampler, coord)[i], weight[i],
+                                    nbins, HIST_SIZES_1D[coord]['Xmin'], HIST_SIZES_1D[coord]['Xmax'])
+                for coord in HIST_SIZES_1D_LOG.keys():
+                    storedata1DLog(HIST_DICT, "{}_{}_All".format(name, coord), getattr(sampler, coord), weight,
+                                   nbins, HIST_SIZES_1D_LOG[coord]['XminExp'], HIST_SIZES_1D_LOG[coord]['XmaxExp'])
+                    for i, partID in enumerate(sampler.partID):
+                        particle = getParticleName(partID)
+                        storedata1DLog(HIST_DICT, "{}_{}_{}".format(name, coord, particle), getattr(sampler, coord)[i], weight[i],
+                                       nbins, HIST_SIZES_1D_LOG[coord]['XminExp'], HIST_SIZES_1D_LOG[coord]['XmaxExp'])
+                for coords in HIST_SIZES_2D.keys():
+                    storedata2D(HIST_DICT, "{}_{}_All".format(name, coords), getattr(sampler, HIST_SIZES_2D[coords]['Xcoord']),
+                                getattr(sampler, HIST_SIZES_2D[coords]['Ycoord']), weight, nbins, nbins,
+                                HIST_SIZES_2D[coords]['Xmin'], HIST_SIZES_2D[coords]['Xmax'],
+                                HIST_SIZES_2D[coords]['Ymin'], HIST_SIZES_2D[coords]['Ymax'])
+                    for i, partID in enumerate(sampler.partID):
+                        particle = getParticleName(partID)
+                        storedata2D(HIST_DICT, "{}_{}_{}".format(name, coords, particle), getattr(sampler, HIST_SIZES_2D[coords]['Xcoord'])[i],
+                                    getattr(sampler, HIST_SIZES_2D[coords]['Ycoord'])[i], weight[i], nbins, nbins,
+                                    HIST_SIZES_2D[coords]['Xmin'], HIST_SIZES_2D[coords]['Xmax'],
+                                    HIST_SIZES_2D[coords]['Ymin'], HIST_SIZES_2D[coords]['Ymax'])
+    _printProgressBar(npart, npart, prefix='Building hist from {}. Event {}/{}:'.format(inputfilename.split('/')[-1], npart, npart), suffix='Complete', length=50)
+
+    for hist in HIST_DICT:
+        HIST_DICT[hist].Scale(ELECTRONS_PER_BUNCH/npart)
+
+    outputfilename = inputfilename.replace('04_dataLocal', '06_analysis/root_files/beamDump').replace('05_dataFarm', '06_analysis/root_files/beamDump').replace('.root', '')
+    outfile = _bd.Data.CreateEmptyRebdsimFile('{}_hist.root'.format(outputfilename), root_data.header.nOriginalEvents)
+    _bd.Data.WriteROOTHistogramsToDirectory(outfile, "Event/MergedHistograms", list(HIST_DICT.values()))
+    outfile.Close()
 
 
-def analysisHIST(inputfilename, nbins=50):
-    root_data = _bd.Data.Load(inputfilename)
-    e = root_data.GetEvent()
-    et = root_data.GetEventTree()
+def combineHistFiles(globstring):
+    filelist = _gl.glob(globstring)
+    if not filelist:
+        raise FileNotFoundError("Glob did not find any files")
+    folder = filelist[0].split('/')[0] + '/' + filelist[0].split('/')[1] + '/'
+    prefix = filelist[0].split('/')[-1].split('_part')[0][3:23]
+    suffix = filelist[0].split('_part')[-1].replace('hist', 'merged_hist')
+    npart = 0
+    for filename in filelist:
+        npart += int(filename.split('/')[-1].split('_part')[0].split('_')[-1])
+    outputfile = folder + prefix + "{}_part".format(npart) + suffix
+    _sub.call('rebdsimCombine ' + outputfile + ' ' + globstring, shell=True)
 
-    HIST_DICT = {}
-    HIST_DICT['ELECTRONS_E_det'] = _rt.TH1D('ELECTRONS_E_det', "{} Electrons wrt energy at detector".format(tag), nbins, 0, 14)
-    HIST_DICT['ELECTRONS_X_Y_det'] = _rt.TH2D('ELECTRONS_X_Y_det', "{} Electrons X-Y at detector".format(tag), nbins, 0.1, 0.6, nbins, -0.25, 0.25)
-    HIST_DICT['PHOTONS_E_Theta_log'] = _rt.TH2D('PHOTONS_E_Theta_log', r"{} Photons E-$\theta$ at sampler".format(tag),
-                                                nbins, _np.logspace(-4, 2, nbins + 1),
-                                                nbins, _np.logspace(-6, -2, nbins + 1))
+
+def getHistList(rebdsimfile, sampler=None, coord=None, particle=None):
+    histlist = rebdsimfile.histograms.keys()
+
+    if sampler is not None:
+        histlist = [k for k in histlist if sampler in k]
+    if coord is not None:
+        histlist = [k for k in histlist if '_'+coord+'_' in k]
+    if particle is not None:
+        histlist = [k for k in histlist if particle in k]
+    return histlist
+
+
+def plot1DHist(inputfilename, sampler=None, coord=None, particle=None, xlabel=None, ylabel=None,
+               xLogScale=False, yLogScale=False, elinewidth=0, printLegend=True):
+    rebdsimfile = _bd.Data.Load(inputfilename)
+    npart = rebdsimfile.header.nOriginalEvents
+    histlist = getHistList(rebdsimfile, sampler=sampler, coord=coord, particle=particle)
+
+    fig, ax = plotOptions()
+    for histname in histlist:
+        try:
+            python_hist = rebdsimfile.histograms1dpy[histname]
+            _bd.Plot.Histogram1D(python_hist, xlabel=xlabel, ylabel=ylabel, title=None, log=yLogScale, ax=ax, elinewidth=elinewidth,
+                                 label=histname.split('/')[-1])
+        except KeyError:
+            pass
+
+    ax.relim()
+    ax.autoscale()
+
+    if xLogScale:
+        _plt.xscale("log")
+    if printLegend:
+        _plt.legend()
+
+
+def plot2DHist(inputfilename, sampler=None, coord=None, particle=None, xlabel=None, ylabel=None, zlabel=None,
+               xLogScale=False, yLogScale=False, zLogScale=False):
+    rebdsimfile = _bd.Data.Load(inputfilename)
+    npart = rebdsimfile.header.nOriginalEvents
+    histname = getHistList(rebdsimfile, sampler=sampler, coord=coord, particle=particle)[0]
+
+    fig, ax = plotOptions()
+    python_hist = rebdsimfile.histograms2dpy[histname]
+    _bd.Plot.Histogram2D(python_hist, xLogScale=xLogScale, yLogScale=yLogScale, logNorm=zLogScale, ax=ax,
+                         xlabel=xlabel, ylabel=ylabel, zlabel=zlabel, title=None)
 
 
 def getSymbolByName(name):
