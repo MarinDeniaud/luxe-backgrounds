@@ -3,17 +3,12 @@ import ROOT as _rt
 import numpy as _np
 import matplotlib.pyplot as _plt
 import re
+import glob as _gl
+import subprocess as _sub
 import G4Dict
 
 Particle_type_dict = G4Dict.Particle_type_dict
 Process_type_dict = G4Dict.Process_type_subtype_dict
-
-Coord_dict = {'x':  {'Name': "$X$",  'Unit': '[m]'},
-              'xp': {'Name': "$X'$", 'Unit': '[rad]'},
-              'y':  {'Name': "$Y$",  'Unit': '[m]'},
-              'yp': {'Name': "$Y'$", 'Unit': '[rad]'},
-              'E':  {'Name': "$E$",  'Unit': '[GeV]'},
-              'KE': {'Name': "$kE$", 'Unit': '[GeV]'}}
 
 
 def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
@@ -23,12 +18,12 @@ def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
     npart = et.GetEntries()
 
     HIST_DICT = {}
-    HIST_SIZES_1D = {'x': {'Xmin': -2.5, 'Xmax': 2.5},
-                     'y': {'Xmin': -2.5, 'Xmax': 2.5},
-                     'xp': {'Xmin': -1, 'Xmax': 1},
-                     'yp': {'Xmin': -1, 'Xmax': 1}}
-    HIST_SIZES_1D_LOG = {'energy': {'XminExp': -4, 'XmaxExp': 1},
-                         'kineticEnergy': {'XminExp': -4, 'XmaxExp': 1}}
+    HIST_SIZES_1D = {'x':  {'Name': "$X$",  'Unit': '[m]',   'Xmin': -2.5, 'Xmax': 2.5},
+                     'y':  {'Name': "$Y$",  'Unit': '[m]',   'Xmin': -2.5, 'Xmax': 2.5},
+                     'xp': {'Name': "$X'$", 'Unit': '[rad]', 'Xmin': -1,   'Xmax': 1},
+                     'yp': {'Name': "$Y'$", 'Unit': '[rad]', 'Xmin': -1,   'Xmax': 1}}
+    HIST_SIZES_1D_LOG = {'energy':        {'Name': "$E$",  'Unit': '[GeV]', 'XminExp': -4, 'XmaxExp': 1},
+                         'kineticEnergy': {'Name': "$kE$", 'Unit': '[GeV]', 'XminExp': -4, 'XmaxExp': 1}}
     HIST_SIZES_2D = {'x_y': {'Xcoord': 'x', 'Ycoord': 'y', 'Xmin': -2.5, 'Xmax': 2.5, 'Ymin': -2.5, 'Ymax': 2.5},
                      'xp_yp': {'Xcoord': 'xp', 'Ycoord': 'yp', 'Xmin': -1, 'Xmax': 1, 'Ymin': -1, 'Ymax': 1}}
 
@@ -209,6 +204,9 @@ class TrajData:
     def __init__(self, inputfilename):
         self.inputfilename = inputfilename
         self.bdsim_data = _bd.Data.Load(inputfilename)
+        self.Event = self.bdsim_data.GetEvent()
+        self.EventTree = self.bdsim_data.GetEventTree()
+        self.Samplers = self.Event.Samplers
 
     def printTrajLog(self, evtnb):
         traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
@@ -219,6 +217,109 @@ class TrajData:
             print(f'{str(line[0]):10s}{str(line[1]):10s}{str(line[2]):10s}{str(line[3]):10s}{str(line[4]):10s}'
                   f'{str(line[5]):10s}{str(line[6]):15s}{str(line[7]):15s}')
 
+    def getParticleID(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['partID']
+
+    def getParticleName(self, evtnb, index):
+        partID = self.getParticleID(evtnb, index)
+        return Particle_type_dict[partID]['Name']
+
+    def getTrackID(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['trackID']
+
+    def getParentID(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['parentID']
+
+    def getParentIDX(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['parentIDX']
+
+    def getParentStepIDX(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['parentStepIDX']
+
+    def getPrimaryStepIDX(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['primaryStepIDX']
+
+    def getParentParticleID(self, evtnb, index):
+        parentIDX = self.getParentIDX(evtnb, index)
+        return self.getParticleID(evtnb, parentIDX)
+
+    def getPreProcessType(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['prePT']
+
+    def getPreProcessSubType(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['prePST']
+
+    def getPostProcessType(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['postPT']
+
+    def getPostProcessSubType(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        return traj_data[index]['postPST']
+
+    def getPrePocess(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        traj = traj_data.trajectories[index]
+        preProcess = []
+        preProcessName = []
+        for prePT, prePST in zip(traj['prePT'], traj['prePST']):
+            preProcess.append((prePT, prePST))
+            try:
+                preProcessName.append((Process_type_dict[prePT]['Name'], Process_type_dict[prePT]['Subtype'][prePST]))
+            except KeyError:
+                preProcessName.append((prePT, prePST))
+        return preProcess, preProcessName
+
+    def getPostPocess(self, evtnb, index):
+        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+        traj = traj_data.trajectories[index]
+        postProcess = []
+        postProcessName = []
+        for postPT, postPST in zip(traj['postPT'], traj['postPST']):
+            postProcess.append((postPT, postPST))
+            try:
+                postProcessName.append((Process_type_dict[postPT]['Name'], Process_type_dict[postPT]['Subtype'][postPST]))
+            except KeyError:
+                postProcessName.append((postPT, postPST))
+        return postProcess, postProcessName
+
+    def getCreationProcessAndParentParticleName(self, evtnb, index):
+        partID = self.getParticleID(evtnb, index)
+        while self.getParticleID(evtnb, index) == partID:
+            parentStepIndex = self.getParentStepIDX(evtnb, index)
+            index = self.getParentIDX(evtnb, index)
+        creationProcess = self.getPostPocess(evtnb, index)[1][parentStepIndex]
+        return self.getParticleName(evtnb, index), creationProcess
+
+    def getProcessChain(self, evtnb, index):
+        partNameList = [self.getParticleName(evtnb, index)]
+        processList = [self.getPostPocess(evtnb, index)[1]]
+        while self.getParentID(evtnb, index) != 0:
+            parentStepIndex = self.getParentStepIDX(evtnb, index)
+            index = self.getParentIDX(evtnb, index)
+            partNameList.insert(0, self.getParticleName(evtnb, index))
+            processList.insert(0, self.getPostPocess(evtnb, index)[1][0:parentStepIndex+1])
+        return partNameList, processList
+
+    def getProcessChainWithoutTransp(self, evtnb, index):
+        partNameList, processList = self.getProcessChain(evtnb, index)
+        d = {}
+        for i in range(len(partNameList)):
+            partName = str(i)+'_'+partNameList[i]
+            d[partName] = []
+            for process in processList[i]:
+                if process[0] != 'fTransportation' and process[0] != 'fParallel':
+                    d[partName].append(process)
+        return d
+
     def getEndOfChainTrackID(self, evtnb):
         traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
         trackIDlist = []
@@ -228,82 +329,57 @@ class TrajData:
             parentIDlist.append(traj['parentID'])
         return _np.setdiff1d(trackIDlist, parentIDlist)
 
-    def getEndOfChainIndex(self, evtnb):
+    def getEndOfChainIndex(self, evtnb, scut=18.5):
         traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
         trackIDs = self.getEndOfChainTrackID(evtnb)
         indexList = []
         for trackID in trackIDs:
             for index, traj in enumerate(traj_data):
-                if trackID == traj['trackID']:
+                if trackID == traj['trackID'] and traj['Z'].max() >= scut and traj['trackID'] != 0:
                     indexList.append(index)
         return indexList
+
+    def findUnknownPartID(self):
+        for evt in self.EventTree:
+            for sampler in self.Samplers:
+                for partID in sampler.partID:
+                    try:
+                        name = Particle_type_dict[partID]['Name']
+                    except KeyError:
+                        print(partID)
+
+    def findEventAndIndexByPartID(self, partIDList, scut=0):
+        for evtnb, evt in enumerate(self.EventTree):
+            traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
+            for index, traj in enumerate(traj_data.trajectories):
+                if traj['partID'] in partIDList and traj['Z'].max() >= scut:
+                    print(evtnb, index)
+
+    def storeAllProcesses(self):
+        # IT TAKES AGES OMG MARIN OPTIMIZE
+        data = {}
+        for i, evt in enumerate(self.EventTree):
+            indexList = self.getEndOfChainIndex(i)
+            for index in indexList:
+                partID = self.getParticleID(i, index)
+                PT, PST = self.getCreationProcessTypeAndSubType(i, index, printdata=False)
+                try:
+                    data[Particle_type_dict[partID]['Name']][(Process_type_dict[PT]['Subtype'][PST], Process_type_dict[PT]['Name'])] += 1
+                except KeyError:
+                    try:
+                        data[Particle_type_dict[partID]['Name']][(Process_type_dict[PT]['Subtype'][PST], Process_type_dict[PT]['Name'])] = 1
+                    except KeyError:
+                        try:
+                            data[Particle_type_dict[partID]['Name']] = {(Process_type_dict[PT]['Subtype'][PST], Process_type_dict[PT]['Name']): 1}
+                        except KeyError:
+                            data[partID] = {(Process_type_dict[PT]['Subtype'][PST], Process_type_dict[PT]['Name']): 1}
+        return data
 
     def getTrackNumberWithID(self, evtnb, trackID):
         traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
         for tracknb, traj in enumerate(traj_data.trajectories):
             if traj['trackID'] == trackID:
                 return tracknb
-
-    def getPocessTypeSubtype(self, evtnb, index):
-        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
-        traj = traj_data.trajectories[index]
-        preSet = []
-        postSet = []
-        for prePT, prePST, postPT, postPST in zip(traj['prePT'], traj['prePST'], traj['postPT'], traj['postPST']):
-            preSet.append((prePT, prePST))
-            postSet.append((postPT, postPST))
-        return preSet, postSet
-
-    def getProcessChain(self, evtnb, index):
-        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
-        traj = traj_data.trajectories[index]
-        processList = []
-        processNameList = []
-        while traj['parentID'] != 0:
-            processList.append((traj['prePST'][0], traj['prePT'][0]))
-            processNameList.append(())
-            traj = traj_data.trajectories[traj['parentIDX']]
-
-        return _np.flip(processList)
-
-    def printTrackDataByTrackID(self, evtnb, trackID):
-        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
-        tracknb = self.getTrackNumberWithID(evtnb, trackID)
-        traj = traj_data[tracknb]
-        print('Particle : {}'.format(Particle_type_dict[traj['partID']]['Name']))
-        preSet, postSet = self.getPocessTypeSubtype(evtnb, tracknb)
-        print('preSet : ', preSet)
-        print('postSet : ', postSet)
-
-    def printTrackDataByIndex(self, evtnb, index):
-        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
-        traj = traj_data[index]
-        print('Particle : {}'.format(Particle_type_dict[traj['partID']]['Name']))
-        preSet, postSet = self.getPocessTypeSubtype(evtnb, index)
-        print('preSet : ', preSet)
-        print('postSet : ', postSet)
-
-
-def plothist(data_dict, sampler, coord, nbins=50, logScale=False, figsize=[11, 7]):
-    keys = data_dict.keys()
-    reduced_keys = list(filter(re.compile("^{}_{}_".format(sampler, coord)).match, keys))
-    bins = _np.histogram(data_dict[reduced_keys[0]], bins=nbins)[1]
-
-    plotOptions(figsize=figsize)
-    for key in reduced_keys:
-        name = '_'.join(key.split('_')[2:])
-        symbol = getSymbolByName(name)
-        _plt.hist(data_dict[key], bins=bins, histtype='step', label=symbol)
-    _plt.xlabel(Coord_dict[coord]['Name']+' '+Coord_dict[coord]['Unit'])
-    _plt.ylabel('Entries')
-    _plt.legend()
-    if logScale:
-        _plt.yscale('log')
-
-
-def plotAlongS(data_dict, coord):
-    keys = data_dict.keys()
-    reduced_keys = list(filter(re.compile("^_{}_".format(coord)).match, keys))
 
 
 def plotOptions(figsize=[9, 6], rows_colums=[1, 1], height_ratios=None, sharex=False, sharey=False, font_size=17):
@@ -316,3 +392,27 @@ def plotOptions(figsize=[9, 6], rows_colums=[1, 1], height_ratios=None, sharex=F
                                 sharex=sharex, sharey=sharey)
     fig.tight_layout()
     return fig, ax
+
+
+def _printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+    import sys
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    # print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
+    sys.stdout.write('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix) + printEnd)
+    # Print New Line on Complete
+    if iteration == total:
+        print()
