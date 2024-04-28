@@ -1,0 +1,58 @@
+<DAQREQ>
+<TStart time='2023-11-22T16:00:00'/>
+<TStop time='2023-11-22T16:05:00'/>
+<Exp  name='linac'/>
+<CDir name='/daq/xfel/admtemp/'/>
+<Chan name='XFEL.DIAG/BPM/BPMI.1860.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMI.1863.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.1868.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.1873.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMI.1878.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMI.1889.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMI.1910.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMI.1925.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMI.1930.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMI.1939.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.1966.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMD.1977.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.1995.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2011.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMD.2022.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2041.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2054.TL' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2040.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2044.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2055.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2062.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2068.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2082.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2088.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2092.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2097.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2109.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2124.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2138.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2153.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2167.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2179.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2184.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPME.2191.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPME.2197.T1' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2071.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2086.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2101.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2116.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2132.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2145.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2161.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2176.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2191.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2206.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2218.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPMA.2223.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPME.2229.T2' dtype='47'/>
+<Chan name='XFEL.DIAG/BPM/BPME.2235.T2' dtype='47'/>
+<Chan name='XFEL.SDIAG/BAM.DAQ/1932M.TL.ARRIVAL_TIME.RELATIVE' dtype='47'/>
+<Chan name='XFEL.SDIAG/BAM.DAQ/1932S.TL.ARRIVAL_TIME.RELATIVE' dtype='47'/>
+<Chan name='XFEL.DIAG/BEAM_ENERGY_MEASUREMENT/CL/ENERGY.ALL' dtype='47'/>
+<DAQREQ>
