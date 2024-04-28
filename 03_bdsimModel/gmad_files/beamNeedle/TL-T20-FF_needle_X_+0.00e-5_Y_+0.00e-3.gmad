@@ -11,4 +11,6 @@ include TL-T20-FF_needle_X_+0.00e-5_Y_+0.00e-3_material.gmad;
 include TL-T20-FF_needle_X_+0.00e-5_Y_+0.00e-3_objects.gmad;
 
 
-sample, all;
+! sample, all;
+sample, range = FIRSTDUMP;
+sample, range = FIRSTDET;
