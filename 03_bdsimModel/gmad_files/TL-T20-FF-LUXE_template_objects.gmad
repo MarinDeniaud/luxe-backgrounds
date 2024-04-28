@@ -1,0 +1,11 @@
+! Template  : Tue 23 Apr 2024 18:00:00 +0000
+! Generated : {{dayname}} {{day}} {{month}} {{year}} {{hour}}:{{minute}}:{{second}} +0000
+! pybdsim.Builder Lattice, using pybdsim version 3.0.0 
+! OBJECTS DEFINITION
+
+! biasElecBeamGas: xsecBias, proc="eBrem CoulombScat electronNuclear", xsecfact={1.0,1.0,1.0}, flag={2,2,2}, particle="e-";
+! biasFirstDump: xsecBias, proc="neutronInelastic protonInelastic pi+Inelastic pi-Inelastic kaon+Inelastic kaon-Inelastic",
+! xsecfact={1.0,1.0,1.0,1.0,1.0,1.0}, flag={1,1,1,1,1,1}, particle="e-";
+
+{{biases|default('biasElecBeamGas: xsecBias, proc="eBrem CoulombScat electronNuclear", xsecfact={1.0,1.0,1.0}, flag={2,2,2}, particle="e-";
+biasDump: xsecBias, proc="neutronInelastic", xsecfact={1.0}, flag={1}, particle="neutrons";',true)}}

@@ -1,0 +1,21 @@
+! Template  : Tue 23 Apr 2024 18:00:00 +0000
+! Generated : {{dayname}} {{day}} {{month}} {{year}} {{hour}}:{{minute}}:{{second}} +0000
+! pybdsim.Builder Lattice, using pybdsim version 3.0.0 
+! OPTIONS DEFINITION
+
+option,	physicsList                       = "{{physicsList|default('em em_extra qgsp_bert decay',true)}}",
+	    useLENDGammaNuclear               =  {{useLENDGammaNuclear|default(0,true)}},
+	    useElectroNuclear                 =  {{useElectroNuclear|default(1,true)}},
+	    useMuonNuclear                    =  {{useMuonNuclear|default(1,true)}},
+	    useGammaToMuMu                    =  {{useGammaToMuMu|default(1,true)}},
+	    usePositronToMuMu                 =  {{usePositronToMuMu|default(1,true)}},
+	    usePositronToHadrons              =  {{usePositronToHadrons|default(1,true)}},
+	    printPhysicsProcesses             =  {{printPhysicsProcesses|default(0,true)}},
+	    worldMaterial                     = "{{worldMaterial|default('vacuum',true)}}",
+	    checkOverlaps                     =  {{checkOverlaps|default(0,true)}},
+	    storeEloss                        =  {{storeEloss|default(0,true)}},
+	    storeTrajectory                   =  {{storeTrajectory|default(0,true)}},
+	    storeTrajectorySecondaryParticles =  {{storeTrajectorySecondaryParticles|default(0,true)}},
+	    trajCutGTZ                        =  {{trajCutGTZ|default(18.5,true)}}*m,
+	    trajectoryConnect                 =  {{trajectoryConnect|default(1,true)}},
+	    storeTrajectoryProcesses          =  {{storeTrajectoryProcesses|default(1,true)}};
