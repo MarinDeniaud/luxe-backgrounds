@@ -3,6 +3,8 @@ import ROOT as _rt
 import numpy as _np
 import matplotlib.pyplot as _plt
 import glob as _gl
+import pickle as _pk
+import time
 import subprocess as _sub
 import G4Dict
 
@@ -80,7 +82,7 @@ def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
             return partID
 
     for j, t in enumerate(et):
-        _printProgressBar(j, npart, prefix='Building hist from {}. Event {}/{}:'.format(inputfilename.split('/')[-1], j, npart), suffix='Complete', length=50)
+        _printProgressBar(j, npart, prefix='Building hist from {} {}/{}:'.format(inputfilename.split('/')[-1], j, npart), suffix='Complete', length=50)
         for sampler in e.Samplers:
             weight = sampler.weight
             name = sampler.samplerName
@@ -110,12 +112,12 @@ def analysis(inputfilename, nbins=50, ELECTRONS_PER_BUNCH=2e9):
                                     getattr(sampler, HIST_SIZES_2D[coords]['Ycoord'])[i], weight[i], nbins, nbins,
                                     HIST_SIZES_2D[coords]['Xmin'], HIST_SIZES_2D[coords]['Xmax'],
                                     HIST_SIZES_2D[coords]['Ymin'], HIST_SIZES_2D[coords]['Ymax'])
-    _printProgressBar(npart, npart, prefix='Building hist from {}. Event {}/{}:'.format(inputfilename.split('/')[-1], npart, npart), suffix='Complete', length=50)
+    _printProgressBar(npart, npart, prefix='Building hist from {} {}/{}:'.format(inputfilename.split('/')[-1], npart, npart), suffix='Complete', length=50)
 
     for hist in HIST_DICT:
         HIST_DICT[hist].Scale(ELECTRONS_PER_BUNCH/npart)
 
-    outputfilename = inputfilename.replace('04_dataLocal', '06_analysis/root_files/beamDump').replace('05_dataFarm', '06_analysis/root_files/beamDump').replace('.root', '')
+    outputfilename = inputfilename.replace('04_dataLocal', '06_analysis/root_files').replace('05_dataFarm', '06_analysis/root_files').replace('.root', '')
     outfile = _bd.Data.CreateEmptyRebdsimFile('{}_hist.root'.format(outputfilename), root_data.header.nOriginalEvents)
     _bd.Data.WriteROOTHistogramsToDirectory(outfile, "Event/MergedHistograms", list(HIST_DICT.values()))
     outfile.Close()
@@ -248,7 +250,13 @@ class Trajectories:
         return track_dict
 
     def getAttribute(self, index, attribute):
-        return self.track_table[index][attribute]
+        if type(index) == int:
+            return self.track_table[index][attribute]
+        elif type(index) == list:
+            L = []
+            for i in index:
+                L.append(self.track_table[i][attribute])
+            return L
 
     def findOtherIndicesWithAttribute(self, index, attribute, value):
         Indices = []
@@ -278,9 +286,22 @@ class Trajectories:
     def getParentIndex(self, index):
         return self.getAttribute(index, 'parentIDX')
 
+    def getTrueParentIndex(self, index):
+        partID = self.getAttribute(index, 'partID')
+        while self.getAttribute(index, 'partID') == partID:
+            index = self.getAttribute(index, 'parentIDX')
+        return index
+
     def getSisterIndices(self, index):
         parentID = self.getAttribute(index, 'parentID')
         return self.findOtherIndicesWithAttribute(index, 'parentID', parentID)
+
+    def getTwinsSisterIndices(self, index):
+        parentID = self.getAttribute(index, 'parentID')
+        L1 = self.findOtherIndicesWithAttribute(index, 'parentID', parentID)
+        parentStepIDX = self.getAttribute(index, 'parentStepIDX')
+        L2 = self.findOtherIndicesWithAttribute(index, 'parentStepIDX', parentStepIDX)
+        return list(set(L1) & set(L2))
 
     def getDaugtherIndices(self, index):
         trackID = self.getAttribute(index, 'trackID')
@@ -356,34 +377,6 @@ class TrajData:
     def Trajectory(self, evtnb):
         return Trajectories(self.bdsim_data, evtnb)
 
-    def printTrajLog(self, evtnb):
-        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
-        print(f'{"partID":10s}{"min Z":10s}{"max Z":10s}{"trackID":10s}{"parentID":10s}{"parentIDX":10s}{"parentStepIDX":15s}{"primaryStepIDX":15s}')
-        for traj in traj_data.trajectories:
-            line = [traj['partID'], round(traj['Z'].min(), 3), round(traj['Z'].max(), 3), traj['trackID'], traj['parentID'],
-                    traj['parentIDX'], traj['parentStepIDX'], traj['primaryStepIDX']]
-            print(f'{str(line[0]):10s}{str(line[1]):10s}{str(line[2]):10s}{str(line[3]):10s}{str(line[4]):10s}'
-                  f'{str(line[5]):10s}{str(line[6]):15s}{str(line[7]):15s}')
-
-    def getEndOfChainTrackID(self, evtnb):
-        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
-        trackIDlist = []
-        parentIDlist = []
-        for traj in traj_data.trajectories:
-            trackIDlist.append(traj['trackID'])
-            parentIDlist.append(traj['parentID'])
-        return _np.setdiff1d(trackIDlist, parentIDlist)
-
-    def getEndOfChainIndex(self, evtnb, scut=18.5):
-        traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
-        trackIDs = self.getEndOfChainTrackID(evtnb)
-        indexList = []
-        for trackID in trackIDs:
-            for index, traj in enumerate(traj_data):
-                if trackID == traj['trackID'] and traj['Z'].max() >= scut and traj['trackID'] != 0:
-                    indexList.append(index)
-        return indexList
-
     def findUnknownPartID(self, includeNucleus=False):
         s = set()
         for evtnb, evt in enumerate(self.EventTree):
@@ -401,13 +394,18 @@ class TrajData:
         _printProgressBar(self.npart, self.npart, prefix='Looking for unknown particle. Event {}/{}:'.format(self.npart, self.npart), suffix='Complete', length=50)
         return s
 
-    def findEventAndIndexByPartID(self, partIDList, scut=0):
-        print(f'{"partID":10s}{"Event nb":10s}{"Index":10s}')
+    def findEventAndIndexByPartID(self, partIDList, ZminDownCut=0, ZminUpCut=_np.inf, ZmaxDownCut=0, ZmaxUpCut=_np.inf):
+        print(f"{'PartName':10s}{'EventNb':10s}{'Index':10s}{'ParentName':15s}{'TrueParentName':15s}")
         for evtnb, evt in enumerate(self.EventTree):
-            traj_data = _bd.Data.TrajectoryData(self.bdsim_data, evtnb)
-            for index, traj in enumerate(traj_data.trajectories):
-                if traj['partID'] in partIDList and traj['Z'].max() >= scut:
-                    print(f"{str(traj['partID']):10s}{str(evtnb):10s}{str(index):10s}")
+            Traj = self.Trajectory(evtnb)
+            for index, track in enumerate(Traj.track_table):
+                Zmin = track['Z'].min()
+                Zmax = track['Z'].max()
+                if track['partID'] in partIDList and ZminDownCut <= Zmin <= ZminUpCut and ZmaxDownCut <= Zmax <= ZmaxUpCut:
+                    PartName = Traj.getParticleName(index)
+                    ParentPartName = Traj.getParticleName(Traj.getParentIndex(index))
+                    TrueParentPartName = Traj.getParticleName(Traj.getTrueParentIndex(index))
+                    print(f"{str(PartName):10s}{str(evtnb):10s}{str(index):10s}{str(ParentPartName):15s}{str(TrueParentPartName):15s}")
 
     def storeOneCreationProcess(self, data, partName, parentPartName, creationProcess):
         try:
@@ -436,6 +434,16 @@ class TrajData:
         if measureTime:
             print("Measured time : ", end - start)
         return data
+
+
+def combineAndSaveCreationProcessesDict(filelist, outputfilename="creation_processes_dict.pk"):
+    creation_processes_dict = {}
+    for file in filelist:
+        TD = TrajData(file)
+        TD.storeCreationProcessesAllEvents(creation_processes_dict)
+    with open(outputfilename, 'wb') as f:
+        _pk.dump(creation_processes_dict, f)
+    return creation_processes_dict
 
 
 def plotOptions(figsize=[9, 6], rows_colums=[1, 1], height_ratios=None, sharex=False, sharey=False, font_size=17):
