@@ -172,32 +172,32 @@ D08500:    drift, aper1=0.02413, apertureType="circular", biasVacuum="biasElecBe
 !
 
 LUXESTART:  marker;
-ICSC:       element, l=0.42,              geometryFile="gdml:{{ICSC|default('../gdml_files/ICSChamber.gdml',true)}}", stripOuterVolume=1;
+ICSC:       element, l=0.42,                geometryFile="gdml:{{ICSC|default('../../gdml_files/ICSChamber.gdml',true)}}", stripOuterVolume=1;
 ICSCDRIFT:  drift,   l=0.42, aper1=0.02413, apertureType="circular", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
-FIELD1:     field,   type="dipole",       fieldParameters="field={{FIELD1|default(0,true)}} bx=1.0"; ! 1.2T
-M001:       element, l=1.2,               geometryFile="gdml:../gdml_files/FirstMagnet.gdml", stripOuterVolume=1, fieldAll="FIELD1";
-DUM1:       element, l=4.424100480733040, geometryFile="gdml:../gdml_files/FirstDump.gdml", stripOuterVolume=1, biasMaterial="{{biasMatDump1|default('biasDump', true)}}";
+FIELD1:     field,   type="dipole",         fieldParameters="field={{FIELD1|default(0,true)}} bx=1.0"; ! 1.2T
+M001:       element, l=1.2,                 geometryFile="gdml:{{M001|default('../../gdml_files/FirstMagnet.gdml',true)}}", stripOuterVolume=1, fieldAll="FIELD1";
+DUM1:       element, l=4.424100480733040,   geometryFile="gdml:{{DUM1|default('../../gdml_files/FirstDump.gdml',true)}}", stripOuterVolume=1, biasMaterial="{{biasMatDump1|default('biasDump', true)}}";
 FIRSTDUMP:  marker;
-IPCH:       element, l=2.925899519266959, geometryFile="gdml:{{IPCH|default('../gdml_files/IPChamberWithAssembly.gdml',true)}}", stripOuterVolume=1;
-FIELD2:     field,   type="dipole",       fieldParameters="field={{FIELD2|default(0,true)}} by=1.0"; ! 1.5T
-M002:       element, l=1.2,               geometryFile="gdml:../gdml_files/SecondMagnet.gdml", stripOuterVolume=1, fieldAll="FIELD2";
-EXT1:       element, l=1.3,               geometryFile="gdml:../gdml_files/FirstExtraction.gdml", stripOuterVolume=1;
+IPCH:       element, l=2.925899519266959,   geometryFile="gdml:{{IPCH|default('../../gdml_files/IPChamberWithAssembly.gdml',true)}}", stripOuterVolume=1;
+FIELD2:     field,   type="dipole",         fieldParameters="field={{FIELD2|default(0,true)}} by=1.0"; ! 1.5T
+M002:       element, l=1.2,                 geometryFile="gdml:{{M002|default('../../gdml_files/SecondMagnet.gdml',true)}}", stripOuterVolume=1, fieldAll="FIELD2";
+EXT1:       element, l=1.3,                 geometryFile="gdml:{{EXT1|default('../../gdml_files/FirstExtraction.gdml',true)}}", stripOuterVolume=1;
 FIRSTDET:   marker;
-DET1:       element, l=2.5,               geometryFile="gdml:../gdml_files/FirstDetectors.gdml", stripOuterVolume=1;
-GAMC:       element, l=0.1,               geometryFile="gdml:{{GAMC|default('../gdml_files/GammaChamber.gdml',true)}}", stripOuterVolume=1;
-GAMCDRIFT:  drift,   l=0.1, aper1=0.02413, apertureType="circular", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
-DUM2:       element, l=1.95,              geometryFile="gdml:../gdml_files/SecondDump.gdml", stripOuterVolume=1, biasMaterial="{{biasMatDump2|default('biasDump', true)}}";
+DET1:       element, l=2.5,                 geometryFile="gdml:{{DET1|default('../../gdml_files/FirstDetectors.gdml',true)}}", stripOuterVolume=1;
+GAMC:       element, l=0.1,                 geometryFile="gdml:{{GAMC|default('../../gdml_files/GammaChamber.gdml',true)}}", stripOuterVolume=1;
+GAMCDRIFT:  drift,   l=0.1, aper1=0.02413,  apertureType="circular", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
+DUM2:       element, l=1.95,                geometryFile="gdml:{{DUM2|default('../../gdml_files/SecondDump.gdml',true)}}", stripOuterVolume=1, biasMaterial="{{biasMatDump2|default('biasDump', true)}}";
 SECONDDUMP: marker;
 D001:       drift,   l=0.54, aper1=0.02413, apertureType="circular", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
-FIELD3:     field,   type="dipole",       fieldParameters="field={{FIELD3|default(0,true)}} by=1.0"; ! 1.4T
-M003:       element, l=1.2,               geometryFile="gdml:../gdml_files/ThirdMagnet.gdml", stripOuterVolume=1, fieldAll="FIELD3";
-EXT2:       element, l=0.62,              geometryFile="gdml:../gdml_files/SecondExtraction.gdml", stripOuterVolume=1;
+FIELD3:     field,   type="dipole",         fieldParameters="field={{FIELD3|default(0,true)}} by=1.0"; ! 1.4T
+M003:       element, l=1.2,                 geometryFile="gdml:{{M003|default('../../gdml_files/ThirdMagnet.gdml',true)}}", stripOuterVolume=1, fieldAll="FIELD3";
+EXT2:       element, l=0.62,                geometryFile="gdml:{{EXT2|default('../../gdml_files/SecondExtraction.gdml',true)}}", stripOuterVolume=1;
 SECONDDET:  marker;
 ! DET2:       element;
-DET2DRIFT:  drift,   l=1.17, aper1=0.01, apertureType="circular", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
-DUM3:       element, l=0.8,               geometryFile="gdml:../gdml_files/ThirdDump.gdml", stripOuterVolume=1, biasMaterial="{{biasMatDump3|default('biasDump', true)}}";
+DET2DRIFT:  drift,   l=1.17,                aper1=0.01, apertureType="circular", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
+DUM3:       element, l=0.8,                 geometryFile="gdml:{{DUM3|default('../../gdml_files/ThirdDump.gdml',true)}}", stripOuterVolume=1, biasMaterial="{{biasMatDump3|default('biasDump', true)}}";
 THIRDDUMP:  marker;
 ! DET3:       element;
-DET3DRIFT:  drift,   l=3.17, aper1=0.01, apertureType="circular", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
-WALL:       element, l=0.17806,           geometryFile="gdml:../gdml_files/FinalWall.gdml", stripOuterVolume=1, biasVacuum="biasElecBeamGas";
+DET3DRIFT:  drift,   l=3.17,                aper1=0.01, apertureType="circular", biasVacuum="biasElecBeamGas", vacuumMaterial="luxeVacuum";
+WALL:       element, l=0.17806,             geometryFile="gdml:{{WALL|default('../../gdml_files/FinalWall.gdml',true)}}", stripOuterVolume=1, biasVacuum="biasElecBeamGas";
 LUXEEND:    marker;
