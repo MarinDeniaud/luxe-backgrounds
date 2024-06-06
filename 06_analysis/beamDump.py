@@ -230,10 +230,10 @@ class Trajectories:
             indexList.append(self.getIndexWithTrackID(trackID))
         return indexList
 
-    def getEndOfChainIndexWithCut(self, scut=18.5):
+    def getEndOfChainIndexWithCut(self, scut=18.12):
         indexList = []
         for index, track in enumerate(self.track_table):
-            if track['Z'].max() >= scut and track['trackID'] != 0 and track['trackID'] != 1:
+            if track['Z'].max() >= scut and track['trackID'] != 1:
                 indexList.append(index)
         return indexList
 
@@ -286,40 +286,43 @@ class Trajectories:
         trackID = self.getAttribute(index, 'trackID')
         return self.findOtherIndicesWithAttribute(index, 'parentID', trackID)
 
-    def getPreProcessIDs(self, index):
+    def getPreProcessIDs(self, index, transpSteps=False):
         prePT = self.getAttribute(index, 'prePT')
         prePST = self.getAttribute(index, 'prePST')
         preProcessIDs = []
         for PT, PST in zip(prePT, prePST):
-            preProcessIDs.append((PT, PST))
+            if transpSteps or PT not in [1.0, 10.0]:
+                preProcessIDs.append((PT, PST))
         return preProcessIDs
 
-    def getPostProcessIDs(self, index):
+    def getPostProcessIDs(self, index, transpSteps=False):
         postPT = self.getAttribute(index, 'postPT')
         postPST = self.getAttribute(index, 'postPST')
         postProcessIDs = []
         for PT, PST in zip(postPT, postPST):
-            postProcessIDs.append((PT, PST))
+            if transpSteps or PT not in [1.0, 10.0]:
+                postProcessIDs.append((PT, PST))
         return postProcessIDs
 
-    def getPreProcessNames(self, index):
-        preProcessIDs = self.getPreProcessIDs(index)
-        preProcessNames = []
-        for PT, PST in preProcessIDs:
-            try:
-                preProcessNames.append((Process_type_dict[PT]['Name'], Process_type_dict[PT]['Subtype'][PST]))
-            except KeyError:
-                preProcessNames.append((PT, PST))
+    def getProcessNamesFromIDs(self, processType, processSubType):
+        try:
+            preProcessNames = (Process_type_dict[processType]['Name'], Process_type_dict[processType]['Subtype'][processSubType])
+        except KeyError:
+            preProcessNames = (processType, processSubType)
         return preProcessNames
 
-    def getPostProcessNames(self, index):
-        postProcessIDs = self.getPostProcessIDs(index)
+    def getPreProcessNames(self, index, transpSteps=False):
+        preProcessIDs = self.getPreProcessIDs(index, transpSteps=transpSteps)
+        preProcessNames = []
+        for PT, PST in preProcessIDs:
+            preProcessNames.append(self.getProcessNamesFromIDs(PT, PST))
+        return preProcessNames
+
+    def getPostProcessNames(self, index, transpSteps=False):
+        postProcessIDs = self.getPostProcessIDs(index, transpSteps=transpSteps)
         postProcessNames = []
         for PT, PST in postProcessIDs:
-            try:
-                postProcessNames.append((Process_type_dict[PT]['Name'], Process_type_dict[PT]['Subtype'][PST]))
-            except KeyError:
-                postProcessNames.append((PT, PST))
+            postProcessNames.append(self.getProcessNamesFromIDs(PT, PST))
         return postProcessNames
 
     def getCreationProcessAndParentParticleName(self, index):
@@ -332,23 +335,13 @@ class Trajectories:
 
     def getProcessChain(self, index, transpSteps=False):
         partNameList = [self.getParticleName(index)]
-        processList = [self.getPostProcessNames(index)]
+        processList = [self.getPostProcessNames(index, transpSteps=transpSteps)]
         while self.getAttribute(index, 'parentID') != 0:
             parentStepIndex = self.getAttribute(index, 'parentStepIDX')
             index = self.getAttribute(index, 'parentIDX')
             partNameList.insert(0, self.getParticleName(index))
-            processList.insert(0, self.getPostProcessNames(index)[0:parentStepIndex + 1])
-        chain_dict = {}
-        for i in range(len(partNameList)):
-            partName = str(i) + '_' + partNameList[i]
-            chain_dict[partName] = []
-            if not transpSteps:
-                for process in processList[i]:
-                    if process[0] != 'fTransportation' and process[0] != 'fParallel':
-                        chain_dict[partName].append(process)
-            else:
-                chain_dict[partName] = processList[i]
-        return chain_dict
+            processList.insert(0, self.getPostProcessNames(index, transpSteps=transpSteps)[0:parentStepIndex + 1])
+        return partNameList, processList
 
 
 class TrajData:
@@ -416,53 +409,32 @@ class TrajData:
                 if traj['partID'] in partIDList and traj['Z'].max() >= scut:
                     print(f"{str(traj['partID']):10s}{str(evtnb):10s}{str(index):10s}")
 
-    def storeAllProcesses(self):
-        # IT TAKES AGES OMG MARIN OPTIMIZE
-        data = {}
-        for evtnb, evt in enumerate(self.EventTree):
-            _printProgressBar(evtnb, self.npart, prefix='Storing processes. Event {}/{}:'.format(evtnb, self.npart), suffix='Complete', length=50)
-            indexList = self.getEndOfChainIndex(evtnb)
-            for index in indexList:
-                ParentName, PostProcessName = self.Trajectory(evtnb).getCreationProcessAndParentParticleName(index)
-                try:
-                    data[ParentName][PostProcessName] += 1
-                except KeyError:
-                    data[ParentName] = {PostProcessName: 1}
-        _printProgressBar(self.npart, self.npart, prefix='Storing processes. Event {}/{}:'.format(self.npart, self.npart), suffix='Complete', length=50)
-        return data
+    def storeOneCreationProcess(self, data, partName, parentPartName, creationProcess):
+        try:
+            data[partName][parentPartName][creationProcess] += 1
+        except KeyError:
+            try:
+                data[partName][parentPartName] = {creationProcess: 1}
+            except KeyError:
+                data[partName] = {parentPartName: {creationProcess: 1}}
 
-    def storeAllProcessesWithCut(self, scut=18.5):
-        # IT TAKES AGES OMG MARIN OPTIMIZE
-        data = {}
-        for evtnb, evt in enumerate(self.EventTree):
-            _printProgressBar(evtnb, self.npart, prefix='Storing processes. Event {}/{}:'.format(evtnb, self.npart), suffix='Complete', length=50)
-            indexList = self.Trajectory(evtnb).getEndOfChainIndexWithCut(scut=scut)
-            for index in indexList:
-                ParentName, PostProcessName = self.Trajectory(evtnb).getCreationProcessAndParentParticleName(index)
-                try:
-                    data[ParentName][PostProcessName] += 1
-                except KeyError:
-                    data[ParentName] = {PostProcessName: 1}
-        _printProgressBar(self.npart, self.npart, prefix='Storing processes. Event {}/{}:'.format(self.npart, self.npart), suffix='Complete', length=50)
-        return data
-
-    def storeCreationProcessesForOneEvent(self, evtnb, data, scut=18.5):
+    def storeCreationProcessesForOneEvent(self, evtnb, data, scut=18.12):
         Traj = self.Trajectory(evtnb)
         for index, track in enumerate(Traj.track_table):
-            if track['Z'].max() >= scut and track['trackID'] != 0 and track['trackID'] != 1:
+            if track['Z'].max() > scut > track['Z'].min() and track['trackID'] != 1 and track['partID'] < 1000000000:
                 partName = Traj.getParticleName(index)
                 parentPartName, creationProcess = Traj.getCreationProcessAndParentParticleName(index)
-                try:
-                    data[partName]["count"] += 1
-                except KeyError:
-                    data[partName] = {"Parent": parentPartName, "Process": creationProcess, "count": 1}
+                self.storeOneCreationProcess(data, partName, parentPartName, creationProcess)
 
-    def storeCreationProcessesAllEvents(self, scut=18.5):
-        data = {}
+    def storeCreationProcessesAllEvents(self, data={}, scut=18.12, measureTime=False):
+        start = time.time()
         for evtnb, evt in enumerate(self.EventTree):
             _printProgressBar(evtnb, self.npart, prefix='Storing processes. Event {}/{}:'.format(evtnb, self.npart), suffix='Complete', length=50)
             self.storeCreationProcessesForOneEvent(evtnb, data, scut=scut)
         _printProgressBar(self.npart, self.npart, prefix='Storing processes. Event {}/{}:'.format(self.npart, self.npart), suffix='Complete', length=50)
+        end = time.time()
+        if measureTime:
+            print("Measured time : ", end - start)
         return data
 
 
