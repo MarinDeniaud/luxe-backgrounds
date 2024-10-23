@@ -11,4 +11,8 @@ include {{tag}}_options.gmad;
 include {{tag}}_material.gmad;
 include {{tag}}_objects.gmad;
 
-{{samplers|default('sample, all;',true)}}
+{{samplerElement|default('sample, all;',true)}}
+
+{{samplerPlacement|default('',true)}}
+
+! det1: samplerplacement, type='plane', shape='rectangular', referenceElement="DET1", x=20*cm, y=-1*cm, s=30*cm, aper1=40*m, aper2=40*m;;

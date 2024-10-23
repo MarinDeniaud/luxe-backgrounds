@@ -65,14 +65,21 @@ def getDateTime():
 
 
 def GenerateMainGmadFile(lattice, tag, date, time, pathtooutput=gmad_path, templatetag=template_default_tag, templatefolder=template_path,
-                         sampleAll=True, samplerList=None):
+                         sampleAll=True, samplerElementList=None, samplerPlacementDict=None):
+    samplerElement = ""
+    samplerPlacement = ""
     if sampleAll:
-        samplers = "sample, all;"
-    else:
-        samplers = ""
-        for sampler in samplerList:
-            samplers += "sample, range = {};\n".format(sampler)
-    paramdict = dict(tag=lattice+'_'+tag, dayname=date[0], day=date[1], month=date[2], year=date[3], hour=time[0], minute=time[1], second=time[2], samplers=samplers)
+        samplerElement = "sample, all;"
+    elif samplerElementList is not None:
+        for sampler in samplerElementList:
+            samplerElement += "sample, range = {};\n".format(sampler)
+    if samplerPlacementDict is not None:
+        for samplername in samplerPlacementDict:
+            samplerPlacement += "{}: samplerplacement".format(samplername)
+            for param in samplerPlacementDict[samplername]:
+                samplerPlacement += ", {}={}".format(param, samplerPlacementDict[samplername][param])
+    paramdict = dict(tag=lattice+'_'+tag, dayname=date[0], day=date[1], month=date[2], year=date[3], hour=time[0], minute=time[1], second=time[2],
+                     samplerElement=samplerElement, samplerPlacement=samplerPlacement)
     GenerateOneGmadFile(pathtooutput + lattice + '_' + tag + ".gmad", templatetag + ".gmad", templatefolder, paramdict)
 
 
@@ -183,9 +190,9 @@ def GenerateOneGmadFile(gmadfilename, templatefilename, templatefolder=template_
 
 def GenerateSetGmadFiles(lattice="TL-T20-FF-LUXE", tag="default-tag", pathtooutput=gmad_path,
                          templatetag=template_default_tag, templatefolder=template_path,
-                         sampleAll=True, samplerList=None, distrType="gausstwiss", energy=14, particle="e-",
+                         sampleAll=True, samplerElementList=None, samplerPlacementDict=None, distrType="gausstwiss", energy=14, particle="e-",
                          FIELD1=0.0, FIELD2=0.0, FIELD3=0.0, gdmlfolder=gdml_path,
-                         ICSC='ICSChamber.gdml', IPCH='IPChamberWithAssembly.gdml', GAMC='GammaChamber.gdml',
+                         ICSC='ICSChamberOFF.gdml', IPCH='IPChamberWithAssembly.gdml', GAMC='GammaChamberOFF.gdml',
                          biasMatDump1='biasDump', biasMatDump2='biasDump', biasMatDump3='biasDump',
                          T=300, density=1e-12, compList=["G4_H", "G4_C", "G4_O"], fracList=[0.482, 0.221, 0.297],
                          biasNameList=["biasElecBeamGas", "biasDump"], particleList=['e-', 'neutron'],
@@ -196,7 +203,7 @@ def GenerateSetGmadFiles(lattice="TL-T20-FF-LUXE", tag="default-tag", pathtooutp
                          usePositronToHadrons=1, worldMaterial='vacuum', storeEloss=0,
                          storeTrajectory=0, storeTrajectorySecondaryParticles=0, trajCutGTZ=18.5, trajectoryConnect=1, storeTrajectoryProcesses=1):
     date, time = getDateTime()
-    GenerateMainGmadFile(lattice, tag, date, time, pathtooutput, templatetag, templatefolder, sampleAll, samplerList)
+    GenerateMainGmadFile(lattice, tag, date, time, pathtooutput, templatetag, templatefolder, sampleAll, samplerElementList, samplerPlacementDict)
     GenerateBeamGmadFile(lattice, tag, date, time, pathtooutput, templatetag, templatefolder, distrType, energy, particle)
     GenerateComponentsGmadFile(lattice, tag, date, time, pathtooutput, templatetag, templatefolder, gdmlfolder,
                                ICSC=ICSC, IPCH=IPCH, GAMC=GAMC, FIELD1=FIELD1, FIELD2=FIELD2, FIELD3=FIELD3,
