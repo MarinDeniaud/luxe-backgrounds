@@ -127,13 +127,21 @@ def combineHistFiles(globstring):
     filelist = _gl.glob(globstring)
     if not filelist:
         raise FileNotFoundError("Glob did not find any files")
-    folder = filelist[0].split('/')[0] + '/' + filelist[0].split('/')[1] + '/'
-    prefix = filelist[0].split('/')[-1].split('_part')[0][3:23]
-    suffix = filelist[0].split('_part')[-1].replace('hist', 'merged_hist')
+
+    path = ''
+    filename = filelist[0].split('/')[-1]
+    for element in filelist[0].split('/'):
+        if element != filename:
+            path += (element + '/')
+
+    seed, lattice, tag1, tag2, part, filetype = filename.split('_')
+    prefix = lattice + '_' + tag1 + '_' + tag2 + '_'
+    suffix = '_' + filetype.replace('hist', 'merged_hist')
+
     npart = 0
-    for filename in filelist:
-        npart += int(filename.split('/')[-1].split('_part')[0].split('_')[-1])
-    outputfile = folder + prefix + "{}_part".format(npart) + suffix
+    for filepath in filelist:
+        npart += int(filepath.split('/')[-1].split('-part')[0].split('_')[-1])
+    outputfile = path + prefix + "{}_part".format(npart) + suffix
     _sub.call('rebdsimCombine ' + outputfile + ' ' + globstring, shell=True)
 
 
@@ -348,10 +356,13 @@ class Trajectories:
 
     def getCreationProcessAndParentParticleName(self, index):
         partID = self.getAttribute(index, 'partID')
-        while self.getAttribute(index, 'partID') == partID:
+        while self.getAttribute(index, 'partID') == partID and self.getAttribute(index, 'trackID') != 1:
             parentStepIndex = self.getAttribute(index, 'parentStepIDX')
             index = self.getAttribute(index, 'parentIDX')
-        creationProcess = self.getPostProcessNames(index)[parentStepIndex]
+        try:
+            creationProcess = self.getPostProcessNames(index, transpSteps=True)[parentStepIndex]
+        except UnboundLocalError:
+            raise ValueError("Attempted to get the creation process of a primary")
         return self.getParticleName(index), creationProcess
 
     def getProcessChain(self, index, transpSteps=False):
@@ -416,19 +427,23 @@ class TrajData:
             except KeyError:
                 data[partName] = {parentPartName: {creationProcess: 1}}
 
-    def storeCreationProcessesForOneEvent(self, evtnb, data, scut=18.12):
+    def storeCreationProcessesForOneEvent(self, evtnb, data, doScut=True, scut=18.12):
         Traj = self.Trajectory(evtnb)
         for index, track in enumerate(Traj.track_table):
-            if track['Z'].max() > scut > track['Z'].min() and track['trackID'] != 1 and track['partID'] < 1000000000:
+            if doScut is False:
+                passCut = True
+            else:
+                passCut = track['Z'].max() > scut > track['Z'].min()
+            if passCut and track['trackID'] != 1 and track['partID'] < 1000000000:
                 partName = Traj.getParticleName(index)
                 parentPartName, creationProcess = Traj.getCreationProcessAndParentParticleName(index)
                 self.storeOneCreationProcess(data, partName, parentPartName, creationProcess)
 
-    def storeCreationProcessesAllEvents(self, data={}, scut=18.12, measureTime=False):
+    def storeCreationProcessesAllEvents(self, data={}, doScut=True, scut=18.12, measureTime=False):
         start = time.time()
         for evtnb, evt in enumerate(self.EventTree):
             _printProgressBar(evtnb, self.npart, prefix='Storing processes. Event {}/{}:'.format(evtnb, self.npart), suffix='Complete', length=50)
-            self.storeCreationProcessesForOneEvent(evtnb, data, scut=scut)
+            self.storeCreationProcessesForOneEvent(evtnb, data, doScut=doScut, scut=scut)
         _printProgressBar(self.npart, self.npart, prefix='Storing processes. Event {}/{}:'.format(self.npart, self.npart), suffix='Complete', length=50)
         end = time.time()
         if measureTime:
@@ -436,11 +451,11 @@ class TrajData:
         return data
 
 
-def combineAndSaveCreationProcessesDict(filelist, outputfilename="creation_processes_dict.pk"):
+def combineAndSaveCreationProcessesDict(filelist, outputfilename="creation_processes_dict.pk", doScut=True, scut=18.12):
     creation_processes_dict = {}
     for file in filelist:
         TD = TrajData(file)
-        TD.storeCreationProcessesAllEvents(creation_processes_dict)
+        TD.storeCreationProcessesAllEvents(creation_processes_dict, doScut=doScut, scut=scut)
     with open(outputfilename, 'wb') as f:
         _pk.dump(creation_processes_dict, f)
     return creation_processes_dict
