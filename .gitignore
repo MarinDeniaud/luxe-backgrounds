@@ -50,7 +50,7 @@ Thumbs.db
 
 *.root
 *.eps
-/06_analysis/.ipynb_checkpoints/
-/06_analysis/plots/
+/06_analysis/jupyter_notebooks/.ipynb_checkpoints/
+/06_analysis/jupyter_notebooks/plots/
 /06_analysis/XFEL_data/
 /STB/
