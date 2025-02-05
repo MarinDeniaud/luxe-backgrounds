@@ -5,9 +5,9 @@ from datetime import datetime
 import subprocess as _sub
 
 
-main_path       = "~/PhD/PhD-git/luxe-backgrounds/"
+main_path       = "~/PhD/PhD-git/luxe-backgrounds/03_bdsimModel/"
 gmad_path       = "gmad_files/"
-gdml_path       = "../../gdml_files/"
+gdml_path       = "../gdml_files/"
 template_path   = "gmad_files/"
 beamDump_path   = gmad_path + "beamDump/"
 beamGas_path    = gmad_path + "beamGas/"
@@ -51,6 +51,8 @@ Twiss_dict = {"TL":   {'ALPHX': 0.000000,   'ALPHY': 0.000000,   'BETX': 0.20000
 
 def getFirstLatticeSection(lattice):
     for element in lattice.split('-'):
+        if element in ["LUXE", "LUXEDUM1", "LUXEDET1", "LUXEDUM2", "LUXEDET2", "LUXEDUM3", "LUXEDET3"]:
+            return "LUXE"
         if element in Twiss_dict.keys():
             return element
 
@@ -78,6 +80,7 @@ def GenerateMainGmadFile(lattice, tag, date, time, pathtooutput=gmad_path, templ
             samplerPlacement += "{}: samplerplacement".format(samplername)
             for param in samplerPlacementDict[samplername]:
                 samplerPlacement += ", {}={}".format(param, samplerPlacementDict[samplername][param])
+        samplerPlacement += ";"
     paramdict = dict(tag=lattice+'_'+tag, dayname=date[0], day=date[1], month=date[2], year=date[3], hour=time[0], minute=time[1], second=time[2],
                      samplerElement=samplerElement, samplerPlacement=samplerPlacement)
     GenerateOneGmadFile(pathtooutput + lattice + '_' + tag + ".gmad", templatetag + ".gmad", templatefolder, paramdict)
@@ -172,7 +175,7 @@ def GenerateOptionsGmadFile(lattice, tag, date, time, pathtooutput=gmad_path, te
 def GenerateSequenceGmadFile(lattice, tag, date, time, pathtooutput=gmad_path, templatetag=template_default_tag, templatefolder=template_path):
     line = ''
     for section in lattice.split('-'):
-        if section in Twiss_dict.keys():
+        if section in Twiss_dict.keys() or section in ["LUXE", "LUXEDUM1", "LUXEDET1", "LUXEDUM2", "LUXEDET2", "LUXEDUM3", "LUXEDET3"]:
             line += section + ', '
     paramdict = dict(dayname=date[0], day=date[1], month=date[2], year=date[3], hour=time[0], minute=time[1], second=time[2], line=line[:-2])
     GenerateOneGmadFile(pathtooutput + lattice + '_' + tag + "_sequence.gmad", templatetag + "_sequence.gmad", templatefolder, paramdict)
@@ -217,7 +220,7 @@ def GenerateSetGmadFiles(lattice="TL-T20-FF-LUXE", tag="default-tag", pathtooutp
                             storeTrajectory, storeTrajectorySecondaryParticles, trajCutGTZ, trajectoryConnect, storeTrajectoryProcesses)
     GenerateSequenceGmadFile(lattice, tag, date, time, pathtooutput, templatetag, templatefolder)
 
-    return lattice+tag
+    return lattice + '_' + tag
 
 
 def GenerateSetGmadFirstDump(lattice="==-===-FF-LUXE", tag="first-dump", pathtooutput=beamDump_path,
