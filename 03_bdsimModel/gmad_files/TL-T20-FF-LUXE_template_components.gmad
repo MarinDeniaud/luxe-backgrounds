@@ -195,5 +195,5 @@ DET2:       element, l=1.17,                geometryFile="gdml:{{DET2|default('.
 DUM3:       element, l=0.8,                 geometryFile="gdml:{{DUM3|default('../../gdml_files/ThirdDump.gdml',true)}}", stripOuterVolume=1, biasMaterial="{{biasMatDump3|default('biasDump', true)}}";
 THIRDDUMP:  marker;
 DET3:       element, l=3.17,                geometryFile="gdml:{{DET3|default('../../gdml_files/ThirdDetectors.gdml',true)}}", stripOuterVolume=1;
-WALL:       element, l=0.17806,             geometryFile="gdml:{{WALL|default('../../gdml_files/FinalWall.gdml',true)}}", stripOuterVolume=1";
+WALL:       element, l=0.17806,             geometryFile="gdml:{{WALL|default('../../gdml_files/FinalWall.gdml',true)}}", stripOuterVolume=1;
 LUXEEND:    marker;

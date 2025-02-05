@@ -11,7 +11,7 @@ include {{tag}}_options.gmad;
 include {{tag}}_material.gmad;
 include {{tag}}_objects.gmad;
 
-{{samplerElement|default('sample, all;',true)}}
+{{samplerElement|default('',true)}}
 
 {{samplerPlacement|default('',true)}}
 
