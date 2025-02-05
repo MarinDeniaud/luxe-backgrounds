@@ -5,6 +5,194 @@ import pandas as _pd
 import time as t
 import pymad8 as _m8
 import matplotlib.ticker as mtick
+import pickle as _pk
+
+
+class EnergyPerBunchData:
+    def __init__(self, inputfilename):
+        self.inputfilename = inputfilename
+        self.file = open("../XFEL_data/marin-energy-measurements/mp2234914117-CL.pkl", 'rb')
+        self.energy_dict = _pk.load(self.file)
+
+    def RemoveNan(self):
+        mask = (_np.nan_to_num(self.energy_dict['data']) != 0)
+        return self.energy_dict['data'][mask[:, 1]]
+
+    def CutData(self, minBunch=0, maxBunch=None):
+        E = self.RemoveNan()
+        return E[minBunch:maxBunch]
+
+    def PlotEnergyPerBunch(self, minBunch=0, maxBunch=None, color=None , label=True):
+        E = self.CutData(minBunch=minBunch, maxBunch=maxBunch)
+        if label:
+            _plt.plot(E[:, 0], E[:, 1], color=color, label="mean = " + str(_np.mean(E[:400][:, 1])))
+        else:
+            _plt.plot(E[:, 0], E[:, 1], color=color)
+
+    def PlotEnergyHist(self, minBunch=0, maxBunch=None, color=None):
+        E = self.CutData(minBunch=minBunch, maxBunch=maxBunch)
+        _plt.hist(E[:, 1], bins=20, color=color, label="std = " + str(_np.std(E[:400][:, 1])))
+
+    def PlotAll(self, minCut=None, maxCut=None, figsize=[9, 6]):
+        if minCut is None or maxCut is None:
+            raise ValueError("Must provide cuts for plotting")
+        fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 2], height_ratios=None, sharex=False, sharey=False, font_size=15)
+        ax[0].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[0].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+
+        _plt.subplot(1, 2, 1)
+        self.PlotEnergyPerBunch(0, minCut, color='C0')
+        self.PlotEnergyPerBunch(maxCut, None, color='C1')
+        self.PlotEnergyPerBunch(minCut, maxCut, color='grey', label=False)
+        _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
+        _plt.xticks(rotation=45)
+        _plt.ylabel("Energy [MeV]")
+        _plt.xlabel("Bunch time [ns]")
+        _plt.legend()
+
+        _plt.subplot(1, 2, 2)
+        self.PlotEnergyHist(0, minCut, color='C0')
+        self.PlotEnergyHist(maxCut, None, color='C1')
+        _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
+        _plt.xticks(rotation=45)
+        _plt.xlabel("Energy [MeV]")
+        _plt.legend()
+
+
+class EnergyPerTrainData:
+    def __init__(self, inputfilename):
+        self.inputfilename = inputfilename
+        self.df = getH5dataInDF(inputfilename, getEnergy=True, getPosition=False)
+
+    def GetValidDF(self):
+        return self.df[self.df['Valid'] == 1]
+
+    def GetFirstBunchDF(self):
+        df_valid = self.GetValidDF()
+        return df_valid[df_valid.index.get_level_values('BunchID') == 0]
+
+    def PlotHist(self):
+        df_e = self.GetFirstBunchDF()
+        _plt.hist(df_e['E'], bins=20, label="std = " + str(_np.std(df_e['E'])))
+
+    def PlotHistPerTrain(self):
+        df_e = self.GetFirstBunchDF()
+        df_train = df_e[df_e.index.get_level_values('BPM') == df_e.index.get_level_values('BPM')[0]]
+        _plt.hist(df_train['E'], bins=20, label="std = " + str(_np.std(df_train['E'])))
+
+    def PlotHistPerBPM(self):
+        df_e = self.GetFirstBunchDF()
+        df_bpm = df_e[df_e.index.get_level_values('TrainID') == df_e.index.get_level_values('TrainID')[0]]
+        _plt.hist(df_bpm['E'], bins=20, label="std = " + str(_np.std(df_bpm['E'])))
+
+    def PlotEnergyPerTrain(self):
+        df_e = self.GetFirstBunchDF()
+        df_train = df_e[df_e.index.get_level_values('BPM') == df_e.index.get_level_values('BPM')[0]]
+        _plt.plot(df_train.index.get_level_values('TrainID'), df_train['E'], label="mean = " + str(_np.mean(df_train['E'])))
+
+    def PlotEnergyPerBPM(self):
+        df_e = self.GetFirstBunchDF()
+        df_bpm = df_e[df_e.index.get_level_values('TrainID') == df_e.index.get_level_values('TrainID')[0]]
+        _plt.plot(df_bpm.index.get_level_values('BPM'), df_bpm['E'], label="mean = " + str(_np.mean(df_bpm['E'])))
+
+    def PlotAll(self, figsize=[9, 6]):
+        fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 2], height_ratios=None, sharex=False, sharey=False, font_size=15)
+        ax[0].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[0].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+
+        _plt.subplot(1, 2, 1)
+        self.PlotEnergyPerTrain()
+        _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
+        _plt.xticks(rotation=45)
+        _plt.ylabel("Energy [GeV]")
+        _plt.xlabel("Train ID")
+        _plt.legend()
+
+        _plt.subplot(1, 2, 2)
+        self.PlotHistPerTrain()
+        _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
+        _plt.xticks(rotation=45)
+        _plt.xlabel("Energy [GeV]")
+        _plt.legend()
+
+        # _plt.subplot(2, 2, 3)
+        # self.PlotEnergyPerBPM()
+        # _plt.ylabel("Energy [GeV]")
+        # _plt.xlabel("BPM")
+        # _plt.xticks(rotation=90)
+        # _plt.legend()
+
+        # _plt.subplot(2, 2, 4)
+        # self.PlotHistPerBPM()
+        # _plt.xlabel("Energy [GeV]")
+        # _plt.legend()
+
+
+class ArrivalTimeData:
+    def __init__(self, inputfilename):
+        self.inputfilename = inputfilename
+        self.df = getH5dataInDF(inputfilename, getTime=True, getPosition=False)
+
+    def GetValidDF(self):
+        df_valid = self.df[self.df['Valid'] == 1]
+        return df_valid
+
+    def GetTimePer(self, Bunch=None, Train=None, BPM=None):
+        df = self.GetValidDF()
+        if Bunch is not None:
+            df = df[df.index.get_level_values('BunchID') == Bunch]
+        if Train is not None:
+            df = df[df.index.get_level_values('TrainID') == Train]
+        if BPM is not None:
+            df = df[df.index.get_level_values('BPM') == BPM]
+        return df
+
+    def PlotTimePer(self, index='BunchID', Bunch=None, Train=None, BPM=None, minCut=0, maxCut=None):
+        df_time = self.GetTimePer(Bunch, Train, BPM)
+        _plt.plot(df_time.index.get_level_values(index)[minCut:maxCut], df_time['Time'][minCut:maxCut], label="mean = " + str(_np.mean(df_time['Time'][minCut:maxCut])))
+        if minCut != 0:
+            _plt.plot(df_time.index.get_level_values(index)[0:minCut], df_time['Time'][0:minCut], color='grey')
+        if maxCut is not None:
+            _plt.plot(df_time.index.get_level_values(index)[maxCut:None], df_time['Time'][maxCut:None], color='grey')
+
+    def PlotTimeHistPer(self, Bunch=None, Train=None, BPM=None, minCut=0, maxCut=None, bins=30):
+        df_time = self.GetTimePer(Bunch, Train, BPM)
+        _plt.hist(df_time['Time'][minCut:maxCut], bins=bins, label="std = " + str(_np.std(df_time['Time'][minCut:maxCut])))
+
+    def PlotTimeAndHistPer(self, index='BunchID', Bunch=None, Train=None, BPM=None, minCut=0, maxCut=None, bins=30, figsize=[9, 6]):
+        fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 2], height_ratios=None, sharex=False, sharey=False, font_size=15)
+        ax[0].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[0].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+
+        _plt.subplot(1, 2, 1)
+        self.PlotTimePer(index=index, Bunch=Bunch, Train=Train, BPM=BPM, minCut=minCut, maxCut=maxCut)
+        _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
+        _plt.xticks(rotation=45)
+        _plt.ylabel("Time [s]")
+        _plt.xlabel(index)
+        _plt.legend()
+
+        _plt.subplot(1, 2, 2)
+        self.PlotTimeHistPer(Bunch=Bunch, Train=Train, BPM=BPM, minCut=minCut, maxCut=maxCut, bins=bins)
+        _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
+        _plt.xticks(rotation=45)
+        _plt.xlabel("Time [s]")
+        _plt.legend()
+
+    def PlotAllTimeHist(self, bins=50, figsize=[9, 6]):
+        df_time = self.GetValidDF()
+        fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 1], height_ratios=None, sharex=False, sharey=False, font_size=15)
+        _plt.hist(df_time['Time'], bins=bins, label="std = " + str(_np.std(df_time['Time'])))
+        _plt.ticklabel_format(axis="x", style="sci", scilimits=(-6, -6))
+        _plt.xlabel("Time [s]")
+        _plt.legend()
+
 
 
 class CrispData:
@@ -80,6 +268,13 @@ class CrispData:
         _plt.plot(trainIDs, Lengths, label='Bunch length per train')
         _plt.ylabel('$Length$ [us]')
         _plt.xlabel('$Train ID$')
+        _plt.legend()
+
+    def plotLenghtHist(self, percentile=0.95, figsize=[9, 7]):
+        fig, ax = plotOptions(figsize=figsize)
+        trainIDs, Lengths = self.calcLengthAllTrains(percentile=percentile)
+        _plt.hist(Lengths, bins=50, label="std = " + str(_np.std(Lengths)))
+        _plt.xlabel('$Length$ [us]')
         _plt.legend()
 
 
@@ -755,6 +950,17 @@ def calcJitterAndNoise(df, coord):
     return Jitter, Noise
 
 
+def calcResolution(df, coord):
+    Resol_array = _np.array([])
+    for bpm in df.index.get_level_values(0).unique():
+        V, M = buildMatrixAndVectorForSVD(df, bpm, coord=coord)
+        meas_Vect, Residual = calcMeasuredPositionAndNResidual(M, V)
+        Resol = (meas_Vect - V).std()
+        Resol_array = _np.append(Resol_array, Resol)
+
+    return Resol_array
+
+
 def matchJitterAndBeamSizeArray(S, Jitter_X, Jitter_Y, df_bpm, tolerence=0.001):
     if len(S) == len(df_bpm.S):
         return S, Jitter_X, Jitter_Y
@@ -887,9 +1093,11 @@ def plotBunchPattern(df, sample=1, figsize=[14, 4]):
     _plt.legend()
 
 
-def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, height_ratios=None,
+def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, height_ratios=None, xlim=None,
                        plotAngle=False, plotSigma=False, plotBeta=False, plotDisp=False, plotNoise=False, plotMean=False, figsize=[14, 6]):
     df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
+    if xlim:
+        df_reduced = df_reduced[df_reduced.S.between(xlim[0], xlim[1])]
     S = df_reduced.S.unique()
     Jitter_X, Noise_X = calcJitterAndNoise(df_reduced, 'X')
     Jitter_Y, Noise_Y = calcJitterAndNoise(df_reduced, 'Y')
@@ -915,7 +1123,7 @@ def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey
         _plt.subplot(rows_colums[0], rows_colums[1], spnum)
         S_match, JitterX_SigX, JitterY_SigY = calcJitterSigmaRatio(df_reduced, twiss, Jitter_X, Jitter_Y)
         plot2CurvesSameAxis(S_match, JitterX_SigX, JitterY_SigY, ls1='+-', ls2='+-',
-                            legend1=r'$\frac{\sigma_{J,X}}{\sigma_X}$', legend2=r'$\frac{\sigma_{J,Y}}{\sigma_Y}',
+                            legend1=r'$\frac{\sigma_{J,X}}{\sigma_X}$', legend2=r'$\frac{\sigma_{J,Y}}{\sigma_Y}$',
                             labelX='$S$ [m]', labelY='Jitter/sigma', ticksType='plain')
         _plt.hlines([5], min(S_match), max(S_match), ls='--', colors='C3')
         ax[1].yaxis.set_major_formatter(mtick.PercentFormatter())
@@ -939,6 +1147,28 @@ def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey
         plot2CurvesSameAxis(S, X_bar, Y_bar, ls1='+-', ls2='+-', legend1='$mean(|X|)$', legend2='$mean(|Y|)$', labelX='$S$ [m]', labelY='Mean [m]')
 
     fig.align_labels()
+    _m8.Plot.AddMachineLatticeToFigure(fig, twiss)
+    _plt.xlim(min([min(S), min(df_cut.S)]) - 2, max([max(S), max(df_cut.S)]) + 2)
+    if xlim:
+        _plt.xlim(xlim[0], xlim[1])
+
+
+def plotResolution(df, twissfile, trains=None, bunches=None, ylog=False, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, figsize=[14, 6]):
+    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
+    S = df_reduced.S.unique()
+    Res_X = calcResolution(df_reduced, 'X')
+    Res_Y = calcResolution(df_reduced, 'Y')
+
+    twiss = _m8.Output(twissfile)
+    twiss.calcBeamSize(ex, ey, esprd)
+    df_cut = twiss.data[twiss.data.S.between(min(S), max(S))]
+
+    fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 1])
+
+    plot2CurvesSameAxis(S, Res_X, Res_Y, ls1='+-', ls2='+-', legend1=r'$R_{X}$', legend2=r'$R_{Y}$', labelX='$S$ [m]', labelY='Resolution [m]')
+    fig.align_labels()
+    if ylog:
+        _plt.yscale('log')
     _m8.Plot.AddMachineLatticeToFigure(fig, twiss)
     _plt.xlim(min([min(S), min(df_cut.S)]) - 2, max([max(S), max(df_cut.S)]) + 2)
 
