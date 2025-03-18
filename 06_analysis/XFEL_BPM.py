@@ -11,7 +11,7 @@ import pickle as _pk
 class EnergyPerBunchData:
     def __init__(self, inputfilename):
         self.inputfilename = inputfilename
-        self.file = open("../XFEL_data/marin-energy-measurements/mp2234914117-CL.pkl", 'rb')
+        self.file = open(inputfilename, 'rb')
         self.energy_dict = _pk.load(self.file)
 
     def RemoveNan(self):
@@ -33,7 +33,7 @@ class EnergyPerBunchData:
         E = self.CutData(minBunch=minBunch, maxBunch=maxBunch)
         _plt.hist(E[:, 1], bins=20, color=color, label="std = " + str(_np.std(E[:400][:, 1])))
 
-    def PlotAll(self, minCut=None, maxCut=None, figsize=[9, 6]):
+    def PlotAll(self, minCut=None, maxCut=None, figsize=[12, 5]):
         if minCut is None or maxCut is None:
             raise ValueError("Must provide cuts for plotting")
         fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 2], height_ratios=None, sharex=False, sharey=False, font_size=15)
@@ -163,7 +163,7 @@ class ArrivalTimeData:
         df_time = self.GetTimePer(Bunch, Train, BPM)
         _plt.hist(df_time['Time'][minCut:maxCut], bins=bins, label="std = " + str(_np.std(df_time['Time'][minCut:maxCut])))
 
-    def PlotTimeAndHistPer(self, index='BunchID', Bunch=None, Train=None, BPM=None, minCut=0, maxCut=None, bins=30, figsize=[9, 6]):
+    def PlotTimeAndHistPer(self, index='BunchID', Bunch=None, Train=None, BPM=None, minCut=0, maxCut=None, bins=30, figsize=[12, 5]):
         fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 2], height_ratios=None, sharex=False, sharey=False, font_size=15)
         ax[0].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
         ax[1].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
@@ -174,7 +174,7 @@ class ArrivalTimeData:
         self.PlotTimePer(index=index, Bunch=Bunch, Train=Train, BPM=BPM, minCut=minCut, maxCut=maxCut)
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
         _plt.xticks(rotation=45)
-        _plt.ylabel("Time [s]")
+        _plt.ylabel("Time [ps]")
         _plt.xlabel(index)
         _plt.legend()
 
@@ -182,7 +182,7 @@ class ArrivalTimeData:
         self.PlotTimeHistPer(Bunch=Bunch, Train=Train, BPM=BPM, minCut=minCut, maxCut=maxCut, bins=bins)
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
         _plt.xticks(rotation=45)
-        _plt.xlabel("Time [s]")
+        _plt.xlabel("Time [ps]")
         _plt.legend()
 
     def PlotAllTimeHist(self, bins=50, figsize=[9, 6]):
@@ -208,6 +208,8 @@ class CrispData:
     def calcLengthOneTrainCUMSUM(self, trainID, percentile=0.95, plotCumsum=False):
         time = self.df.Time
         current = self.df[self.df.keys()[1 + trainID]]
+        if list(current.unique()) == [0]:
+            return 0
         cumsum = _np.cumsum(current/current.sum())
 
         def calcBunchEdge(time, cumsum, value):
@@ -242,7 +244,7 @@ class CrispData:
         fig, ax = plotOptions(figsize=figsize)
         _plt.plot(self.df.Time, self.df.Train1, label=self.df.Train1.name)
         _plt.ylabel('$Current$ [?]')
-        _plt.xlabel('$Time$ [us]')
+        _plt.xlabel('$Time$ [fs]')
         _plt.legend()
 
     def plotAllTrainProfile(self, figsize=[10, 8]):
@@ -251,7 +253,7 @@ class CrispData:
         for train in self.df.keys()[1:]:
             _plt.plot(time, self.df[train])
         _plt.ylabel('$Current$ [?]')
-        _plt.xlabel('$Time$ [us]')
+        _plt.xlabel('$Time$ [fs]')
 
     def plotSelectTrainProfile(self, select=_np.array([0]), figsize=[10, 8]):
         fig, ax = plotOptions(figsize=figsize)
@@ -259,22 +261,47 @@ class CrispData:
         for train in self.df.keys()[1:][select]:
             _plt.plot(time, self.df[train], label=self.df[train].name)
         _plt.ylabel('$Current$ [?]')
-        _plt.xlabel('$Time$ [us]')
+        _plt.xlabel('$Time$ [fs]')
         _plt.legend()
 
     def plotLengthPerTrain(self, percentile=0.95, figsize=[14, 4]):
         fig, ax = plotOptions(figsize=figsize)
         trainIDs, Lengths = self.calcLengthAllTrains(percentile=percentile)
         _plt.plot(trainIDs, Lengths, label='Bunch length per train')
-        _plt.ylabel('$Length$ [us]')
+        _plt.ylabel('$Length$ [fs]')
         _plt.xlabel('$Train ID$')
         _plt.legend()
 
-    def plotLenghtHist(self, percentile=0.95, figsize=[9, 7]):
+    def plotLenghtHist(self, percentile=0.95, bins=50, figsize=[9, 7]):
         fig, ax = plotOptions(figsize=figsize)
         trainIDs, Lengths = self.calcLengthAllTrains(percentile=percentile)
-        _plt.hist(Lengths, bins=50, label="std = " + str(_np.std(Lengths)))
-        _plt.xlabel('$Length$ [us]')
+        Lengths = Lengths[Lengths.nonzero()]
+        _plt.hist(Lengths, bins=bins, label="std = " + str(_np.std(Lengths)))
+        _plt.xlabel('$Length$ [fs]')
+        _plt.legend()
+
+    def PlotLengthAndHistPer(self, percentile=0.95, bins=50, figsize=[12, 5]):
+        fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 2], height_ratios=None, sharex=False, sharey=False, font_size=15)
+        ax[0].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[0].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+
+        trainIDs, Lengths = self.calcLengthAllTrains(percentile=percentile)
+
+        _plt.subplot(1, 2, 1)
+        _plt.plot(trainIDs, Lengths, label='Bunch length per train')
+        _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
+        _plt.xticks(rotation=45)
+        _plt.ylabel('$Length$ [fs]')
+        _plt.xlabel('$Train ID$')
+        _plt.legend()
+
+        _plt.subplot(1, 2, 2)
+        _plt.hist(Lengths, bins=bins, label="std = " + str(_np.std(Lengths)))
+        _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
+        _plt.xticks(rotation=45)
+        _plt.xlabel('$Length$ [fs]')
         _plt.legend()
 
 
@@ -287,7 +314,7 @@ bl_number_adress = "XFEL.SDIAG/THZ_SPECTROMETER.FORMFACTOR/CRD.1934.TL/NTH_BUNCH
 
 class BPMData:
     def __init__(self, inputfilename, excelfilename="~/Users/marindeniaud/Desktop/component_list_2023.07.02.xls",
-                 EmitX=3.58e-11, EmitY=3.58e-11, Esprd=1e-6):
+                 EmitX=3.58e-11, EmitY=3.58e-11, Esprd=1e-6, getPosition=True, getCharge=False, getEnergy=False, getTime=False):
         print("Loaded file '{}'".format(inputfilename.split('/')[-1]))
         self.inputfilename = inputfilename
         self.bpm_adress = "XFEL.DIAG/BPM"
@@ -325,7 +352,7 @@ class BPMData:
         self.s_by_s = self.s_by_section[self.s_by_section.argsort()]
         self.bpmIDs_by_s = self.bpmIDs_by_section[self.s_by_section.argsort()]
 
-        self.df_bpm = self.getH5dataInDF()
+        self.df_bpm = self.getH5dataInDF(getPosition=getPosition, getCharge=getCharge, getEnergy=getEnergy, getTime=getTime)
 
     def calcBeamSize(self, EmitX, EmitY, Esprd):
         SigmaX = []
@@ -423,8 +450,8 @@ class BPMData:
             if getCharge:
                 storedata(data_dict, 'Charge', self.bpmdata[bpm]['CHARGE.TD'][mask], factor=1e-9)  # nC converted to C
             if getTime:
-                storedata(data_dict, 'TimeS', self.timeSdata['Value'][mask], factor=1e-6)  # us converted to s
-                storedata(data_dict, 'TimeM', self.timeMdata['Value'][mask], factor=1e-6)  # us converted to s
+                storedata(data_dict, 'TimeS', self.timeSdata['Value'][mask], factor=1e-12)  # ps converted to s
+                storedata(data_dict, 'TimeM', self.timeMdata['Value'][mask], factor=1e-12)  # ps converted to s
             if getEnergy:
                 storedata(data_dict, 'E', _np.tile(self.energydata['Value'][mask], (self.nbbunch, 1)).transpose(), factor=1e-3)  # MeV converted to GeV
         for key in data_dict:
@@ -513,13 +540,13 @@ BPM_DICT = {'BPMI.1860.TL': {'MAD8_name': 'BPMI.Y1.TL', 'Line': 'TL', 'S': 1838.
             'BPMI.1925.TL': {'MAD8_name': 'BPMI.X3.TL', 'Line': 'TL', 'S': 1902.259255, 'X': 0.000000, 'Y': -2.413274},
             'BPMI.1930.TL': {'MAD8_name': 'BPMI.Y4.TL', 'Line': 'TL', 'S': 1907.559255, 'X': 0.000000, 'Y': -2.415209},
             'BPMI.1939.TL': {'MAD8_name': 'BPMI.X4.TL', 'Line': 'TL', 'S': 1916.304255, 'X': 0.000000, 'Y': -2.418402},
-            'BPMA.1966.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1943.710757, 'X': 0.000000, 'Y': -2.428409},  # 11
-            # TLD
+            'BPMA.1966.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1943.710757, 'X': 0.000000, 'Y': -2.428409},  # 12
             'BPMD.1977.TL': {'MAD8_name': 'BPMD.TL',    'Line': 'TL', 'S': 1955.124959, 'X': 0.000000, 'Y': -2.432576},
+            # TLD
             'BPMA.1995.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1972.760701, 'X': 0.000000, 'Y': -2.439016},
             'BPMA.2011.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 1988.710701, 'X': 0.000000, 'Y': -2.444839},
             'BPMD.2022.TL': {'MAD8_name': 'BPMD.TL',    'Line': 'TL', 'S': 2000.125103, 'X': 0.000000, 'Y': -2.449007},
-            'BPMA.2041.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 2018.710845, 'X': 0.000000, 'Y': -2.455793},  # 5
+            'BPMA.2041.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 2018.710845, 'X': 0.000000, 'Y': -2.455793},  # 4
 
             'BPMA.2054.TL': {'MAD8_name': 'BPMA.TL',    'Line': 'TL', 'S': 2031.915847, 'X': 0.000000, 'Y': -2.460614},  # Difference with mad8 lattice ...
 
@@ -778,14 +805,14 @@ def getH5dataInDF(inputfilename, getPosition=True, getCharge=False, getEnergy=Fa
         _printProgressBar(i, nbbpm, prefix='Load {} | {} bpms, {} trains, {} bunches:'.format(inputfilename.split('/')[-1], nbbpm, nbtrain, nbbunch),
                           suffix='Complete', length=50)
         storedata(data_dict, 'Valid', bpmdata[bpm]['BUNCH_VALID.TD'])
+        storedata(data_dict, 'S', _np.full((nbtrain, nbbunch), slist[i]))  # m
         if getPosition:
             storedata(data_dict, 'X', bpmdata[bpm]['X.TD'], factor=1e-3)  # mm converted in m
             storedata(data_dict, 'Y', bpmdata[bpm]['Y.TD'], factor=1e-3)  # mm converted in m
-            storedata(data_dict, 'S', _np.full((nbtrain, nbbunch), slist[i]))  # m
         if getCharge:
             storedata(data_dict, 'Charge', bpmdata[bpm]['CHARGE.TD'], factor=1e-9)  # nC converted to C
         if getTime:
-            storedata(data_dict, 'Time', timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'], factor=1e-6)  # us converted to s
+            storedata(data_dict, 'Time', timedata['1932S.TL.ARRIVAL_TIME.RELATIVE']['Value'])  # ps
         if getEnergy:
             storedata(data_dict, 'E', _np.tile(energydata['Value'], (nbbunch, 1)).transpose(), factor=1e-3)  # MeV converted to GeV
     for key in data_dict:
@@ -879,9 +906,13 @@ def getBunchPattern(df, refT1='BPMA.2097.T1', refT2='BPMA.2161.T2', sample=1, va
 
 
 def buildPositionMatrix(df_reduced, coord):
-    nb_trains = df_reduced.index.levshape[1]
-    nb_bunches = df_reduced.index.levshape[2]
-    M = df_reduced[coord].to_numpy().reshape((-1, nb_trains * nb_bunches)).transpose()
+    try:
+        nb_trains = df_reduced.index.levshape[1]
+        nb_bunches = df_reduced.index.levshape[2]
+        M = df_reduced[coord].to_numpy().reshape((-1, nb_trains * nb_bunches)).transpose()
+    except:
+        nb_shots = df_reduced.index.levshape[1]
+        M = df_reduced[coord].to_numpy().reshape((-1, nb_shots)).transpose()
     return M
 
 
@@ -893,16 +924,25 @@ def calcPositionMean(df_reduced, coord):
     return Mean
 
 
-def buildMatrixAndVectorForSVD(df, refbpmname, coord='X'):
-    df_ref = df.loc[df.index.get_level_values('BPM') == refbpmname][['X', 'Y']]
-    df_matrix = df.loc[df.index.get_level_values('BPM') != refbpmname][['X', 'Y']]
+def buildMatrixAndVectorForSVD(df, refbpmname, coord='X', meanSub=True):
+    if coord in ['X', 'Y']:
+        df_ref = df.loc[df.index.get_level_values('BPM') == refbpmname][['X', 'Y']]
+        df_matrix = df.loc[df.index.get_level_values('BPM') != refbpmname][['X', 'Y']]
 
-    M_X = buildPositionMatrix(df_matrix, 'X')
-    M_Y = buildPositionMatrix(df_matrix, 'Y')
-    Vect_ref = df_ref[coord].to_numpy()
-    M = _np.concatenate((M_X, M_Y), axis=1)
+        M_X = buildPositionMatrix(df_matrix, 'X')
+        M_Y = buildPositionMatrix(df_matrix, 'Y')
+        Vect_ref = df_ref[coord].to_numpy()
+        M = _np.concatenate((M_X, M_Y), axis=1)
+    elif coord == 'Charge':
+        df_ref = df.loc[df.index.get_level_values('BPM') == refbpmname][['Charge']]
+        df_matrix = df.loc[df.index.get_level_values('BPM') != refbpmname][['Charge']]
+        M = buildPositionMatrix(df_matrix, 'Charge')
+        Vect_ref = df_ref[coord].to_numpy()
+    else:
+        raise ValueError('Unknown coordinate : {}'.format(coord))
 
-    M = M - M.mean(0)
+    if meanSub:
+        M = M - M.mean(0)
 
     return Vect_ref, M
 
@@ -948,6 +988,18 @@ def calcJitterAndNoise(df, coord):
         Noise = _np.append(Noise, Residual.std())
 
     return Jitter, Noise
+
+
+def calcAvgPositionAndError(df, coord):
+    AvgPos = _np.array([])
+    AvgErr = _np.array([])
+    for bpm in df.index.get_level_values(0).unique():
+        V, M = buildMatrixAndVectorForSVD(df, bpm, coord=coord, meanSub=False)
+        meas_Vect, Residual = calcMeasuredPositionAndNResidual(M, V)
+        AvgPos = _np.append(AvgPos, meas_Vect.mean())
+        AvgErr = _np.append(AvgErr, Residual.mean())
+
+    return AvgPos, AvgErr
 
 
 def calcResolution(df, coord):
@@ -1093,9 +1145,10 @@ def plotBunchPattern(df, sample=1, figsize=[14, 4]):
     _plt.legend()
 
 
-def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, height_ratios=None, xlim=None,
-                       plotAngle=False, plotSigma=False, plotBeta=False, plotDisp=False, plotNoise=False, plotMean=False, figsize=[14, 6]):
-    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, trains=trains, bunches=bunches)
+def plotJitterAndNoise(df, twissfile, bpms=None, trains=None, bunches=None,
+                       ex=3.58e-11, ey=3.58e-11, esprd=1e-6, height_ratios=None, xlim=None,
+                       plotJitter=True, plotAngle=False, plotSigma=False, plotBeta=False, plotDisp=False, plotNoise=False, plotMean=False, figsize=[14, 6]):
+    df_reduced = reduceDFbyBPMTrainBunchByIndex(df, bpms=bpms, trains=trains, bunches=bunches)
     if xlim:
         df_reduced = df_reduced[df_reduced.S.between(xlim[0], xlim[1])]
     S = df_reduced.S.unique()
@@ -1106,12 +1159,14 @@ def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey
     twiss.calcBeamSize(ex, ey, esprd)
     df_cut = twiss.data[twiss.data.S.between(min(S), max(S))]
 
-    rows_colums = [1+plotAngle+plotSigma+plotBeta+plotDisp+plotNoise+plotMean, 1]
+    rows_colums = [plotJitter+plotAngle+plotSigma+plotBeta+plotDisp+plotNoise+plotMean, 1]
     fig, ax = plotOptions(figsize=figsize, rows_colums=rows_colums, sharex='all', height_ratios=height_ratios)
 
-    spnum = 1
-    _plt.subplot(rows_colums[0], rows_colums[1], spnum)
-    plot2CurvesSameAxis(S, Jitter_X, Jitter_Y, ls1='+-', ls2='+-', legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', labelX='$S$ [m]', labelY='Jitter [m]')
+    spnum = 0
+    if plotJitter:
+        spnum += 1
+        _plt.subplot(rows_colums[0], rows_colums[1], spnum)
+        plot2CurvesSameAxis(S, Jitter_X, Jitter_Y, ls1='+-', ls2='+-', legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', labelX='$S$ [m]', labelY='Jitter [m]')
     if plotAngle:
         spnum += 1
         _plt.subplot(rows_colums[0], rows_colums[1], spnum)
@@ -1126,7 +1181,7 @@ def plotJitterAndNoise(df, twissfile, trains=None, bunches=None, ex=3.58e-11, ey
                             legend1=r'$\frac{\sigma_{J,X}}{\sigma_X}$', legend2=r'$\frac{\sigma_{J,Y}}{\sigma_Y}$',
                             labelX='$S$ [m]', labelY='Jitter/sigma', ticksType='plain')
         _plt.hlines([5], min(S_match), max(S_match), ls='--', colors='C3')
-        ax[1].yaxis.set_major_formatter(mtick.PercentFormatter())
+        ax[spnum-1].yaxis.set_major_formatter(mtick.PercentFormatter())
     if plotBeta:
         spnum += 1
         _plt.subplot(rows_colums[0], rows_colums[1], spnum)
@@ -1194,6 +1249,16 @@ def plotJitterAverageForAllBunches(df, ex=3.58e-11, ey=3.58e-11, esprd=1e-6, tra
         plot2CurvesSameAxis(bunchIDs_cut, Jitter_X_mean, Jitter_Y_mean, ls1='-', ls2='-', labelX='bunchID', labelY='Average Jitter [m]',
                             legend1=r'$\sigma_{J,X}$', legend2=r'$\sigma_{J,Y}$', color1='C0', color2='C1', markersize=8, markeredgewidth=1)
     _plt.legend()
+
+
+def plot1Curve(X, Y, labelX='X', labelY='Y', legend='label', ls='-', color='C0',
+               markersize=15, markeredgewidth=2, ticksType='sci', printLegend=True):
+    _plt.plot(X, Y, ls, color=color, markersize=markersize, markeredgewidth=markeredgewidth, label=legend)
+    _plt.ylabel(labelY)
+    _plt.xlabel(labelX)
+    _plt.ticklabel_format(axis="y", style=ticksType, scilimits=(0, 0))
+    if printLegend:
+        _plt.legend()
 
 
 def plot2CurvesSameAxis(X, Y1, Y2, labelX='X', labelY='Y', legend1='Y1', legend2='Y2',
