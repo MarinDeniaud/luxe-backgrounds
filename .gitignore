@@ -2,10 +2,13 @@
 *.eps
 *.gmad
 *.gdml
+*.pkl
+*.pk
 
 /01_mad8/XFEL_T20/beam_size/
 /03_bdsimModel/gdml_files/*
 /03_bdsimModel/gmad_files/*
+/03_bdsimModel/AlignmentTargetsAssembly/
 /06_analysis/jupyter_notebooks/.ipynb_checkpoints/
 /06_analysis/jupyter_notebooks/plots/
 /06_analysis/XFEL_data/
