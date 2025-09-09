@@ -25,13 +25,13 @@ class EnergyPerBunchData:
     def PlotEnergyPerBunch(self, minBunch=0, maxBunch=None, color=None , label=True):
         E = self.CutData(minBunch=minBunch, maxBunch=maxBunch)
         if label:
-            _plt.plot(E[:, 0], E[:, 1], color=color, label="mean = " + str(_np.mean(E[:400][:, 1])))
+            _plt.plot(E[:, 0], E[:, 1], color=color, label="$\overline{{E}}$ = {:.2e}".format(_np.mean(E[:400][:, 1])))
         else:
             _plt.plot(E[:, 0], E[:, 1], color=color)
 
     def PlotEnergyHist(self, minBunch=0, maxBunch=None, color=None):
         E = self.CutData(minBunch=minBunch, maxBunch=maxBunch)
-        _plt.hist(E[:, 1], bins=20, color=color, label="std = " + str(_np.std(E[:400][:, 1])))
+        _plt.hist(E[:, 1], bins=20, color=color, label="$\sigma_E$ = {:.2e}".format(_np.std(E[:400][:, 1])))
 
     def PlotAll(self, minCut=None, maxCut=None, figsize=[12, 5]):
         if minCut is None or maxCut is None:
@@ -41,13 +41,14 @@ class EnergyPerBunchData:
         ax[1].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
         ax[0].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
         ax[1].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].xaxis.set_major_locator(mtick.MaxNLocator(nbins=5))
 
         _plt.subplot(1, 2, 1)
         self.PlotEnergyPerBunch(0, minCut, color='C0')
         self.PlotEnergyPerBunch(maxCut, None, color='C1')
         self.PlotEnergyPerBunch(minCut, maxCut, color='grey', label=False)
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
-        _plt.xticks(rotation=45)
+        #_plt.xticks(rotation=45)
         _plt.ylabel("Energy [MeV]")
         _plt.xlabel("Bunch time [ns]")
         _plt.legend()
@@ -56,7 +57,7 @@ class EnergyPerBunchData:
         self.PlotEnergyHist(0, minCut, color='C0')
         self.PlotEnergyHist(maxCut, None, color='C1')
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
-        _plt.xticks(rotation=45)
+        #_plt.xticks(rotation=45)
         _plt.xlabel("Energy [MeV]")
         _plt.legend()
 
@@ -75,27 +76,28 @@ class EnergyPerTrainData:
 
     def PlotHist(self):
         df_e = self.GetFirstBunchDF()
-        _plt.hist(df_e['E'], bins=20, label="std = " + str(_np.std(df_e['E'])))
+        _plt.hist(df_e['E'], bins=20, label="$\sigma_E$ = {:.2e}".format(_np.std(df_e['E'])))
 
     def PlotHistPerTrain(self):
         df_e = self.GetFirstBunchDF()
         df_train = df_e[df_e.index.get_level_values('BPM') == df_e.index.get_level_values('BPM')[0]]
-        _plt.hist(df_train['E'], bins=20, label="std = " + str(_np.std(df_train['E'])))
+        _plt.hist(df_train['E'], bins=20, label="$\sigma_E$ = {:.2e}".format(_np.std(df_train['E'])))
 
     def PlotHistPerBPM(self):
         df_e = self.GetFirstBunchDF()
         df_bpm = df_e[df_e.index.get_level_values('TrainID') == df_e.index.get_level_values('TrainID')[0]]
-        _plt.hist(df_bpm['E'], bins=20, label="std = " + str(_np.std(df_bpm['E'])))
+        _plt.hist(df_bpm['E'], bins=20, label="$\sigma_E$ = {:.2e}".format(_np.std(df_bpm['E'])))
 
     def PlotEnergyPerTrain(self):
         df_e = self.GetFirstBunchDF()
         df_train = df_e[df_e.index.get_level_values('BPM') == df_e.index.get_level_values('BPM')[0]]
-        _plt.plot(df_train.index.get_level_values('TrainID'), df_train['E'], label="mean = " + str(_np.mean(df_train['E'])))
+        train_ids = df_train.index.get_level_values('TrainID') - df_train.index.get_level_values('TrainID')[0]
+        _plt.plot(train_ids, df_train['E'], label="$\overline{{E}}$ = {:.2e}".format(_np.mean(df_train['E'])))
 
     def PlotEnergyPerBPM(self):
         df_e = self.GetFirstBunchDF()
         df_bpm = df_e[df_e.index.get_level_values('TrainID') == df_e.index.get_level_values('TrainID')[0]]
-        _plt.plot(df_bpm.index.get_level_values('BPM'), df_bpm['E'], label="mean = " + str(_np.mean(df_bpm['E'])))
+        _plt.plot(df_bpm.index.get_level_values('BPM'), df_bpm['E'], label="$\overline{{E}}$ = {:.2e}".format(_np.mean(df_bpm['E'])))
 
     def PlotAll(self, figsize=[9, 6]):
         fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 2], height_ratios=None, sharex=False, sharey=False, font_size=15)
@@ -103,11 +105,12 @@ class EnergyPerTrainData:
         ax[1].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
         ax[0].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
         ax[1].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].xaxis.set_major_locator(mtick.MaxNLocator(nbins=5))
 
         _plt.subplot(1, 2, 1)
         self.PlotEnergyPerTrain()
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
-        _plt.xticks(rotation=45)
+        #_plt.xticks(rotation=45)
         _plt.ylabel("Energy [GeV]")
         _plt.xlabel("Train ID")
         _plt.legend()
@@ -115,7 +118,7 @@ class EnergyPerTrainData:
         _plt.subplot(1, 2, 2)
         self.PlotHistPerTrain()
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
-        _plt.xticks(rotation=45)
+        #_plt.xticks(rotation=45)
         _plt.xlabel("Energy [GeV]")
         _plt.legend()
 
@@ -153,15 +156,18 @@ class ArrivalTimeData:
 
     def PlotTimePer(self, index='BunchID', Bunch=None, Train=None, BPM=None, minCut=0, maxCut=None):
         df_time = self.GetTimePer(Bunch, Train, BPM)
-        _plt.plot(df_time.index.get_level_values(index)[minCut:maxCut], df_time['Time'][minCut:maxCut], label="mean = " + str(_np.mean(df_time['Time'][minCut:maxCut])))
+        ids = df_time.index.get_level_values(index)[minCut:maxCut] - df_time.index.get_level_values(index)[0]
+        ids_cut_min = df_time.index.get_level_values(index)[0:minCut] - df_time.index.get_level_values(index)[0]
+        ids_cut_max = df_time.index.get_level_values(index)[maxCut:None] - df_time.index.get_level_values(index)[0]
+        _plt.plot(ids, df_time['Time'][minCut:maxCut], label="$\overline{{t}}$ = {:.2e}".format(_np.mean(df_time['Time'][minCut:maxCut])))
         if minCut != 0:
-            _plt.plot(df_time.index.get_level_values(index)[0:minCut], df_time['Time'][0:minCut], color='grey')
+            _plt.plot(ids_cut_min, df_time['Time'][0:minCut], color='grey')
         if maxCut is not None:
-            _plt.plot(df_time.index.get_level_values(index)[maxCut:None], df_time['Time'][maxCut:None], color='grey')
+            _plt.plot(ids_cut_max, df_time['Time'][maxCut:None], color='grey')
 
     def PlotTimeHistPer(self, Bunch=None, Train=None, BPM=None, minCut=0, maxCut=None, bins=30):
         df_time = self.GetTimePer(Bunch, Train, BPM)
-        _plt.hist(df_time['Time'][minCut:maxCut], bins=bins, label="std = " + str(_np.std(df_time['Time'][minCut:maxCut])))
+        _plt.hist(df_time['Time'][minCut:maxCut], bins=bins, label="$\sigma_t$ = {:.2e}".format(_np.std(df_time['Time'][minCut:maxCut])))
 
     def PlotTimeAndHistPer(self, index='BunchID', Bunch=None, Train=None, BPM=None, minCut=0, maxCut=None, bins=30, figsize=[12, 5]):
         fig, ax = plotOptions(figsize=figsize, rows_colums=[1, 2], height_ratios=None, sharex=False, sharey=False, font_size=15)
@@ -169,11 +175,12 @@ class ArrivalTimeData:
         ax[1].yaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
         ax[0].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
         ax[1].xaxis.set_major_formatter(mtick.ScalarFormatter(useOffset=False))
+        ax[1].xaxis.set_major_locator(mtick.MaxNLocator(nbins=5))
 
         _plt.subplot(1, 2, 1)
         self.PlotTimePer(index=index, Bunch=Bunch, Train=Train, BPM=BPM, minCut=minCut, maxCut=maxCut)
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
-        _plt.xticks(rotation=45)
+        #_plt.xticks(rotation=45)
         _plt.ylabel("Time [ps]")
         _plt.xlabel(index)
         _plt.legend()
@@ -181,7 +188,7 @@ class ArrivalTimeData:
         _plt.subplot(1, 2, 2)
         self.PlotTimeHistPer(Bunch=Bunch, Train=Train, BPM=BPM, minCut=minCut, maxCut=maxCut, bins=bins)
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
-        _plt.xticks(rotation=45)
+        #_plt.xticks(rotation=45)
         _plt.xlabel("Time [ps]")
         _plt.legend()
 
@@ -233,17 +240,19 @@ class CrispData:
 
         return timemax - timemin
 
-    def calcLengthAllTrains(self, percentile=0.95):
+    def calcLengthAllTrains(self, percentile=0.95, excludefirsts=True):
         Lengths = _np.array([])
         trainIDs = range(len(self.df.keys())-1)
         for trainID in trainIDs:
             Lengths = _np.append(Lengths, self.calcLengthOneTrainCUMSUM(trainID, percentile=percentile))
+        if excludefirsts:
+            return trainIDs[100:], Lengths[100:]
         return trainIDs, Lengths
 
     def plotFirstTrainProfile(self, figsize=[9, 7]):
         fig, ax = plotOptions(figsize=figsize)
         _plt.plot(self.df.Time, self.df.Train1, label=self.df.Train1.name)
-        _plt.ylabel('$Current$ [?]')
+        _plt.ylabel('$Current$')
         _plt.xlabel('$Time$ [fs]')
         _plt.legend()
 
@@ -252,7 +261,7 @@ class CrispData:
         time = self.df.Time
         for train in self.df.keys()[1:]:
             _plt.plot(time, self.df[train])
-        _plt.ylabel('$Current$ [?]')
+        _plt.ylabel('$Current$')
         _plt.xlabel('$Time$ [fs]')
 
     def plotSelectTrainProfile(self, select=_np.array([0]), figsize=[10, 8]):
@@ -260,15 +269,15 @@ class CrispData:
         time = self.df.Time
         for train in self.df.keys()[1:][select]:
             _plt.plot(time, self.df[train], label=self.df[train].name)
-        _plt.ylabel('$Current$ [?]')
+        _plt.ylabel('$Current$')
         _plt.xlabel('$Time$ [fs]')
         _plt.legend()
 
     def plotLengthPerTrain(self, percentile=0.95, figsize=[14, 4]):
         fig, ax = plotOptions(figsize=figsize)
         trainIDs, Lengths = self.calcLengthAllTrains(percentile=percentile)
-        _plt.plot(trainIDs, Lengths, label='Bunch length per train')
-        _plt.ylabel('$Length$ [fs]')
+        _plt.plot(trainIDs, Lengths, label='$\overline{{\Delta_t}}$ = {:.2e}'.format(_np.mean(Lengths)))
+        _plt.ylabel('$\Delta_t$ [fs]')
         _plt.xlabel('$Train ID$')
         _plt.legend()
 
@@ -276,8 +285,8 @@ class CrispData:
         fig, ax = plotOptions(figsize=figsize)
         trainIDs, Lengths = self.calcLengthAllTrains(percentile=percentile)
         Lengths = Lengths[Lengths.nonzero()]
-        _plt.hist(Lengths, bins=bins, label="std = " + str(_np.std(Lengths)))
-        _plt.xlabel('$Length$ [fs]')
+        _plt.hist(Lengths, bins=bins, label="$\sigma_{{\Delta_t}}$ = {:.2e}".format(_np.std(Lengths)))
+        _plt.xlabel('$\Delta_t$ [fs]')
         _plt.legend()
 
     def PlotLengthAndHistPer(self, percentile=0.95, bins=50, figsize=[12, 5]):
@@ -290,18 +299,18 @@ class CrispData:
         trainIDs, Lengths = self.calcLengthAllTrains(percentile=percentile)
 
         _plt.subplot(1, 2, 1)
-        _plt.plot(trainIDs, Lengths, label='Bunch length per train')
+        _plt.plot(trainIDs, Lengths, label='$\overline{{\Delta_t}}$ = {:.2e}'.format(_np.mean(Lengths)))
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
-        _plt.xticks(rotation=45)
-        _plt.ylabel('$Length$ [fs]')
+        #_plt.xticks(rotation=45)
+        _plt.ylabel('$\Delta_t$ [fs]')
         _plt.xlabel('$Train ID$')
         _plt.legend()
 
         _plt.subplot(1, 2, 2)
-        _plt.hist(Lengths, bins=bins, label="std = " + str(_np.std(Lengths)))
+        _plt.hist(Lengths, bins=bins, label="$\sigma_{{\Delta_t}}$ = {:.2e}".format(_np.std(Lengths)))
         _plt.ticklabel_format(axis="both", style="sci", scilimits=(-3, 3))
-        _plt.xticks(rotation=45)
-        _plt.xlabel('$Length$ [fs]')
+        #_plt.xticks(rotation=45)
+        _plt.xlabel('$\Delta_t$ [fs]')
         _plt.legend()
 
 
@@ -1146,7 +1155,7 @@ def plotBunchPattern(df, sample=1, figsize=[14, 4]):
 
 
 def plotJitterAndNoise(df, twissfile, bpms=None, trains=None, bunches=None,
-                       ex=3.58e-11, ey=3.58e-11, esprd=1e-6, height_ratios=None, xlim=None,
+                       ex=3.58e-11, ey=3.58e-11, esprd=1e-6, height_ratios=None, xlim=None, font_size=17,
                        plotJitter=True, plotAngle=False, plotSigma=False, plotBeta=False, plotDisp=False, plotNoise=False, plotMean=False, figsize=[14, 6]):
     df_reduced = reduceDFbyBPMTrainBunchByIndex(df, bpms=bpms, trains=trains, bunches=bunches)
     if xlim:
@@ -1160,7 +1169,7 @@ def plotJitterAndNoise(df, twissfile, bpms=None, trains=None, bunches=None,
     df_cut = twiss.data[twiss.data.S.between(min(S), max(S))]
 
     rows_colums = [plotJitter+plotAngle+plotSigma+plotBeta+plotDisp+plotNoise+plotMean, 1]
-    fig, ax = plotOptions(figsize=figsize, rows_colums=rows_colums, sharex='all', height_ratios=height_ratios)
+    fig, ax = plotOptions(figsize=figsize, rows_colums=rows_colums, sharex='all', height_ratios=height_ratios, font_size=font_size)
 
     spnum = 0
     if plotJitter:
@@ -1193,7 +1202,7 @@ def plotJitterAndNoise(df, twissfile, bpms=None, trains=None, bunches=None,
     if plotNoise:
         spnum += 1
         _plt.subplot(rows_colums[0], rows_colums[1], spnum)
-        plot2CurvesSameAxis(S, Noise_X, Noise_Y, ls1='+-', ls2='+-', legend1=r'$\sigma_{N,X}$', legend2=r'$\sigma_{N,X}$', labelX='$S$ [m]', labelY='Noise [m]')
+        plot2CurvesSameAxis(S, Noise_X, Noise_Y, ls1='+-', ls2='+-', legend1=r'$\sigma_{N,X}$', legend2=r'$\sigma_{N,Y}$', labelX='$S$ [m]', labelY='Noise [m]')
     if plotMean:
         spnum += 1
         _plt.subplot(rows_colums[0], rows_colums[1], spnum)
