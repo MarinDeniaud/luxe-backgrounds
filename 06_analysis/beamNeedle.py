@@ -9,7 +9,7 @@ import sympy as _sp
 import jinja2 as _jj
 import subprocess as _sub
 from scipy.optimize import curve_fit
-from scipy.integrate import simps
+from scipy.integrate import simpson
 from scipy.interpolate import interp1d
 from scipy import integrate
 
@@ -103,7 +103,7 @@ def func_conv_needle(X, A=1, sigma=3e-5, mu=0, R1=50e-6, R2=200e-6, length=10e-3
     y_needle = needleprofile(X, 1, R1, R2, length)
 
     conv = _np.convolve(y_gaus, y_needle, "same")
-    conv = conv / simps(conv, X)
+    conv = conv / simpson(conv, X)
 
     func = interp1d(X, conv, fill_value='extrapolate')
     return A * func(X)
