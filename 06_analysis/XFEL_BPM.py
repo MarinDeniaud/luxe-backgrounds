@@ -240,7 +240,7 @@ class CrispData:
 
         return timemax - timemin
 
-    def calcLengthAllTrains(self, percentile=0.95, excludefirsts=True):
+    def calcLengthAllTrains(self, percentile=0.95, excludefirsts=False):
         Lengths = _np.array([])
         trainIDs = range(len(self.df.keys())-1)
         for trainID in trainIDs:
@@ -322,7 +322,7 @@ bl_number_adress = "XFEL.SDIAG/THZ_SPECTROMETER.FORMFACTOR/CRD.1934.TL/NTH_BUNCH
 
 
 class BPMData:
-    def __init__(self, inputfilename, excelfilename="~/Users/marindeniaud/Desktop/component_list_2023.07.02.xls",
+    def __init__(self, inputfilename, excelfilename="../01_mad8/component_list_2023.07.02.xls",
                  EmitX=3.58e-11, EmitY=3.58e-11, Esprd=1e-6, getPosition=True, getCharge=False, getEnergy=False, getTime=False):
         print("Loaded file '{}'".format(inputfilename.split('/')[-1]))
         self.inputfilename = inputfilename
@@ -347,9 +347,9 @@ class BPMData:
         self.nbbunch = self.bpmdata[self.bpmIDs[0]]['X.TD'].shape[1]
         self.bunchIDs = _np.array(range(self.nbbunch))
 
-        df_excel_T1 = _pd.read_excel("/Users/marindeniaud/Desktop/component_list_2023.07.02.xls", sheet_name='I1toT5D')
+        df_excel_T1 = _pd.read_excel(excelfilename, sheet_name='I1toT5D')
         df_excel_T1_bpm = df_excel_T1[df_excel_T1['NAME1'].isin(self.bpmIDs)]
-        df_excel_T2 = _pd.read_excel("/Users/marindeniaud/Desktop/component_list_2023.07.02.xls", sheet_name='I1toT4D')
+        df_excel_T2 = _pd.read_excel(excelfilename, sheet_name='I1toT4D')
         df_excel_T2_bpm = df_excel_T2[df_excel_T2['NAME1'].isin(self.bpmIDs)]
 
         self.df_excel = _pd.concat((df_excel_T1_bpm, df_excel_T2_bpm[df_excel_T2['NAME1'].isin(df_excel_T1['NAME1']) == False]))
@@ -467,7 +467,7 @@ class BPMData:
             data_dict[key] = _np.asarray(data_dict[key]).flatten()
         df = _pd.DataFrame(data_dict, index=_pd.MultiIndex.from_product([range(s) for s in (self.nbbpm, self.nbtrain, self.nbbunch)],
                                                                         names=['BPM', 'TrainID', 'BunchID']))
-        df.index.set_levels([self.bpmIDs_by_s, self.trainIDs_matched], level=[0, 1], inplace=True)
+        df.index = df.index.set_levels([self.bpmIDs_by_s, self.trainIDs_matched], level=[0, 1])
         _printProgressBar(self.nbbpm, self.nbbpm, prefix='Loading {} bpms, {} trains and {} bunches in df:'.format(self.nbbpm, self.nbtrain, self.nbbunch),
                           suffix='Complete', length=50)
         return df
@@ -827,7 +827,7 @@ def getH5dataInDF(inputfilename, getPosition=True, getCharge=False, getEnergy=Fa
     for key in data_dict:
         data_dict[key] = _np.asarray(data_dict[key]).flatten()
     df = _pd.DataFrame(data_dict, index=_pd.MultiIndex.from_product([range(s) for s in (nbbpm, nbtrain, nbbunch)], names=['BPM', 'TrainID', 'BunchID']))
-    df.index.set_levels([bpmlist, bpmdata[bpmlist[0]]['TrainId']], level=[0, 1], inplace=True)
+    df.index = df.index.set_levels([bpmlist, bpmdata[bpmlist[0]]['TrainId']], level=[0, 1])
     rawdata.close()
     _printProgressBar(nbbpm, nbbpm, prefix='Load {} | {} bpms, {} trains, {} bunches:'.format(inputfilename.split('/')[-1], nbbpm, nbtrain, nbbunch),
                       suffix='Complete', length=50)
