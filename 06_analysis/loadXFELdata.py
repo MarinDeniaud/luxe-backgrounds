@@ -332,6 +332,19 @@ class XFELdata:
             print("{}/{} bunches".format(len(self.bunchIDs_XTLD), len(self.bunchIDs_XTLD)), end='\r')
         return bunchIDs, sx_mean, sy_mean
 
+    def calcAverageChargeJitterPerBunchID(self, bpms=['BPMI.1910.TL', 'BPMI.1925.TL', 'BPMI.1930.TL', 'BPMI.1939.TL'], sample=10):
+        df_red = self.reduceDFbyBPMTrainBunchByIndex(df=self.df_bpm, bpms=bpms)
+        bunchIDs = []
+        jq_mean = []
+        for bunchID in self.bunchIDs_XTLD[::sample]:
+            print("{}/{} bunches".format(bunchID, len(self.bunchIDs_XTLD)), end='\r')
+            df = self.reduceDFbyBPMTrainBunchByIndex(df_red, bunches=bunchID)
+            jq, nq = self.calcJitterAndNoise(df, 'Charge')
+            jq_mean.append(jq.mean())
+            bunchIDs.append(bunchID)
+            print("{}/{} bunches".format(len(self.bunchIDs_XTLD), len(self.bunchIDs_XTLD)), end='\r')
+        return bunchIDs, jq_mean
+
     def calcJitterAndNoise(self, df, coord, meanSub=True):
         Jitter = _np.array([])
         Noise = _np.array([])
@@ -419,6 +432,63 @@ class XFELdata:
         # _plt.ylabel('Path')
         _plt.xlabel('Bunch ID')
         # _plt.legend()
+
+    def plotBunchPattern2(self, train=1, sample=49,
+                          xlim=[-150, 2700], ylim=[-0.1, 2.8], inSubplot=False, figsize=[12, 3]):
+        def gauss(x, a, sigma, mu):
+            return a / (_np.sqrt(2 * _np.pi) * sigma) * _np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
+
+        def envelope(x, bunchIDs_TL, bunchIDs_T1, bunchIDs_T2):
+            x1 = bunchIDs_TL[0] - 50
+            x2 = (bunchIDs_T1[-1] + bunchIDs_T2[0]) / 2
+            x3 = bunchIDs_TL[-1] + 50
+            return _np.piecewise(x, [x < x1, (x1 <= x) & (x < x2), (x2 <= x) & (x < x3), x >= x3],
+                                 [0, lambda xx: 80, lambda xx: 100, 0])
+
+        def convolution(X, bunchIDs_TL, bunchIDs_T1, bunchIDs_T2, A=1, a=10, sigma=30, mu=0):
+            x_gaus = gauss(X, a, sigma, mu)
+            x_env = envelope(X, bunchIDs_TL, bunchIDs_T1, bunchIDs_T2)
+            conv = _np.convolve(x_gaus, x_env, "same")
+            conv = conv / simpson(conv, X)
+            func = interp1d(X, conv, fill_value='extrapolate')
+            return A * func(X)
+
+        bunchIDs_TL, bunchIDs_T1, bunchIDs_T2 = self.getBunchPattern(train=train, sample=1)
+
+        if not inSubplot:
+            _plt.figure(figsize=figsize)
+            _plt.xlabel('Bunch ID')
+        X = _np.linspace(-3000, 3000, 1000)
+        _plt.plot(X, convolution(X, bunchIDs_TL, bunchIDs_T1, bunchIDs_T2, A=5000), color='C0', linewidth=2)
+
+        XTLD = 0
+        XTD1 = 0
+        XTD2 = 0
+        for bunchID in range(bunchIDs_TL[-1]):
+            if bunchID % sample == 0:
+                if bunchID in bunchIDs_TL:
+                    if XTLD == 0:
+                        XTLD = 1
+                        _plt.axvline(bunchID, color='gray', linewidth=2.5, ymax=0.9, label='XTLD')
+                    else:
+                        _plt.axvline(bunchID, color='gray', linewidth=2.5, ymax=0.9)
+                if bunchID in bunchIDs_T1:
+                    if XTD1 == 0:
+                        XTD1 = 1
+                        _plt.axvline(bunchID, color='C2', linewidth=2.5, ymax=0.9, label='XTD1')
+                    else:
+                        _plt.axvline(bunchID, color='C2', linewidth=2.5, ymax=0.9)
+                if bunchID in bunchIDs_T2:
+                    if XTD2 == 0:
+                        XTD2 = 1
+                        _plt.axvline(bunchID, color='C3', linewidth=2.5, ymax=0.9, label='XTD2')
+                    else:
+                        _plt.axvline(bunchID, color='C3', linewidth=2.5, ymax=0.9)
+        _plt.gca().set_yticks([0, 1, 2])
+        _plt.yticks([])
+        _plt.ylim(ylim)
+        _plt.xlim(xlim)
+        _plt.legend(loc=8, ncols=3, framealpha=0.9)
 
     def checkBunchPath(self, bunchID,
                        refTL='BPMI.1860.TL', refTLD='BPMA.2054.TL',
