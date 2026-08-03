@@ -3,6 +3,11 @@ import matplotlib.pyplot as _plt
 import numpy as _np
 import pandas as _pd
 
+from scipy.integrate import simpson
+from scipy.interpolate import interp1d
+
+_plt.rcParams['font.size'] = 15
+
 
 class CrispData:
     def __init__(self, inputfilename):
@@ -38,9 +43,9 @@ class CrispData:
 
         if plotCumsum:
             _plt.plot(time, cumsum, '+', color='C0')
-            _plt.hlines([1-percentile, percentile], xmin=min(time), xmax=max(time), colors=['C3', 'C3'], linestyles='--')
-            _plt.vlines([timemin, timemax], ymin=min(cumsum), ymax=max(cumsum), colors=['C3', 'C3'], linestyles='--')
-            _plt.ylabel('cumsum')
+            _plt.hlines([1-percentile, percentile], xmin=min(time), xmax=max(time), colors=['C3', 'C3'], linestyles=':')
+            _plt.vlines([timemin, timemax], ymin=min(cumsum), ymax=max(cumsum), colors=['C3', 'C3'], linestyles=':')
+            _plt.ylabel('cumulative sum')
             _plt.xlabel('$t$ [fs]')
             _plt.legend([r"$\sigma_t$ = {:.2f} fs".format(length), "{} percentiles".format(percentile)])
 
@@ -315,12 +320,12 @@ class XFELdata:
             sy.append(_np.std(df_bpm.Y))
         return _np.array(sx), _np.array(sy)
 
-    def calcAverageJitterPerBunchID(self, bpms=['BPMI.1910.TL', 'BPMI.1925.TL', 'BPMI.1930.TL', 'BPMI.1939.TL']):
+    def calcAverageJitterPerBunchID(self, bpms=['BPMI.1910.TL', 'BPMI.1925.TL', 'BPMI.1930.TL', 'BPMI.1939.TL'], sample=10):
         df_red = self.reduceDFbyBPMTrainBunchByIndex(df=self.df_bpm, bpms=bpms)
         bunchIDs = []
         sx_mean = []
         sy_mean = []
-        for bunchID in self.bunchIDs_XTLD[::10]:
+        for bunchID in self.bunchIDs_XTLD[::sample]:
             print("{}/{} bunches".format(bunchID, len(self.bunchIDs_XTLD)), end='\r')
             df = self.reduceDFbyBPMTrainBunchByIndex(df_red, bunches=bunchID)
             jx, nx = self.calcJitterAndNoise(df, 'X')
